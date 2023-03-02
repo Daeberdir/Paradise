@@ -348,8 +348,17 @@
 				return
 			user.visible_message("<span class='danger'>[user] [pick("chomps","bites")] off [the_item]'s [limb]!</span>")
 			playsound(user.loc, 'sound/items/eatfood.ogg', 50, 0)
-			limb.droplimb(0, DROPLIMB_SHARP)
+			H.apply_damage(20, BRUTE, limb)
+			H.bleed(25)
+			if(prob(90))
+				limb.droplimb(0, DROPLIMB_SHARP)
+				H.apply_damage(10, BRUTE, limb)
+				H.bleed(35)
 			doHeal(user)
+			if((H.reagents.has_reagent("morphine")) || (H.reagents.has_reagent("hydrocodone")) || (H.stat == UNCONSCIOUS))
+				return
+			else if(H.dna.species && !(NO_PAIN in H.dna.species.species_traits))
+				H.emote("scream")
 	else
 		user.visible_message("<span class='danger'>[user] eats \the [the_item].</span>")
 		playsound(user.loc, 'sound/items/eatfood.ogg', 50, 0)
