@@ -352,7 +352,6 @@
 			H.bleed(25)
 			if(prob(90))
 				limb.droplimb(0, DROPLIMB_SHARP)
-				H.apply_damage(10, BRUTE, limb)
 				H.bleed(35)
 			doHeal(user)
 			if((H.reagents.has_reagent("morphine")) || (H.reagents.has_reagent("hydrocodone")) || (H.stat == UNCONSCIOUS))
