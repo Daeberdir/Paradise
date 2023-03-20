@@ -1696,9 +1696,9 @@
 /datum/reagent/consumable/ethanol/alcomender/reaction_mob(mob/living/M, method=REAGENT_TOUCH, volume)
 	var/update_flags = STATUS_UPDATE_NONE
 	if(method == REAGENT_TOUCH)
-		update_flags |= M.adjustFireLoss(volume * -0.7, FALSE)
+		update_flags |= M.adjustFireLoss(-volume * 0.7, FALSE)
 		to_chat(M, "<span class='notice'>The diluted silver sulfadiazine soothes your burns.</span>")
-	return ..()
+	return ..() | update_flags
 
 /datum/reagent/consumable/ethanol/amnesia
 	name = "Star Amnesia"
