@@ -1698,7 +1698,7 @@
 	if(method == REAGENT_TOUCH)
 		update_flags |= M.adjustFireLoss(volume * -0.7, FALSE)
 		to_chat(M, "<span class='notice'>The diluted silver sulfadiazine soothes your burns.</span>")
-	return ..() | update_flags
+	return ..()
 
 /datum/reagent/consumable/ethanol/amnesia
 	name = "Star Amnesia"
