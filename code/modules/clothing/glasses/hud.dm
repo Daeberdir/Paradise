@@ -4,11 +4,6 @@
 	flags = null //doesn't protect eyes because it's a monocle, duh
 	origin_tech = "magnets=3;biotech=2"
 	prescription_upgradable = 1
-	/// The visual icons granted by wearing these glasses.
-	var/HUDType = null
-	/// List of things added to examine text, like security or medical records.
-	var/list/examine_extensions = null
-
 
 /obj/item/clothing/glasses/hud/equipped(mob/living/carbon/human/user, slot)
 	..()
@@ -207,50 +202,6 @@
 	see_in_dark = 1
 	flash_protect = 1
 	tint = 1
-
-/obj/item/clothing/glasses/hud/security/tajblind
-	name = "sleek veil"
-	desc = "An Ahdominian made veil that allows the user to see while obscuring their eyes. This one has an in-built security HUD."
-	icon_state = "tajblind_sec"
-	item_state = "tajblind_sec"
-	flags_cover = GLASSESCOVERSEYES
-	actions_types = list(/datum/action/item_action/toggle)
-	up = 0
-
-	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/eyes.dmi',
-		"Monkey" = 'icons/mob/species/monkey/eyes.dmi',
-		"Farwa" = 'icons/mob/species/monkey/eyes.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/eyes.dmi',
-		"Neara" = 'icons/mob/species/monkey/eyes.dmi',
-		"Stok" = 'icons/mob/species/monkey/eyes.dmi'
-		)
-
-/obj/item/clothing/glasses/hud/security/tajblind/attack_self()
-	toggle_veil()
-
-/obj/item/clothing/glasses/hud/health/tajblind
-	name = "lightweight veil"
-	desc = "An Ahdominian made veil that allows the user to see while obscuring their eyes. This one has an installed medical HUD."
-	icon_state = "tajblind_med"
-	item_state = "tajblind_med"
-	flags_cover = GLASSESCOVERSEYES
-	actions_types = list(/datum/action/item_action/toggle)
-	up = 0
-
-	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/eyes.dmi',
-		"Grey" = 'icons/mob/species/grey/eyes.dmi',
-		"Drask" = 'icons/mob/species/drask/eyes.dmi',
-		"Monkey" = 'icons/mob/species/monkey/eyes.dmi',
-		"Farwa" = 'icons/mob/species/monkey/eyes.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/eyes.dmi',
-		"Neara" = 'icons/mob/species/monkey/eyes.dmi',
-		"Stok" = 'icons/mob/species/monkey/eyes.dmi'
-		)
-
-/obj/item/clothing/glasses/hud/health/tajblind/attack_self()
-	toggle_veil()
 
 /obj/item/clothing/glasses/hud/skills
 	name = "Skills HUD"

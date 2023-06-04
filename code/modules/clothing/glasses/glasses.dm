@@ -546,7 +546,6 @@
 	item_state = "eyepatch"
 	flags = NODROP
 
-
 /obj/item/clothing/glasses/godeye
 	name = "eye of god"
 	desc = "A strange eye, said to have been torn from an omniscient creature that used to roam the wastes."
@@ -584,59 +583,6 @@
 		qdel(src)
 	..()
 
-/obj/item/clothing/glasses/tajblind
-	name = "embroidered veil"
-	desc = "An Ahdominian made veil that allows the user to see while obscuring their eyes."
-	icon_state = "tajblind"
-	item_state = "tajblind"
-	flags_cover = GLASSESCOVERSEYES
-	actions_types = list(/datum/action/item_action/toggle)
-	up = 0
-	tint = 0
-
-	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/eyes.dmi',
-		"Grey" = 'icons/mob/species/grey/eyes.dmi',
-		"Drask" = 'icons/mob/species/drask/eyes.dmi',
-		"Monkey" = 'icons/mob/species/monkey/eyes.dmi',
-		"Farwa" = 'icons/mob/species/monkey/eyes.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/eyes.dmi',
-		"Neara" = 'icons/mob/species/monkey/eyes.dmi',
-		"Stok" = 'icons/mob/species/monkey/eyes.dmi'
-		)
-
-/obj/item/clothing/glasses/tajblind/eng
-	name = "industrial veil"
-	icon_state = "tajblind_engi"
-	item_state = "tajblind_engi"
-
-/obj/item/clothing/glasses/tajblind/sci
-	name = "hi-tech veil"
-	icon_state = "tajblind_sci"
-	item_state = "tajblind_sci"
-
-/obj/item/clothing/glasses/tajblind/cargo
-	name = "khaki veil"
-	icon_state = "tajblind_cargo"
-	item_state = "tajblind_cargo"
-
-/obj/item/clothing/glasses/tajblind/attack_self()
-	toggle_veil()
-
-/obj/item/clothing/glasses/proc/toggle_veil()
-	if(usr.canmove && !usr.incapacitated())
-		if(up)
-			up = !up
-			tint = initial(tint)
-			to_chat(usr, "You activate [src], allowing you to see.")
-		else
-			up = !up
-			tint = 3
-			to_chat(usr, "You deactivate [src], obscuring your vision.")
-		var/mob/living/carbon/user = usr
-		user.update_tint()
-		user.update_inv_glasses()
-		
 /obj/item/clothing/glasses/sunglasses/blindfold/cucumbermask
 	desc = "A simple pair of two cucumber slices. Medically proven to be able to heal your eyes over time."
 	name = "cucumber mask"

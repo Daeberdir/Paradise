@@ -232,6 +232,10 @@
 	var/invis_view = SEE_INVISIBLE_LIVING
 	var/invis_override = 0
 	var/lighting_alpha
+//steeley veeley automobiley yeeeeeeah
+	var/HUDType = null// The visual icons granted by wearing these glasses.
+	var/list/examine_extensions = null// List of things added to examine text, like security or medical records.
+//steeley veeley over
 
 	var/emagged = 0
 	var/list/color_view = null//overrides client.color while worn

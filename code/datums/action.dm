@@ -269,6 +269,9 @@
 	if(istype(H))
 		H.toggle_welding_screen(owner)
 
+/datum/action/item_action/toggle_veil
+	name = "Toggle Veil"
+
 /datum/action/item_action/toggle_helmet_mode
 	name = "Toggle Helmet Mode"
 
