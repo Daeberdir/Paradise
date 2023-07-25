@@ -221,7 +221,7 @@ Made by Xhuis
 				if(!isshadowling(H))
 					for(var/obj/effect/proc_holder/spell/targeted/shadowling_hatch/hatch_ability in shadow.spell_list)
 						hatch_ability.cycles_unused++
-						if(!H.stunned && prob(20) && hatch_ability.cycles_unused > config.shadowling_max_age)
+						if(!H.IsStunned() && prob(20) && hatch_ability.cycles_unused > config.shadowling_max_age)
 							var/shadow_nag_messages = list("You can barely hold yourself in this lesser form!", "The urge to become something greater is overwhelming!", "You feel a burning passion to hatch free of this shell and assume godhood!")
 							H.take_overall_damage(0, 3)
 							to_chat(H, "<span class='userdanger'>[pick(shadow_nag_messages)]</span>")
@@ -289,7 +289,7 @@ Made by Xhuis
 	if(shadows.len)
 		text += "<br><span class='big'><b>The shadowlings were:</b></span>"
 		for(var/datum/mind/shadow in shadows)
-			text += "<br>[shadow.key] was [shadow.name] ("
+			text += "<br>[shadow.get_display_key()] was [shadow.name] ("
 			if(shadow.current)
 				if(shadow.current.stat == DEAD)
 					text += "died"
@@ -304,7 +304,7 @@ Made by Xhuis
 		if(shadowling_thralls.len)
 			text += "<br><span class='big'><b>The thralls were:</b></span>"
 			for(var/datum/mind/thrall in shadowling_thralls)
-				text += "<br>[thrall.key] was [thrall.name] ("
+				text += "<br>[thrall.get_display_key()] was [thrall.name] ("
 				if(thrall.current)
 					if(thrall.current.stat == DEAD)
 						text += "died"

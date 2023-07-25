@@ -53,7 +53,7 @@
 	/// How much damage a successful ambush attack does
 	var/ambush_damage = 25
 	/// How much weaken a successful ambush attack applies
-	var/ambush_weaken = 3
+	var/ambush_weaken = 6 SECONDS
 	/// The spell the morph uses to morph
 	var/obj/effect/proc_holder/spell/targeted/click/mimic/morph/mimic_spell
 	/// The ambush action used by the morph
@@ -374,11 +374,13 @@
 		eat.owner = mind
 		eat.explanation_text = "Eat as many living beings as possible to still the hunger within you."
 		eat.completed = TRUE
+		eat.needs_target = FALSE
 		mind.objectives += eat
 		var/datum/objective/procreate = new /datum/objective
 		procreate.owner = mind
 		procreate.explanation_text = "Split yourself in as many other [name]'s as possible!"
 		procreate.completed = TRUE
+		procreate.needs_target = FALSE
 		mind.objectives += procreate
 		mind.announce_objectives()
 
