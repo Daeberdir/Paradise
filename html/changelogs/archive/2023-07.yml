@@ -204,7 +204,33 @@
       Jackboots icons. (#3226)
   Dimach:
   - bugfix: bsg sprites fix (#3225)
+  Rerik007:
+  - bugfix: correct calc_decay for disgust status effect (#3223)
+  Vladisvell:
+  - bugfix: incorporeal living beings now aren't struck by containment fields (#3232)
   Zwei:
   - refactor: Antag Datums (#3157)
+  - bugfix: Station Goals (#3234)
+  captainnelly:
+  - bugfix: handheld defib sound (#3230)
+  - tweak: stun to weaken while being pulled in walk mode (#3229)
   github-actions[bot]:
   - server: Automatic NanoMap Update (#3227)
+'2023-07-26':
+  Ksaikok46:
+  - tweak: pig-meatyores (#3220)
+  LiquidPotroh:
+  - bugfix: stethoscope counts pulse of a stopped heart (#3224)
+  Roman:
+  - add: Plov Update! (#3237)
+  Vladisvell:
+  - bugfix: dinnerware old vendor in delta's Old Restaurant now sells stuff properly
+      (#3231)
+  WolfLox:
+  - balance: Weakness weaken (#3236)
+  Zwei:
+  - bugfix: Contractor Role Update (#3235)
+  - tweak: Stack Overweight Drop (#3221)
+'2023-07-27':
+  Zwei:
+  - refactor: Porting and Refactoring Official Paradise Spells System (#3168)
