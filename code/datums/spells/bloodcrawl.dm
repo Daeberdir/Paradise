@@ -9,6 +9,7 @@
 	base_cooldown = 0
 	clothes_req = FALSE
 	human_req = FALSE
+	phase_allowed = TRUE
 	cooldown_min = 0
 	should_recharge_after_cast = FALSE
 	overlay = null
@@ -95,7 +96,7 @@
 	left_hand.icon_state = "bloodhand_left"
 	right_hand.icon_state = "bloodhand_right"
 	user.put_in_l_hand(left_hand)
-	user.put_in_l_hand(right_hand)
+	user.put_in_r_hand(right_hand)
 	user.regenerate_icons()
 	return TRUE
 
