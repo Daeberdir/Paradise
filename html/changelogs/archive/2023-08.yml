@@ -96,3 +96,36 @@
   - add: braindamage from holywater (#3329)
   yosoyrebelde:
   - add: new station goal - bluespace rift scan (#3295)
+'2023-08-12':
+  Daeberdir:
+  - add: Brig Healer Handheld Crew Monitor (#3336)
+  Den109G:
+  - bugfix: bolts on syndie-prison (#3335)
+  Dimach:
+  - tweak: prevent send multiple messages to same radio channel (#3337)
+  Vladisvell:
+  - bugfix: holoparasites no longer get spammed by healing pylons (#3339)
+  Zwei:
+  - bugfix: Cuffs and Welding Visor Fixes (#3332)
+  aeternaclose:
+  - bugfix: CorobImprovement-pt1 (#3307)
+  - bugfix: CereBeltFix (#3334)
+  captainnelly:
+  - tweak: health hud no longer displayed on 100% HP mobs (#3302)
+  Сиротка:
+  - tweak: increase Space Dragon min players (#3333)
+'2023-08-13':
+  Vladisvell:
+  - add: bread monster (#3197)
+  Zwei:
+  - add: Accurate Item Drop (#3171)
+  - tweak: Clever Odysseus Sleeper (#3192)
+'2023-08-14':
+  Den109G:
+  - bugfix: icons for holders (#3341)
+  - del: Reverts changes in USSP (#3345)
+  Zwei:
+  - bugfix: Few Objectives Fixes (#3346)
+  - bugfix: More Runtimes Fixed (#3298)
+  github-actions[bot]:
+  - server: Automatic NanoMap Update (#3340)
