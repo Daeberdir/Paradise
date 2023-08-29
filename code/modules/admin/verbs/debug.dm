@@ -181,7 +181,7 @@ GLOBAL_PROTECT(AdminProcCallSpamPrevention)
 	return usr && usr.client && GLOB.AdminProcCaller == usr.client.ckey
 #endif
 
-/client/proc/callproc_datum(var/A as null|area|mob|obj|turf)
+/client/proc/callproc_datum(atom/A as null|area|mob|obj|turf in view(maxview()))
 	set category = null
 	set name = "\[Admin\] Atom ProcCall"
 
@@ -720,7 +720,7 @@ GLOBAL_PROTECT(AdminProcCallSpamPrevention)
 		return
 
 	var/list/dellog = list("<B>List of things that have gone through qdel this round</B><BR><BR><ol>")
-	sortTim(SSgarbage.items, cmp=/proc/cmp_qdel_item_time, associative = TRUE)
+	sortTim(SSgarbage.items, cmp = /proc/cmp_qdel_item_time, associative = TRUE)
 	for(var/path in SSgarbage.items)
 		var/datum/qdel_item/I = SSgarbage.items[path]
 		dellog += "<li><u>[path]</u><ul>"

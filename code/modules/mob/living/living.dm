@@ -280,7 +280,7 @@
 	stop_pulling()
 
 //same as above
-/mob/living/pointed(atom/A as mob|obj|turf)
+/mob/living/pointed(atom/A as mob|obj|turf in view(client.maxview()))
 	if(incapacitated(ignore_lying = TRUE))
 		return FALSE
 	if(HAS_TRAIT(src, TRAIT_FAKEDEATH))
@@ -1206,6 +1206,11 @@
 			update_transform()
 		if("lighting_alpha")
 			sync_lighting_plane_alpha()
+
+
+/mob/living/throw_at(atom/target, range, speed, mob/thrower, spin, diagonals_first, datum/callback/callback, force)
+	stop_pulling()
+	return ..()
 
 
 GLOBAL_LIST_INIT(ventcrawl_machinery, list(/obj/machinery/atmospherics/unary/vent_pump, /obj/machinery/atmospherics/unary/vent_scrubber))

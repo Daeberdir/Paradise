@@ -279,7 +279,7 @@
 	popup.open()
 
 //mob verbs are faster than object verbs. See http://www.byond.com/forum/?post=1326139&page=2#comment8198716 for why this isn't atom/verb/examine()
-/mob/verb/examinate(atom/A as mob|obj|turf in view())
+/mob/verb/examinate(atom/A as mob|obj|turf in view(client.maxview()))
 	set name = "Examine"
 	set category = "IC"
 
@@ -288,7 +288,7 @@
 /mob/proc/run_examinate(atom/A)
 	if(!has_vision(information_only = TRUE) && !isobserver(src))
 		to_chat(src, "<span class='notice'>Здесь что-то есть, но вы не видите — что именно.</span>")
-		return 1
+		return TRUE
 
 	face_atom(A)
 	var/list/result = A.examine(src)
@@ -298,7 +298,7 @@
 //note: ghosts can point, this is intended
 //visible_message will handle invisibility properly
 //overriden here and in /mob/dead/observer for different point span classes and sanity checks
-/mob/verb/pointed(atom/A as mob|obj|turf)
+/mob/verb/pointed(atom/A as mob|obj|turf in view(client.maxview()))
 	set name = "Point To"
 	set category = "Object"
 
@@ -312,7 +312,7 @@
 /// possibly delayed verb that finishes the pointing process starting in [/mob/verb/pointed()].
 /// either called immediately or in the tick after pointed() was called, as per the [DEFAULT_QUEUE_OR_CALL_VERB()] macro
 /mob/proc/run_pointed(atom/A)
-	if(client && !(A in view(client.view, src)))
+	if(client && !(A in view(client.maxview())))
 		return FALSE
 
 	changeNext_move(CLICK_CD_POINT)
@@ -718,16 +718,20 @@
 			add_spell_to_statpanel(S)
 
 	// Allow admins + PR reviewers to VIEW the panel. Doesnt mean they can click things.
-	if(is_admin(src) || check_rights(R_VIEWRUNTIMES, FALSE))
-		if(statpanel("MC")) //looking at that panel
+	if((is_admin(src) || check_rights(R_VIEWRUNTIMES, FALSE)) && (client?.prefs.toggles2 & PREFTOGGLE_2_MC_TABS))
+		// Below are checks to see which MC panel you are looking at
+
+		// Shows MC Metadata
+		if(statpanel("MC|M"))
+			stat("Info", "Showing MC metadata")
 			var/turf/T = get_turf(client.eye)
 			stat("Location:", COORD(T))
-			stat("CPU:", "[Master.formatcpu()]")
-			stat("Map CPU:", "[Master.format_mapcpu()]")
+			stat("CPU:", "[Master.formatcpu(world.cpu)]")
+			stat("Map CPU:", "[Master.formatcpu(world.map_cpu)]")
+			//stat("Map CPU:", "[Master.formatcpu(world.map_cpu)]")
 			stat("Instances:", "[num2text(world.contents.len, 10)]")
 			GLOB.stat_entry()
 			stat("Server Time:", time_stamp())
-			stat(null)
 			if(Master)
 				Master.stat_entry()
 			else
@@ -736,15 +740,46 @@
 				Failsafe.stat_entry()
 			else
 				stat("Failsafe Controller:", "ERROR")
+
+		// Shows subsystems with SS_NO_FIRE
+		if(statpanel("MC|N"))
+			stat("Info", "Showing subsystems that do not fire")
 			if(Master)
-				stat(null)
-				for(var/datum/controller/subsystem/SS in Master.subsystems)
-					SS.stat_entry()
+				for(var/datum/controller/subsystem/SS as anything in Master.subsystems)
+					if(SS.flags & SS_NO_FIRE)
+						SS.stat_entry()
+
+		// Shows subsystems with the SS_CPUDISPLAY_LOW flag
+		if(statpanel("MC|L"))
+			stat("Info", "Showing subsystems marked as low intensity")
+			if(Master)
+				for(var/datum/controller/subsystem/SS as anything in Master.subsystems)
+					if((SS.cpu_display == SS_CPUDISPLAY_LOW) && !(SS.flags & SS_NO_FIRE))
+						SS.stat_entry()
+
+		// Shows subsystems with the SS_CPUDISPLAY_DEFAULT flag
+		if(statpanel("MC|D"))
+			stat("Info", "Showing subsystems marked as default intensity")
+			if(Master)
+				for(var/datum/controller/subsystem/SS as anything in Master.subsystems)
+					if((SS.cpu_display == SS_CPUDISPLAY_DEFAULT) && !(SS.flags & SS_NO_FIRE))
+						SS.stat_entry()
+
+		// Shows subsystems with the SS_CPUDISPLAY_HIGH flag
+		if(statpanel("MC|H"))
+			stat("Info", "Showing subsystems marked as high intensity")
+			if(Master)
+				for(var/datum/controller/subsystem/SS as anything in Master.subsystems)
+					if((SS.cpu_display == SS_CPUDISPLAY_HIGH) && !(SS.flags & SS_NO_FIRE))
+						SS.stat_entry()
 
 	statpanel("Status") // Switch to the Status panel again, for the sake of the lazy Stat procs
 
-	if(client && client.statpanel == "Status" && SSticker)
-		show_stat_station_time()
+	if(client?.statpanel == "Status")
+		if(SSticker)
+			show_stat_station_time()
+		stat(null, "Players Connected: [length(GLOB.clients)]")
+
 
 // this function displays the station time in the status panel
 /mob/proc/show_stat_station_time()
