@@ -9,3 +9,20 @@
   - refactor: Scoreboard Datum (#3452)
   - bugfix: Thief Mode Completion Text (#3450)
   - bugfix: Parrot Collar Fix (#3457)
+'2023-09-02':
+  Den109G:
+  - bugfix: Admin-spawn key for steal target (#3458)
+  LiquidPotroh:
+  - add: Blindness in xeno's stomach (#3441)
+  NightDawnFox:
+  - bugfix: another lavaland fix (#3455)
+  Zwei:
+  - refactor: TG Style Cinematics (#3454)
+'2023-09-05':
+  SAAD:
+  - add: '"Mages Tavern" space ruin (#3461)'
+  UEDCommander:
+  - tweak: Alert rewrite (#3462)
+  Сиротка:
+  - bugfix: chamaleon hardsuit (#3470)
+  - balance: space dragon (#3444)
