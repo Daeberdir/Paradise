@@ -8,7 +8,6 @@
 	cures = list("haloperidol")
 	agent = "Jagged Crystals"
 	cure_chance = 10
-	viable_mobtypes = list(/mob/living/carbon/human)
 	desc = "Swearing, shouting, attacking nearby crew members uncontrollably."
 	severity = DANGEROUS
 	disease_flags = CURABLE

@@ -77,7 +77,6 @@
 	cures = list("banana")
 	spread_text = "Monkey Bites"
 	spread_flags = SPECIAL
-	viable_mobtypes = list(/mob/living/carbon/human)
 	permeability_mod = 1
 	cure_chance = 1
 	disease_flags = CAN_CARRY|CAN_RESIST

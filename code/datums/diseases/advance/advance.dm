@@ -31,7 +31,6 @@ GLOBAL_LIST_EMPTY(archive_diseases)
 	agent = "advance microbes"
 	max_stages = 5
 	spread_text = "Unknown"
-	viable_mobtypes = list(/mob/living/carbon/human)
 
 	// NEW VARS
 

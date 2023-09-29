@@ -6,7 +6,6 @@
 	cures = list("milk")
 	cure_chance = 50
 	agent = "Nya Virus"
-	viable_mobtypes = list(/mob/living/carbon/human)
 	permeability_mod = 0.75
 	desc = "If left untreated the subject will turn into a feline. In felines it has... OTHER... effects."
 	severity = DANGEROUS
@@ -56,7 +55,6 @@
 	cures = list("plasma")
 	cure_chance = 50
 	agent = "AMB45DR Bacteria"
-	viable_mobtypes = list(/mob/living/carbon/human)
 	permeability_mod = 0.75
 	desc = "If left untreated the subject will mutate to a different species."
 	severity = BIOHAZARD

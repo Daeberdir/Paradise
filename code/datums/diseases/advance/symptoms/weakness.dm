@@ -29,7 +29,7 @@ Bonus
 /datum/symptom/weakness/Activate(datum/disease/advance/A)
 	..()
 	if(prob(SYMPTOM_ACTIVATION_PROB))
-		var/mob/living/M = A.affected_mob
+		var/mob/living/carbon/human/M = A.affected_mob
 		switch(A.stage)
 			if(1, 2)
 				to_chat(M, "<span class='warning'>[pick("You feel weak.", "You feel lazy.")]</span>")

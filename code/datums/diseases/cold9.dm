@@ -6,7 +6,6 @@
 	cure_text = "Common Cold Anti-bodies & Spaceacillin"
 	cures = list("spaceacillin")
 	agent = "ICE9-rhinovirus"
-	viable_mobtypes = list(/mob/living/carbon/human)
 	desc = "If left untreated the subject will slow, as if partly frozen."
 	severity = MEDIUM
 

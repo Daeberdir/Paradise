@@ -6,7 +6,6 @@
 	cure_text = "Chick Chicky Boom!"
 	cures = list("plasma")
 	agent = "Unknown"
-	viable_mobtypes = list(/mob/living/carbon/human)
 	permeability_mod = 1
 	severity = BIOHAZARD
 

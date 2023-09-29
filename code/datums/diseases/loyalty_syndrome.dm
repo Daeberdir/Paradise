@@ -10,7 +10,6 @@
 	cures = list("haloperidol")
 	cure_chance = 5
 	agent = "Halomonas minomae"
-	viable_mobtypes = list(/mob/living/carbon/human)
 	visibility_flags = HIDDEN_SCANNER
 	severity = DANGEROUS
 	var/is_master = FALSE

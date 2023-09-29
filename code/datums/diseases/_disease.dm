@@ -57,8 +57,8 @@ GLOBAL_LIST_INIT(diseases, subtypesof(/datum/disease))
 	var/discovered = FALSE
 
 	//Other
-	var/list/viable_mobtypes = list() //typepaths of viable mobs
-	var/mob/living/carbon/affected_mob = null
+	var/list/viable_mobtypes = list(/mob/living/carbon/human) //typepaths of viable mobs
+	var/mob/living/affected_mob = null
 	var/list/cures = list() //list of cures if the disease has the CURABLE flag, these are reagent ids
 	var/infectivity = 65
 	var/cure_chance = 8

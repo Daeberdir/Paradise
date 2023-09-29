@@ -150,7 +150,6 @@
 	spread_text = "Non-Contagious"
 	spread_flags = SPECIAL
 	cure_text = "Unknown"
-	viable_mobtypes = list(/mob/living/carbon/human)
 	severity = BIOHAZARD
 	disease_flags = CAN_CARRY
 	spread_flags = NON_CONTAGIOUS

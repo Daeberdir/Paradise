@@ -7,7 +7,6 @@
 	spread_flags = SPECIAL
 	cure_text = "Incurable"
 	agent = "Prions"
-	viable_mobtypes = list(/mob/living/carbon/human)
 	desc = "Uncontrollable laughing."
 	severity = BIOHAZARD
 	spread_flags = NON_CONTAGIOUS

@@ -7,7 +7,6 @@
 	cures = list("diphenhydramine","sulfur")
 	cure_chance = 15//higher chance to cure, since two reagents are required
 	agent = "Gravitokinetic Bipotential SADS+"
-	viable_mobtypes = list(/mob/living/carbon/human)
 	disease_flags = CAN_CARRY|CAN_RESIST|CURABLE
 	permeability_mod = 1
 	severity = BIOHAZARD

@@ -27,7 +27,6 @@
 	cure_text = "Saline-Glucose Solution"
 	cures = list("salglu_solution")
 	cure_chance = 10
-	viable_mobtypes = list(/mob/living/carbon/human)
 	stage_prob = 6
 	severity = DANGEROUS
 	disease_flags = CURABLE
@@ -89,7 +88,6 @@
 	cures = list("atropine", "epinephrine", "heparin")
 	cure_chance = 10
 	needs_all_cures = FALSE
-	viable_mobtypes = list(/mob/living/carbon/human)
 	stage_prob = 5
 	severity = DANGEROUS
 	disease_flags = CURABLE
@@ -147,7 +145,6 @@
 	spread_flags = SPECIAL
 	spread_text = "The patient has low blood sugar."
 	cure_text = "Eating or administration of vitamins or nutrients"
-	viable_mobtypes = list(/mob/living/carbon/human)
 	stage_prob = 1
 	severity = DANGEROUS
 	disease_flags = CURABLE

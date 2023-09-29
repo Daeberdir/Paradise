@@ -8,7 +8,6 @@
 	cures = list("spaceacillin")
 	agent = "Grave Dust"
 	cure_chance = 20
-	viable_mobtypes = list(/mob/living/carbon/human)
 	severity = DANGEROUS
 	disease_flags = CURABLE
 	spread_flags = NON_CONTAGIOUS
