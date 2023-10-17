@@ -88,3 +88,17 @@
 	density = TRUE
 	opacity = TRUE
 	anchored = TRUE
+
+/obj/structure/perch
+	name = "жёрдочка"
+	desc = "неприметная жёрдочка для птиц"
+	icon = 'icons/obj/decorations.dmi'
+/*	icon_state = "perch"	*/
+	density = TRUE
+	anchored = TRUE
+
+/obj/structure/perch/cool
+	name = "крутая жёрдочка"
+	desc = "крутая жёрдочка для птиц"
+	icon = 'icons/obj/decorations.dmi'
+/*	icon_state = "cool_perch"	*/

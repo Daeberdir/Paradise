@@ -5,8 +5,8 @@
 	item_state = "pet_carrier"
 	max_integrity = 100
 	w_class = WEIGHT_CLASS_SMALL
-	var/mob_size = MOB_SIZE_TINY
-
+	var/allowed_mob_size = MOB_SIZE_TINY
+	var/list/allowed_mob_type = null
 	var/list/possible_skins = list("black", "blue", "red", "yellow", "green", "purple")
 	var/color_skin
 
@@ -22,8 +22,18 @@
 	item_state = "pet_carrier_normal"
 	max_integrity = 200
 	w_class = WEIGHT_CLASS_NORMAL
-	mob_size = MOB_SIZE_SMALL
+	allowed_mob_size = MOB_SIZE_SMALL
 
+/obj/item/pet_carrier/birdy
+	name = "клетка для птиц"
+	desc = "Клетка для Ваших любимых пернатых"
+/*	icon_state = "bird_cage"
+	item_state = "bird_cage"	*/
+	max_integrity = 200
+	w_class = WEIGHT_CLASS_NORMAL
+	list/allowed_mob_type = (/mob/living/simple_animal/parrot,	/*/mob/living/simple_animal/hostile/phoenix,*/	/mob/living/simple_animal/goose/gosling,	\
+							/mob/living/simple_animal/cock,	/mob/living/simple_animal/chicken,	/mob/living/simple_animal/chick)
+/*	list/possible_skins = list("steel", "bronze", "silver", "golden")	*/
 
 /obj/item/pet_carrier/Initialize(mapload)
 	. = ..()
@@ -63,16 +73,18 @@
 
 /obj/item/pet_carrier/proc/put_in_carrier(var/mob/living/target, var/mob/living/user)
 	if(!opened)
-		to_chat(user, "<span class='warning'>Ваша переноска закрыта!</span>")
+		to_chat(user,  span_warning("Ваша [src] закрыта!</span>"))
 		return FALSE
 	if(contains_pet)
-		to_chat(user, "<span class='warning'>Ваша переноска заполнена!</span>")
+		to_chat(user,  span_warning("Ваша [src] заполнена!</span>"))
 		return FALSE
 	if(target.mob_size > mob_size)
-		to_chat(user, "<span class='warning'>Ваша переноска слишком мала!</span>")
+		to_chat(user, span_warning("Ваша [src] слишком мала!</span>"))
 		return FALSE
+	if(allowed_mob_type && (!is_type_in_list(target, allowed_mob_type)))
+		to_chat(user, span_warning("Ваша [src] предназначена для другого типа питомцев!"))
 	//if(target.mob_size < mob_size)
-	//	to_chat(user, "<span class='warning'>Ваша переноска слишком большая!</span>")
+	//	to_chat(user, "<span class='warning'>Ваша [src] слишком большая!</span>")
 	//	return FALSE
 
 	target.forceMove(src)

@@ -45,7 +45,7 @@
 	emote_hear = list("squawks","bawks")
 	emote_see = list("flutters its wings")
 
-	speak_chance = 1//1% (1 in 100) chance every tick; So about once per 150 seconds, assuming an average tick is 1.5s
+	speak_chance = 1//1% (1 in 100) chance every tick; So about once per 200 seconds, assuming an average tick is 2s
 	blood_nutrients = 30
 	turns_per_move = 5
 	butcher_results = list(/obj/item/reagent_containers/food/snacks/cracker = 3)
@@ -79,13 +79,13 @@
 	//Parrots will generally sit on their pertch unless something catches their eye.
 	//These vars store their preffered perch and if they dont have one, what they can use as a perch
 	var/obj/parrot_perch = null
-	var/obj/desired_perches = list(/obj/structure/computerframe, 		/obj/structure/displaycase, \
+	var/obj/desired_perches = list(/obj/structure/perch,				/obj/structure/computerframe, \
 									/obj/structure/filingcabinet,		/obj/machinery/teleport, \
-									/obj/machinery/suit_storage_unit,			/obj/machinery/clonepod, \
+									/obj/machinery/suit_storage_unit,	/obj/machinery/clonepod, \
 									/obj/machinery/dna_scannernew,		/obj/machinery/tcomms, \
 									/obj/machinery/nuclearbomb,			/obj/machinery/particle_accelerator, \
 									/obj/machinery/recharge_station,	/obj/machinery/smartfridge, \
-									/obj/machinery/computer)
+									/obj/machinery/computer,			/obj/structure/displaycase)
 
 	//Parrots are kleptomaniacs. This variable ... stores the item a parrot is holding.
 	var/obj/item/held_item = null
@@ -101,7 +101,8 @@
 						/obj/item/radio/headset/headset_eng, \
 						/obj/item/radio/headset/headset_med, \
 						/obj/item/radio/headset/headset_sci, \
-						/obj/item/radio/headset/headset_cargo)
+						/obj/item/radio/headset/headset_cargo \
+						/obj/item/radio/headset/headset_service)
 		ears = new headset(src)
 	update_speak()
 
@@ -199,7 +200,7 @@
 						if(!item_to_add)
 							return
 
-						if( !istype(item_to_add,  /obj/item/radio/headset) )
+						if(!istype(item_to_add, /obj/item/radio/headset))
 							to_chat(usr, "<span class='warning'>This object won't fit.</span>")
 							return
 
@@ -226,7 +227,8 @@
 									available_channels.Add(":d")
 								if("Cargo")
 									available_channels.Add(":q")
-
+								if("Service")
+									available_channels.Add(":z")
 						if(headset_to_add.translate_binary)
 							available_channels.Add(":+")
 						update_speak()
@@ -705,161 +707,31 @@
 	name = "Поли"
 	desc = "Попугай Поли. Эксперт по квантовой теории крекеров."
 	tts_seed = "Gyro"
-	clean_speak = list(
-		"Поли хочет крекер!",
-		"Проверьте сингу, долбоящеры!",
-		"Проверьте теслу, дебилы!",
-		"ВЫ ДОПУСТИЛИ ПОТЕРЮ ДОРОГОСТОЯЩЕГО ОБМУНДИРОВАНИЯ!",
-		"Я обязательно дострою четвёртый энергоблок...",
-		"Химик опять ёбнул!",
-		"НЕТ! Мы будет строить!",
-		"Запустите соляры, идиоты.",
-		"КТО ВЗЯЛ ЧЁРТОВЫ ХАРДСЬЮТЫ.",
-		"ОХ БЛЯТЬ, ОНА ВЫШЛА. ВЫЗЫВАЙТЕ ШАТТЛ!",
-		"Почему у нас так много атмосферных тревог?",
-		"БОЖЕ, ЗАЧЕМ ТЫ ЗАПУСТИЛ PA ДО ТОГО, КАК ВКЛЮЧИЛ ЩИТЫ.",
-		"Не забудьте заблокировать эммитеры картой.",
-		"Хватит дурачиться и идите уже чинить грёбаную станцию!",
-		"Сингулярность — не твой друг.",
-		"Куда вы опять дели проводку?",
-		"Грёбаные емагеры!",
-		"ОХ, БЛЯТЬ, ОНА СБЕЖАЛА! ВЫЗЫВАЙТЕ ШАТТЛ!",
-		"Видел СМО, РД и ХОСА, куда они делись?",
-		"Не думаю что он это сделал",
-		"А то ебанёт",
-		"Ну как, повеселился?",
-		"Ну что, бедолаги, выжили?",
-		"Ну тесла не прокачанная, её выпустили без щитов",
-		"Жду премии",
-		"Если бы не я и мои приказы, вы бы умерли",
-		"Довыёбывался с порталами?",
-		"ПОНАСТРОИЛИ ХУЙНИ!",
-		"Ассистент украл чертежи!",
-		"И это было зря",
-		"Дядя, не надо",
-		"Вы слишком долго тупили",
-		"Кто-то смесы разобрал в инженерке",
-		"А тесла как сбежала?",
-		"Эмиттеры же работали",
-		"Поле забыли поднять?",
-		"Вопрос знатокам",
-		"Это был пиздец",
-		"Это было круто",
-		"А как вы загорелись на лаве?",
-		"Я разбил линзу",
-		"Куда ставить щиты?",
-		"Иду ставить ресивер на лаве",
-		"Механик?",
-		"Они что одновременно?",
-		"Там сидят злые учёные",
-		"Где взять коробку с платами?",
-		"Что?",
-		"Хороший вопрос!",
-		"Ну это да",
-		"Механик, где ключи от челноков?",
-		"Звучит логично",
-		"Можно.",
-		"Ботаники снова просят взломать автомат",
-		"Кто залил азот в кислородные баллоны?",
-		"Но это тупо выглядит",
-		"Клоун крадёт скафандр!",
-		"А вот это уже странно",
-		"А когда лампа включена, она заряд тратит?",
-		"У нас есть титан?",
-		"На мостике разгерма!",
-		"Да нет там никакой радиации",
-		"Что сейчас взорвалось?",
-		"БОМБА?",
-		"Как он улетел?",
-		"О, я вовремя",
-		"Настолько тупо, конечно…",
-		"Чем этот человек думает?…",
-		"У НАС СИНДИ-БОРГ",
-		"Картина маслом",
-		"А мне показалось что вы нормальные",
-		"Он ушёл бухать в бар",
-		"Где ЛКП техов прибытия?",
-		"Нет, это был я",
-		"У нас на станции ужасная культура! Всё раскидано…",
-		"Это было молоко! Клянусь!",
-		"СЕ, где вас найти можно?",
-		"Что у нас тут?",
-		"Установите уже бригмеду химраздатчик",
-		"Куда быстрей-то?",
-		"Увижу грязь на ботинках, получите люлей",
-		"Я пока схожу за вином",
-		"У тебя с собой всё есть?",
-		"А ты кто?",
-		"Что это за звук?",
-		"ИИ, Я ЖЕ ПРОСИЛ НЕ РАСКРЫВАТЬ ЭТО ТАК РАНО",
-		"Пауки",
-		"Курю робаст голд… А что?",
-		"Разгерм на станции больше нет, капитан",
-		"Я могу сделать раздатчик",
-		"А плата есть?",
-		"Просто заварить их?",
-		"Кто наблевал в фойе?",
-		"Это следы от спайдерлингов",
-		"Платы в РНД возьмите, я приду",
-		"ИИ, проведи в РНД, камеры починю",
-		"Может кто шаттл на лаву открыть? Я в нём застрял",
-		"ИИ, видишь меня?",
-		"ИИ выпусти",
-		"ИИ дверь",
-		"ИИ ДВЕРЬ!",
-		"ИИ ДВЕРЬ СРОЧНО!",
-		"Почему вы решили закрыть на болты?",
-		"Какая именно дверь?",
-		"Да и пауки любят там вылазить",
-		"Пусть пока так",
-		"Лампы чинит уборщик!",
-		"Почините её в первую очередь",
-		"Я поговорю с ним…",
-		"Отдел просто пустой",
-		"Я занят, на вызовы отвечаю",
-		"Я завариваю венты",
-		"Сейчас сбегаю быстро",
-		"Куда вы опять дели проводку?",
-		"Запускаем Теслу",
-		"Я телепортер сделаю у себя, вы не против?",
-		"Что это вообще?",
-		"Так будет с каждым!",
-		"CE, мы заключили сделку! Помните об этом!",
-		"Тут человек в чёрном ходил по космосу",
-		"Прости. Но так надо.",
-		"Хватит придуриваться, я спрашиваю координаты",
-		"Я заказал цель",
-		"Да у вас всегда так",
-		"Как работаешь ты хоть понимаешь?",
-		"ИИ, есть инженерный киборг?",
-		"Идут, значит, две вульпы",
-		"Утвердительно, проследуйте на мостик и приступайте к обязанностям",
-		"Святая Хонкоматерь, откуда тут гроб?",
-		"Моя игрушка сбежала",
-		"Спутник ИИ просто так разломало, это пиздец",
-		"У нас потенциально будут сейчас п#е$&*",
-		"А где мои ноги и руки?",
-		"Я настоящий капитан! Меня превратили в попугая!",
-		"Под вашу ответственность",
-		"Постараюсь, я просто сейчас в космосе без скафандра",
-		"Начинаем отгрузку первой партии плазмы с ОБЛ",
-		"Кэп, почему у нас красный код?",
-		"В прибытии страшные звуки",
-		"Коллеги, я в крио",
-		"Он давно планировал суицид",
-		"У меня в кабинете слайм!",
-		"У меня несколько вопросов. Первый",
-		"Эвакуационный шаттл совершил стыковку со станцией. У вас есть 3 минуты, чтобы взобраться на борт эвакуационного шаттла.",
-		"Эвакуационный шаттл покинул станцию. До прибытия в доки ЦК осталось 2 минуты.",
-		"Нам заплатят за доработку?",
-		"Грёбаные емагеры!"
-		)
+	clean_speak = pick_list('/bird_speach.json', "Точное техническое ТЗ")
 	unique_pet = TRUE
 	gold_core_spawnable = NO_SPAWN
 
 /mob/living/simple_animal/parrot/Poly/New()
 	ears = new /obj/item/radio/headset/headset_eng(src)
 	available_channels = list(":e")
+	..()
+
+/mob/living/simple_animal/parrot/Ilai
+	name = "Илай"
+	desc = "Чёрный ворон Илай. Эксперт по религиозной абсурдности. Выступает в качестве прямой связи между Богом и Вами."
+/*	icon_state = "crook_fly"
+	icon_living = "crook_fly"
+	icon_dead = "crook_dead"	*/
+	tts_seed = "Medivh"
+	clean_speak = pick_list('/bird_speach.json', "Фанатический бред")
+	unique_pet = TRUE
+	gold_core_spawnable = NO_SPAWN
+	speak_chance = 0.3
+/*	holder_type = /obj/item/holder/parrot/crook	*/
+
+/mob/living/simple_animal/parrot/Ilai/New()
+	ears = new /obj/item/radio/headset/headset_service(src)
+	available_channels = list(":z")
 	..()
 
 /mob/living/simple_animal/parrot/handle_message_mode(var/message_mode, list/message_pieces, var/verb, var/used_radios)

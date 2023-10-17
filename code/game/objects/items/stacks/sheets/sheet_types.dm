@@ -199,6 +199,7 @@ GLOBAL_LIST_INIT(wood_recipes, list(
 	new /datum/stack_recipe("Honey frame", /obj/item/honey_frame, 5, time = 10),
 	new /datum/stack_recipe("Loom", /obj/structure/loom, 10, time = 15, one_per_turf = TRUE, on_floor = TRUE),
 	new /datum/stack_recipe("Ore box", /obj/structure/ore_box, 4, time = 50, one_per_turf = TRUE, on_floor = TRUE),
+	new /datum/stack_recipe("Perch", /obj/structure/perch, 10, time = 20, one_per_turf = TREU, on_floor = TRUE),
 	new /datum/stack_recipe("Rake", /obj/item/cultivator/rake, 5, time = 10),
 	new /datum/stack_recipe("Rifle stock", /obj/item/weaponcrafting/stock, 10, time = 40),
 	new /datum/stack_recipe("Tribune", /obj/structure/tribune, 5, time = 50, one_per_turf = TRUE, on_floor = TRUE),
