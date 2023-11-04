@@ -130,13 +130,13 @@
 
 /datum/gear/neck/poncho/green
 	display_name = "poncho, green"
-	desc = "Whooops. This poncho was stilled by a mystery coward some time ago."
+	description = "Whooops. This poncho was stilled by a mystery coward some time ago."
 	path = /obj/item/clothing/neck/poncho/green
 	allowed_roles = "Syndicate Officer"
 
 /datum/gear/neck/poncho/red
 	display_name = "poncho, red"
-	desc = "Whooops. This poncho was stilled by a mystery coward some time ago."
+	description = "Whooops. This poncho was stilled by a mystery coward some time ago."
 	path = /obj/item/clothing/neck/poncho/red
 	allowed_roles = "Syndicate Officer"
 
