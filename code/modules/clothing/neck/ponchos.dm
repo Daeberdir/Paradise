@@ -24,25 +24,27 @@
 		"Wryn" = 'icons/mob/clothing/species/wryn/neck.dmi'
 	)
 
-/obj/item/clothing/neck/poncho/AltClick(mob/user)
-	flip(user)
+/obj/item/clothing/neck/poncho/AltClick(mob/living/carbon/human/user)
+	if(!iscarbon(user))
+		..()
+	else if(user.neck != src)
+		..()
+	else
+		flip(user)
 
-/obj/item/clothing/neck/poncho/verb/flip_poncho()
+/obj/item/clothing/neck/poncho/verb/flip_poncho(mob/living/carbon/human/user = usr)
 	set name = "Flip poncho"
 	set category = "Object"
 	set desc = "Flip poncho behind your back"
 
-	flip(usr)
-
-/obj/item/clothing/neck/poncho/proc/flip(mob/user)
 	if(!iscarbon(user))
 		return
-	if(!Adjacent(user))
-		return
-	var/mob/living/carbon/human/human = user
-	if(human.neck != src)
+	if(user.neck != src)
 		to_chat(user, span_warning("Poncho must be equipped before flipping!"))
 		return
+	flip(user)
+
+/obj/item/clothing/neck/poncho/proc/flip(mob/user)
 	if(user.incapacitated())
 		to_chat(user, span_warning("You can't do that right now!"))
 		return
