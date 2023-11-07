@@ -1,64 +1,56 @@
+#define EMPTY_OPEN		1
+#define EMPTY_CLOSED	2
+#define FULL_OPEN		3
+#define FULL_CLOSED		4
+#define FULL_PROCESS	5
+#define BLOOD_OPEN		6
+#define BLOOD_CLOSED	7
+#define BLOOD_PROCESS	8
+
 /obj/machinery/washing_machine
 	name = "Washing Machine"
 	desc = "Gets rid of those pesky bloodstains, or your money back!"
 	icon = 'icons/obj/machines/washing_machine.dmi'
 	icon_state = "wm_10"
-	density = 1
-	anchored = 1.0
-	var/state = 1
-	//1 = empty, open door
-	//2 = empty, closed door
-	//3 = full, open door
-	//4 = full, closed door
-	//5 = running
-	//6 = blood, open door
-	//7 = blood, closed door
-	//8 = blood, running
-	var/panel = 0
-	//0 = closed
-	//1 = open
-	var/hacked = 1 //Bleh, screw hacking, let's have it hacked by default.
-	//0 = not hacked
-	//1 = hacked
-	var/gibs_ready = 0
-	var/obj/crayon
+	density = TRUE
+	anchored = TRUE
+	var/state = EMPTY_OPEN
+	var/panel = FALSE
+	var/hacked = FALSE
+	var/gibs_ready = FALSE
+	var/list/crayons
 
 /obj/machinery/washing_machine/verb/start()
 	set name = "Start Washing"
 	set category = "Object"
 	set src in oview(1)
 
-	if(!istype(usr, /mob/living)) //ew ew ew usr, but it's the only way to check.
+	if(!isliving(usr)) //ew ew ew usr, but it's the only way to check.
 		return
-
-	if( state != 4 )
+	if(state != FULL_CLOSED)
 		to_chat(usr, "The washing machine cannot run in this state.")
 		return
-
-	if( locate(/mob,contents) )
-		state = 8
+	if(locate(/mob, contents))
+		state = BLOOD_PROCESS
 	else
-		state = 5
+		state = FULL_PROCESS
 	update_icon()
 	sleep(200)
 	for(var/atom/A in contents)
 		A.clean_blood()
 
 	//Tanning!
-	for(var/obj/item/stack/sheet/hairlesshide/HH in contents)
-		new /obj/item/stack/sheet/wetleather(src, HH.amount)
-		qdel(HH)
-
-
-	if(crayon)
+	for(var/obj/item/stack/sheet/hairlesshide/leather in contents)
+		new /obj/item/stack/sheet/wetleather(src, leather.amount)
+		qdel(leather)
+	if(crayons)
 		var/wash_color
-		if(istype(crayon,/obj/item/toy/crayon))
+		if(istype(crayon, /obj/item/toy/crayon))
 			var/obj/item/toy/crayon/CR = crayon
 			wash_color = CR.colourName
-		else if(istype(crayon,/obj/item/stamp))
+		else if(istype(crayon, /obj/item/stamp))
 			var/obj/item/stamp/ST = crayon
 			wash_color = ST.item_color
-
 		if(wash_color)
 			var/new_jumpsuit_icon_state = ""
 			var/new_jumpsuit_item_state = ""
@@ -150,10 +142,12 @@
 				for(var/obj/item/clothing/shoes/S in contents)
 					if(!S.dyeable)
 						continue
-					if(S.chained == 1)
-						S.chained = 0
-						S.slowdown = SHOES_SLOWDOWN
-						new /obj/item/restraints/handcuffs( src )
+					if(istype(S, /obj/item/clothing/shoes/orange))
+						var/obj/item/clothing/shoes/orange/prison_shoes = S
+						if(prison_shoes.shackles)
+							prison_shoes.shackles = null
+							prison_shoes.slowdown = SHOES_SLOWDOWN
+							new /obj/item/restraints/handcuffs(src)
 					S.icon_state = new_shoe_icon_state
 					S.item_color = wash_color
 					S.name = new_shoe_name
@@ -183,12 +177,11 @@
 					H.desc = new_desc
 		QDEL_NULL(crayon)
 
-
-	if( locate(/mob,contents) )
-		state = 7
-		gibs_ready = 1
+	if(locate(/mob, contents))
+		state = BLOOD_CLOSED
+		gibs_ready = TRUE
 	else
-		state = 4
+		state = FULL_CLOSED
 	update_icon()
 
 /obj/machinery/washing_machine/verb/climb_out()
@@ -197,14 +190,14 @@
 	set src in usr.loc
 
 	sleep(20)
-	if(state in list(1,3,6) )
+	if(state in list(EMPTY_OPEN, FULL_OPEN, BLOOD_OPEN))
 		usr.loc = src.loc
 
 
 /obj/machinery/washing_machine/update_icon()
 	icon_state = "wm_[state][panel]"
 
-/obj/machinery/washing_machine/attackby(obj/item/W as obj, mob/user as mob, params)
+/obj/machinery/washing_machine/attackby(obj/item/W, mob/user, params)
 	/*if(istype(W,/obj/item/screwdriver))
 		panel = !panel
 		to_chat(user, span_notice("you [panel ? ")open" : "close"] the [src]'s maintenance panel")*/
@@ -212,8 +205,8 @@
 		add_fingerprint(user)
 		power_change()
 		return
-	if(istype(W,/obj/item/toy/crayon) ||istype(W,/obj/item/stamp))
-		if( state in list(	1, 3, 6 ) )
+	if(istype(W, /obj/item/toy/crayon) || istype(W, /obj/item/stamp))
+		if(state in list(EMPTY_OPEN, FULL_OPEN, BLOOD_OPEN))
 			if(!crayon)
 				add_fingerprint(user)
 				user.drop_transfer_item_to_loc(W, src)
@@ -224,74 +217,67 @@
 		else
 			return ..()
 	else if(istype(W,/obj/item/grab))
-		if( (state == 1) && hacked)
+		if((state == EMPTY_OPEN) && hacked)
 			var/obj/item/grab/G = W
 			if(ishuman(G.assailant) && iscorgi(G.affecting))
 				add_fingerprint(user)
 				G.affecting.loc = src
 				qdel(G)
-				state = 3
+				state = FULL_OPEN
 			update_icon()
 		else
 			return ..()
-	else if(istype(W,/obj/item/stack/sheet/hairlesshide) || \
-		istype(W,/obj/item/clothing/under) || \
-		istype(W,/obj/item/clothing/mask) || \
-		istype(W,/obj/item/clothing/head) || \
-		istype(W,/obj/item/clothing/gloves) || \
-		istype(W,/obj/item/clothing/shoes) || \
-		istype(W,/obj/item/clothing/suit) || \
-		istype(W,/obj/item/bedsheet))
+	else if(istype(W, /obj/item/stack/sheet/hairlesshide) || \
+		istype(W, /obj/item/clothing/under) || \
+		istype(W, /obj/item/clothing/mask) || \
+		istype(W, /obj/item/clothing/head) || \
+		istype(W, /obj/item/clothing/gloves) || \
+		istype(W, /obj/item/clothing/shoes) || \
+		istype(W, /obj/item/clothing/suit) || \
+		istype(W, /obj/item/bedsheet))
 
 		//YES, it's hardcoded... saves a var/can_be_washed for every single clothing item.
-		if( istype(W,/obj/item/clothing/suit/space ) )
+		if(istype(W, /obj/item/clothing/suit/space))
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/suit/syndicatefake ) )
+		if(istype(W, /obj/item/clothing/suit/syndicatefake))
 			to_chat(user, "This item does not fit.")
 			return
-//		if( istype(W,/obj/item/clothing/suit/powered ) )
-//			to_chat(user, "This item does not fit.")
-//			return
-		if( istype(W,/obj/item/clothing/suit/cyborg_suit ) )
+		if(istype(W, /obj/item/clothing/suit/cyborg_suit))
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/suit/bomb_suit ) )
+		if(istype(W, /obj/item/clothing/suit/bomb_suit))
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/suit/armor ) )
+		if(istype(W, /obj/item/clothing/suit/armor))
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/suit/armor ) )
+		if(istype(W, /obj/item/clothing/suit/armor))
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/mask/gas ) )
+		if(istype(W, /obj/item/clothing/mask/gas))
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/mask/cigarette ) )
+		if(istype(W, /obj/item/clothing/mask/cigarette))
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/head/syndicatefake ) )
+		if(istype(W, /obj/item/clothing/head/syndicatefake))
 			to_chat(user, "This item does not fit.")
 			return
-//		if( istype(W,/obj/item/clothing/head/powered ) )
-//			to_chat(user, "This item does not fit.")
-//			return
-		if( istype(W,/obj/item/clothing/head/helmet ) )
+		if(istype(W, /obj/item/clothing/head/helmet))
 			to_chat(user, "This item does not fit.")
 			return
-		if( istype(W,/obj/item/clothing/gloves/furgloves ) )
+		if(istype(W, /obj/item/clothing/gloves/furgloves))
 			to_chat(user, "This item does not fit.")
 			return
 		if(W.flags & NODROP) //if "can't drop" item
 			to_chat(user, span_notice("\The [W] is stuck to your hand, you cannot put it in the washing machine!"))
 			return
-
 		if(contents.len < 5)
-			if( state in list(1, 3) )
+			if(state in list(EMPTY_OPEN, FULL_OPEN))
 				add_fingerprint(user)
 				user.drop_transfer_item_to_loc(W, src)
-				state = 3
+				state = FULL_OPEN
 			else
 				to_chat(user, span_notice("You can't put the item in right now."))
 		else
@@ -300,41 +286,48 @@
 	else
 		return ..()
 
-/obj/machinery/washing_machine/attack_hand(mob/user as mob)
+/obj/machinery/washing_machine/attack_hand(mob/user)
 	add_fingerprint(user)
 	switch(state)
-		if(1)
-			state = 2
-		if(2)
-			state = 1
+		if(EMPTY_OPEN)
+			state = EMPTY_CLOSED
+		if(EMPTY_CLOSED)
+			state = EMPTY_OPEN
 			for(var/atom/movable/O in contents)
 				O.loc = src.loc
-		if(3)
-			state = 4
-		if(4)
-			state = 3
+		if(FULL_OPEN)
+			state = FULL_CLOSED
+		if(FULL_CLOSED)
+			state = FULL_OPEN
 			for(var/atom/movable/O in contents)
 				O.loc = src.loc
 			crayon = null
-			state = 1
-		if(5)
+			state = EMPTY_OPEN
+		if(FULL_PROCESS)
 			to_chat(user, span_warning("The [src] is busy."))
-		if(6)
-			state = 7
-		if(7)
+		if(BLOOD_OPEN)
+			state = BLOOD_CLOSED
+		if(BLOOD_CLOSED)
 			if(gibs_ready)
-				gibs_ready = 0
-				if(locate(/mob,contents))
-					var/mob/M = locate(/mob,contents)
+				gibs_ready = FALSE
+				if(locate(/mob, contents))
+					var/mob/M = locate(/mob, contents)
 					M.gib()
 			for(var/atom/movable/O in contents)
 				O.loc = src.loc
 			crayon = null
-			state = 1
-
-
+			state = EMPTY_OPEN
 	update_icon()
 
 /obj/machinery/washing_machine/deconstruct(disassembled = TRUE)
 	new /obj/item/stack/sheet/metal(drop_location(), 2)
 	qdel(src)
+
+#undef EMPTY_OPEN
+#undef EMPTY_CLOSED
+#undef FULL_OPEN
+#undef FULL_CLOSED
+#undef FULL_PROCESS
+#undef BLOOD_OPEN
+#undef BLOOD_CLOSED
+#undef BLOOD_PROCESS

@@ -433,7 +433,6 @@ BLIND     // can't see anything
 	icon = 'icons/obj/clothing/shoes.dmi'
 	desc = "Comfortable-looking shoes."
 	gender = PLURAL //Carn: for grammatically correct text-parsing
-	var/chained = 0
 	var/can_cut_open = 0
 	var/cut_open = 0
 	body_parts_covered = FEET
