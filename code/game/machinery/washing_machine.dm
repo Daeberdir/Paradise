@@ -19,6 +19,7 @@
 	var/hacked = FALSE
 	var/gibs_ready = FALSE
 	var/list/crayons
+	var/list/items
 
 /obj/machinery/washing_machine/verb/start()
 	set name = "Start Washing"
@@ -30,116 +31,118 @@
 	if(state != FULL_CLOSED)
 		to_chat(usr, "The washing machine cannot run in this state.")
 		return
-	if(locate(/mob, contents))
+	if(locate(/mob, items))
 		state = BLOOD_PROCESS
 	else
 		state = FULL_PROCESS
 	update_icon()
 	sleep(200)
-	for(var/atom/A in contents)
+	for(var/atom/A in items)
 		A.clean_blood()
 
 	//Tanning!
-	for(var/obj/item/stack/sheet/hairlesshide/leather in contents)
+	for(var/obj/item/stack/sheet/hairlesshide/leather in items)
 		new /obj/item/stack/sheet/wetleather(src, leather.amount)
 		qdel(leather)
-	if(crayons)
-		var/wash_color
-		if(istype(crayon, /obj/item/toy/crayon))
+	for(crayon in crayons)
+		var/list/wash_color[index] = list()
+		if(istype(crayon, /obj/item/toy/crayon)) // herehere
 			var/obj/item/toy/crayon/CR = crayon
-			wash_color = CR.colourName
-		else if(istype(crayon, /obj/item/stamp))
+			wash_color[CR.colourName] += CR.colourName
+		else if(istype(crayon, /obj/item/stamp)) ///herehere
 			var/obj/item/stamp/ST = crayon
-			wash_color = ST.item_color
-		if(wash_color)
-			var/new_jumpsuit_icon_state = ""
-			var/new_jumpsuit_item_state = ""
-			var/new_jumpsuit_name = ""
-			var/new_glove_icon_state = ""
-			var/new_glove_item_state = ""
-			var/new_glove_name = ""
-			var/new_bandana_icon_state = ""
-			var/new_bandana_item_state = ""
-			var/new_bandana_name = ""
-			var/new_shoe_icon_state = ""
-			var/new_shoe_name = ""
-			var/new_sheet_icon_state = ""
-			var/new_sheet_name = ""
-			var/new_softcap_icon_state = ""
-			var/new_softcap_name = ""
+			wash_color[ST.item_color] += ST.item_color
+		for(new_color in wash_color[index])
+			var/list/new_jumpsuit_icon_state = list()
+			var/list/new_jumpsuit_item_state = list()
+			var/list/new_jumpsuit_name = list()
+			var/list/new_glove_icon_state = list()
+			var/list/new_glove_item_state = list()
+			var/list/new_glove_name = list()
+			var/list/new_bandana_icon_state = list()
+			var/list/new_bandana_item_state = list()
+			var/list/new_bandana_name = list()
+			var/list/new_shoe_icon_state = list()
+			var/list/new_shoe_name = list()
+			var/list/new_sheet_icon_state = list()
+			var/list/new_sheet_name = list()
+			var/list/new_softcap_icon_state = list()
+			var/list/new_softcap_name = list()
 			var/new_desc = "The colors are a bit dodgy."
 			for(var/T in typesof(/obj/item/clothing/under))
 				var/obj/item/clothing/under/J = new T
-				if(wash_color == J.item_color)
-					new_jumpsuit_icon_state = J.icon_state
-					new_jumpsuit_item_state = J.item_state
-					new_jumpsuit_name = J.name
+				if(new_color == J.item_color)
+					new_jumpsuit_icon_state[new_color] += J.icon_state
+					new_jumpsuit_item_state[new_color] += J.item_state
+					new_jumpsuit_name[new_color] += J.name
 					qdel(J)
 					break
 				qdel(J)
 			for(var/T in typesof(/obj/item/clothing/gloves/color))
 				var/obj/item/clothing/gloves/color/G = new T
-				if(wash_color == G.item_color)
-					new_glove_icon_state = G.icon_state
-					new_glove_item_state = G.item_state
-					new_glove_name = G.name
+				if(new_color == G.item_color)
+					new_glove_icon_state[new_color] += G.icon_state
+					new_glove_item_state[new_color] += G.item_state
+					new_glove_name[new_color] += G.name
 					qdel(G)
 					break
 				qdel(G)
 			for(var/T in typesof(/obj/item/clothing/shoes))
 				var/obj/item/clothing/shoes/S = new T
-				if(wash_color == S.item_color)
-					new_shoe_icon_state = S.icon_state
-					new_shoe_name = S.name
+				if(new_color == S.item_color)
+					new_shoe_icon_state[new_color] += S.icon_state
+					new_shoe_name[new_color] += S.name
 					qdel(S)
 					break
 				qdel(S)
 			for(var/T in typesof(/obj/item/clothing/mask/bandana))
 				var/obj/item/clothing/mask/bandana/M = new T
-				if(wash_color == M.item_color)
-					new_bandana_icon_state = M.icon_state
-					new_bandana_item_state = M.item_state
-					new_bandana_name = M.name
+				if(new_color == M.item_color)
+					new_bandana_icon_state[new_color] += M.icon_state
+					new_bandana_item_state[new_color] += M.item_state
+					new_bandana_name[new_color] += M.name
 					qdel(M)
 					break
 				qdel(M)
 			for(var/T in typesof(/obj/item/bedsheet))
 				var/obj/item/bedsheet/B = new T
-				if(wash_color == B.item_color)
-					new_sheet_icon_state = B.icon_state
-					new_sheet_name = B.name
+				if(new_color == B.item_color)
+					new_sheet_icon_state[new_color] += B.icon_state
+					new_sheet_name[new_color] += B.name
 					qdel(B)
 					break
 				qdel(B)
 			for(var/T in typesof(/obj/item/clothing/head/soft))
 				var/obj/item/clothing/head/soft/H = new T
-				if(wash_color == H.item_color)
-					new_softcap_icon_state = H.icon_state
-					new_softcap_name = H.name
+				if(new_color == H.item_color)
+					new_softcap_icon_state[new_color] += H.icon_state
+					new_softcap_name[new_color] += H.name
 					qdel(H)
 					break
 				qdel(H)
 			if(new_jumpsuit_icon_state && new_jumpsuit_item_state && new_jumpsuit_name)
-				for(var/obj/item/clothing/under/J in contents)
+				for(var/obj/item/clothing/under/J in items)
 					if(!J.dyeable)
 						continue
-					J.item_state = new_jumpsuit_item_state
-					J.icon_state = new_jumpsuit_icon_state
-					J.item_color = wash_color
-					J.name = new_jumpsuit_name
+					indexo = pick_n_take(wash_color[index])
+					J.item_state = new_jumpsuit_item_state[indexo]
+					J.icon_state = new_jumpsuit_icon_state[indexo]
+					J.item_color = wash_color[indexo]
+					J.name = new_jumpsuit_name[indexo]
 					J.desc = new_desc
 			if(new_glove_icon_state && new_glove_item_state && new_glove_name)
-				for(var/obj/item/clothing/gloves/color/G in contents)
+				for(var/obj/item/clothing/gloves/color/G in items)
 					if(!G.dyeable)
 						continue
-					G.item_state = new_glove_item_state
-					G.icon_state = new_glove_icon_state
-					G.item_color = wash_color
-					G.name = new_glove_name
+					indexo = pick_n_take(wash_color[index])
+					G.item_state = new_glove_item_state[indexo]
+					G.icon_state = new_glove_icon_state[indexo]
+					G.item_color = wash_color[indexo]
+					G.name = new_glove_name[indexo]
 					if(!istype(G, /obj/item/clothing/gloves/color/black/thief))
 						G.desc = new_desc
 			if(new_shoe_icon_state && new_shoe_name)
-				for(var/obj/item/clothing/shoes/S in contents)
+				for(var/obj/item/clothing/shoes/S in items)
 					if(!S.dyeable)
 						continue
 					if(istype(S, /obj/item/clothing/shoes/orange))
@@ -148,36 +151,39 @@
 							prison_shoes.shackles = null
 							prison_shoes.slowdown = SHOES_SLOWDOWN
 							new /obj/item/restraints/handcuffs(src)
-					S.icon_state = new_shoe_icon_state
-					S.item_color = wash_color
-					S.name = new_shoe_name
+					indexo = pick_n_take(wash_color[index])
+					S.icon_state = new_shoe_icon_state[indexo]
+					S.item_color = wash_color[indexo]
+					S.name = new_shoe_name[indexo]
 					S.desc = new_desc
 			if(new_bandana_icon_state && new_bandana_name)
-				for(var/obj/item/clothing/mask/bandana/M in contents)
+				for(var/obj/item/clothing/mask/bandana/M in items)
 					if(!M.dyeable)
 						continue
-					M.item_state = new_bandana_item_state
-					M.icon_state = new_bandana_icon_state
-					M.item_color = wash_color
-					M.name = new_bandana_name
+					indexo = pick_n_take(wash_color[index])
+					M.item_state = new_bandana_item_state[indexo]
+					M.icon_state = new_bandana_icon_state[indexo]
+					M.item_color = wash_color[indexo]
+					M.name = new_bandana_name[indexo]
 					M.desc = new_desc
 			if(new_sheet_icon_state && new_sheet_name)
-				for(var/obj/item/bedsheet/B in contents)
-					B.icon_state = new_sheet_icon_state
-					B.item_color = wash_color
-					B.name = new_sheet_name
+				for(var/obj/item/bedsheet/B in items)
+					indexo = pick_n_take(wash_color[index])
+					B.icon_state = new_sheet_icon_state[indexo]
+					B.item_color = wash_color[indexo]
+					B.name = new_sheet_name[indexo]
 					B.desc = new_desc
 			if(new_softcap_icon_state && new_softcap_name)
-				for(var/obj/item/clothing/head/soft/H in contents)
+				for(var/obj/item/clothing/head/soft/H in items)
 					if(!H.dyeable)
 						continue
-					H.icon_state = new_softcap_icon_state
-					H.item_color = wash_color
-					H.name = new_softcap_name
+					indexo = pick_n_take(wash_color[index])
+					H.icon_state = new_softcap_icon_state[indexo]
+					H.item_color = wash_color[indexo]
+					H.name = new_softcap_name[indexo]
 					H.desc = new_desc
-		QDEL_NULL(crayon)
-
-	if(locate(/mob, contents))
+		crayons.Cut()
+	if(locate(/mob, items))
 		state = BLOOD_CLOSED
 		gibs_ready = TRUE
 	else
@@ -193,24 +199,35 @@
 	if(state in list(EMPTY_OPEN, FULL_OPEN, BLOOD_OPEN))
 		usr.loc = src.loc
 
+/obj/machinery/washing_machine/multitool_act(mob/user, obj/item/I)
+	. = TRUE
+	if(!I.use_tool(src, user, 0, volume = I.tool_volume))
+		return
+	hacked = !hacked
+	to_chat(user, span_notice("you [hacked ? "disable" : "enable"] the [src]'s safety safeguards"))
+
+/obj/machinery/washing_machine/screwdriver_act(mob/user, obj/item/I)
+	if(!I.use_tool(src, user, 0, volume = 0))
+		return FALSE
+	if(state != FULL_PROCESS)
+		panel = !panel
+		to_chat(user, span_notice("you [panel ? "open" : "close"] the [src]'s maintenance panel"))
+		return TRUE
 
 /obj/machinery/washing_machine/update_icon()
 	icon_state = "wm_[state][panel]"
 
 /obj/machinery/washing_machine/attackby(obj/item/W, mob/user, params)
-	/*if(istype(W,/obj/item/screwdriver))
-		panel = !panel
-		to_chat(user, span_notice("you [panel ? ")open" : "close"] the [src]'s maintenance panel")*/
 	if(default_unfasten_wrench(user, W))
 		add_fingerprint(user)
 		power_change()
 		return
 	if(istype(W, /obj/item/toy/crayon) || istype(W, /obj/item/stamp))
 		if(state in list(EMPTY_OPEN, FULL_OPEN, BLOOD_OPEN))
-			if(!crayon)
+			if(crayons.len <= 6)
 				add_fingerprint(user)
 				user.drop_transfer_item_to_loc(W, src)
-				crayon = W
+				crayons += W
 				update_icon()
 			else
 				return ..()
@@ -221,6 +238,7 @@
 			var/obj/item/grab/G = W
 			if(ishuman(G.assailant) && iscorgi(G.affecting))
 				add_fingerprint(user)
+				item += G.affecting
 				G.affecting.loc = src
 				qdel(G)
 				state = FULL_OPEN
@@ -273,9 +291,10 @@
 		if(W.flags & NODROP) //if "can't drop" item
 			to_chat(user, span_notice("\The [W] is stuck to your hand, you cannot put it in the washing machine!"))
 			return
-		if(contents.len < 5)
+		if(items.len < 5)
 			if(state in list(EMPTY_OPEN, FULL_OPEN))
 				add_fingerprint(user)
+				items += W
 				user.drop_transfer_item_to_loc(W, src)
 				state = FULL_OPEN
 			else
@@ -293,15 +312,17 @@
 			state = EMPTY_CLOSED
 		if(EMPTY_CLOSED)
 			state = EMPTY_OPEN
-			for(var/atom/movable/O in contents)
+			for(var/atom/movable/O in items)
 				O.loc = src.loc
+				items -= O
 		if(FULL_OPEN)
 			state = FULL_CLOSED
 		if(FULL_CLOSED)
 			state = FULL_OPEN
-			for(var/atom/movable/O in contents)
+			for(var/atom/movable/O in items)
 				O.loc = src.loc
-			crayon = null
+				items -= O
+			crayons.Cut()
 			state = EMPTY_OPEN
 		if(FULL_PROCESS)
 			to_chat(user, span_warning("The [src] is busy."))
@@ -310,12 +331,13 @@
 		if(BLOOD_CLOSED)
 			if(gibs_ready)
 				gibs_ready = FALSE
-				if(locate(/mob, contents))
-					var/mob/M = locate(/mob, contents)
+				if(locate(/mob, items))
+					var/mob/M = locate(/mob, items)
 					M.gib()
-			for(var/atom/movable/O in contents)
+			for(var/atom/movable/O in items)
 				O.loc = src.loc
-			crayon = null
+				items -= O
+			crayons.Cut()
 			state = EMPTY_OPEN
 	update_icon()
 
