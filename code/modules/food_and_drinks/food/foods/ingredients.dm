@@ -89,7 +89,7 @@
 	list_reagents = list("protein" = 2)
 	tastes = list("tomato" = 1)
 	foodtype = VEGETABLES
-	
+
 /obj/item/reagent_containers/food/snacks/cucumberslice
  	name = "cucumber slice"
  	desc = "A slice from a cucumber."
@@ -164,6 +164,17 @@
 	tastes = list("dough" = 1)
 	foodtype = GRAIN
 
+/obj/item/reagent_containers/food/snacks/doughslice/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/reagent_containers/food/snacks/rawcutlet))
+		if(isturf(loc))
+			new /obj/item/reagent_containers/food/snacks/pelmeni(loc)
+			to_chat(user, span_notice("You make some pelmeni."))
+			qdel(src)
+			qdel(I)
+		else
+			to_chat(user, span_notice("You need to put [src] on a surface."))
+	else
+		..()
 
 ///cookies by Ume
 
@@ -173,7 +184,7 @@
 	icon = 'icons/obj/food/food_ingredients.dmi'
 	desc = "The base for tasty cookies."
 	icon_state = "cookiedough"
-	list_reagents = list("nutriment" = 5, "sugar" = 5)
+	list_reagents = list("nutriment" = 5, "sugar" = 1)
 	tastes = list("dough" = 1, "sugar" = 1)
 	foodtype = GRAIN | SUGAR
 
@@ -211,7 +222,7 @@
 	desc = "Ready for oven!"
 	icon = 'icons/obj/food/food_ingredients.dmi'
 	icon_state = "unbaked_cookies"
-	list_reagents = list("nutriment" = 5, "sugar" = 5)
+	list_reagents = list("nutriment" = 5, "sugar" = 2)
 	foodtype = GRAIN | SUGAR
 
 /obj/item/reagent_containers/food/snacks/rawcookies/attackby(obj/item/I, mob/user, params)
@@ -243,7 +254,7 @@
 	desc = "Such sweet, fattening food."
 	icon_state = "chocolatebar"
 	filling_color = "#7D5F46"
-	list_reagents = list("nutriment" = 2, "sugar" = 2, "cocoa" = 2)
+	list_reagents = list("nutriment" = 2, "sugar" = 5, "cocoa" = 2)
 	tastes = list("chocolate" = 1)
 	foodtype = SUGAR
 

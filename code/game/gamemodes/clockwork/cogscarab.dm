@@ -29,7 +29,7 @@
 	viewalerts = FALSE
 	modules_break = FALSE
 
-	req_one_access = list(ACCESS_CENT_COMMANDER) //I dare you to try
+	req_access = list(ACCESS_CENT_COMMANDER) //I dare you to try
 	hud_possible = list(SPECIALROLE_HUD, DIAG_STAT_HUD, DIAG_HUD, DIAG_BATT_HUD)
 
 	pull_force = MOVE_FORCE_VERY_WEAK // Can only drag small items
@@ -66,10 +66,21 @@
 	verbs -= /mob/living/silicon/robot/verb/Namepick
 	module = new /obj/item/robot_module/cogscarab(src)
 
+	var/datum/action/innate/hide/drone/cogscarab/hide = new()
+	hide.Grant(src)
+
 	if(!isclocker(src))
 		SSticker.mode.add_clocker(mind)
 
 	update_icons()
+
+
+/mob/living/silicon/robot/drone/Destroy()
+	for(var/datum/action/innate/hide/drone/cogscarab/hide in actions)
+		hide.Remove(src)
+
+	. = ..()
+
 
 /mob/living/silicon/robot/cogscarab/init(alien = FALSE, mob/living/silicon/ai/ai_to_sync_to = null)
 	laws = new /datum/ai_laws/ratvar()
@@ -85,8 +96,8 @@
 	if(hud_used)
 		var/datum/hud/hud = hud_used
 		if(!hud.wind_up_timer)
-			hud.wind_up_timer = new /obj/screen()
-			hud.static_inventory += hud.wind_up_timer
+			hud.wind_up_timer = new /obj/screen/wind_up_timer()
+			hud.infodisplay += hud.wind_up_timer
 			hud.show_hud(hud.hud_version)
 
 /mob/living/silicon/robot/cogscarab/Life(seconds, times_fired)
@@ -108,7 +119,7 @@
 		adjustBruteLoss(2)
 	else
 		wind_up_timer -= seconds
-	hud_used.wind_up_timer?.icon_state = "windup_display-[6-(round(wind_up_timer, wind_up_icon_segment) / wind_up_icon_segment)]"
+	hud_used?.wind_up_timer?.icon_state = "windup_display-[6-(round(wind_up_timer, wind_up_icon_segment) / wind_up_icon_segment)]"
 	//rounds to 30 and divides by 30. if timer full, 6 - 5, state 1. from 1 to 6.
 
 
@@ -176,7 +187,7 @@
 /mob/living/silicon/robot/cogscarab/update_stat(reason = "none given", should_log = FALSE)
 	if(status_flags & GODMODE)
 		return ..()
-	if(health <= -maxHealth && stat != DEAD)
+	if(health <= 0 && stat != DEAD)
 		ghostize(TRUE)
 		gib()
 		log_debug("died of damage, trigger reason: [reason]")
@@ -242,18 +253,6 @@
 
 /mob/living/silicon/robot/cogscarab/use_power() //it's made of gears...
 	return
-
-/mob/living/silicon/robot/cogscarab/verb/hide()
-	set name = "Hide"
-	set desc = "Allows you to hide beneath tables or certain items. Toggled on or off."
-	set category = "Cogscarab"
-
-	if(layer != LOW_OBJ_LAYER)
-		layer = LOW_OBJ_LAYER
-		to_chat(src, text("<span class='notice'>You are now hiding.</span>"))
-	else
-		layer = MOB_LAYER
-		to_chat(src, text("<span class='notice'>You have stopped hiding.</span>"))
 
 /mob/living/silicon/robot/cogscarab/verb/light()
 	set name = "Light On/Off"

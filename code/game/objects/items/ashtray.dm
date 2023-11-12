@@ -1,7 +1,7 @@
 /obj/item/storage/ashtray
 	name = "plastic ashtray"
 	desc = "Cheap plastic ashtray."
-	icon = 'icons/ashtray.dmi'
+	icon = 'icons/obj/ashtray.dmi'
 	icon_state = "ashtray_bl"
 	var/icon_half  = "ashtray_half_bl"
 	var/icon_full  = "ashtray_full_bl"
@@ -84,7 +84,7 @@
 	visible_message("<span class='warning'>Oops, [src] broke into a lot of pieces!</span>")
 	return ..()
 
-/obj/item/storage/ashtray/throw_impact(atom/hit_atom)
+/obj/item/storage/ashtray/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	if(contents.len)
 		for(var/obj/item/I in contents)
 			I.forceMove(loc)

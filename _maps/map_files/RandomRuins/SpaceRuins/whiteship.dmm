@@ -716,8 +716,6 @@
 	},
 /obj/structure/closet{
 	desc = "It's a storage unit for tools.";
-	icon_closed = "toolcloset";
-	icon_opened = "toolclosetopen";
 	icon_state = "toolcloset";
 	name = "tool closet"
 	},
@@ -1223,10 +1221,7 @@
 /obj/item/stack/sheet/mineral/plasma{
 	amount = 15
 	},
-/obj/effect/spawner/lootdrop/maintenance{
-	lootcount = 3;
-	name = "3maintenance loot spawner"
-	},
+/obj/effect/spawner/lootdrop/maintenance/tripple,
 /turf/simulated/floor/plasteel,
 /area/shuttle/abandoned)
 "yA" = (
@@ -1688,8 +1683,7 @@
 /area/shuttle/abandoned)
 "Ji" = (
 /obj/structure/closet{
-	icon_closed = "white";
-	icon_state = "white";
+	custom_door_overlay = "white";
 	name = "Medical gear"
 	},
 /obj/item/clothing/under/rank/medical/paramedic,

@@ -5,7 +5,7 @@
 	var/totalPlayersReady = 0
 	universal_speak = 1
 
-	invisibility = 101
+	invisibility = INVISIBILITY_ABSTRACT
 
 	density = 0
 	stat = 2
@@ -148,7 +148,7 @@
 		if(client.version_blocked)
 			client.show_update_notice()
 			return FALSE
-		if(config.minimum_byondacc_age && client.byondacc_age <= config.minimum_byondacc_age)
+		if(CONFIG_GET(number/minimum_byondacc_age) && client.byondacc_age <= CONFIG_GET(number/minimum_byondacc_age))
 			if(!client.prefs.discord_id || (client.prefs.discord_id && length(client.prefs.discord_id) == 32))
 				client.prefs.load_preferences(client)
 				to_chat(usr, "<span class='danger'>Вам необходимо привязать дискорд-профиль к аккаунту!</span>")
@@ -157,7 +157,7 @@
 		if(!is_used_species_available(client.prefs.species))
 			to_chat(usr, "<span class='warning'>Выбранная раса персонажа недоступна для игры в данный момент! Выберите другого персонажа.</span>")
 			return FALSE
-		if(config.tts_enabled)
+		if(CONFIG_GET(flag/tts_enabled))
 			if(!client.prefs.tts_seed)
 				to_chat(usr, "<span class='danger'>Вам необходимо настроить голос персонажа! Не забудьте сохранить настройки.</span>")
 				client.prefs.ShowChoices(src)
@@ -185,7 +185,7 @@
 		if(client.version_blocked)
 			client.show_update_notice()
 			return FALSE
-		if(config.minimum_byondacc_age && client.byondacc_age <= config.minimum_byondacc_age)
+		if(CONFIG_GET(number/minimum_byondacc_age) && client.byondacc_age <= CONFIG_GET(number/minimum_byondacc_age))
 			if(!client.prefs.discord_id || (client.prefs.discord_id && length(client.prefs.discord_id) == 32))
 				client.prefs.load_preferences(client)
 				to_chat(usr, "<span class='danger'>Вам необходимо привязать дискорд-профиль к аккаунту!</span>")
@@ -195,7 +195,7 @@
 			to_chat(usr, "<span class='warning'>You must wait for the server to finish starting before you can join!</span>")
 			return FALSE
 
-		if(alert(src,"Are you sure you wish to observe?[(config.respawn_observer ? "" : " You cannot normally join the round after doing this!")]","Player Setup","Yes","No") == "Yes")
+		if(alert(src,"Are you sure you wish to observe?[(CONFIG_GET(flag/respawn_observer) ? "" : " You cannot normally join the round after doing this!")]","Player Setup","Yes","No") == "Yes")
 			if(!client)
 				return 1
 			var/mob/dead/observer/observer = new()
@@ -220,7 +220,7 @@
 			observer.name = observer.real_name
 			observer.key = key
 			QDEL_NULL(mind)
-			if (config.respawn_observer) GLOB.respawnable_list += observer			// If enabled in config - observer cant respawn as Player
+			if (CONFIG_GET(flag/respawn_observer)) GLOB.respawnable_list += observer			// If enabled in config - observer cant respawn as Player
 			qdel(src)
 			return 1
 	if(href_list["tos"])
@@ -234,7 +234,7 @@
 		if(client.version_blocked)
 			client.show_update_notice()
 			return FALSE
-		if(config.minimum_byondacc_age && client.byondacc_age <= config.minimum_byondacc_age)
+		if(CONFIG_GET(number/minimum_byondacc_age) && client.byondacc_age <= CONFIG_GET(number/minimum_byondacc_age))
 			if(!client.prefs.discord_id || (client.prefs.discord_id && length(client.prefs.discord_id) == 32))
 				client.prefs.load_preferences(client)
 				to_chat(usr, "<span class='danger'>Вам необходимо привязать дискорд-профиль к аккаунту!</span>")
@@ -247,10 +247,10 @@
 			to_chat(usr, "<span class='warning'>Выбранная раса персонажа недоступна для игры в данный момент! Выберите другого персонажа.</span>")
 			return
 		if(client.prefs.species in GLOB.whitelisted_species)
-			if(!is_alien_whitelisted(src, client.prefs.species) && config.usealienwhitelist)
+			if(!is_alien_whitelisted(src, client.prefs.species) && CONFIG_GET(flag/usealienwhitelist))
 				to_chat(src, alert("You are currently not whitelisted to play [client.prefs.species]."))
 				return FALSE
-		if(config.tts_enabled)
+		if(CONFIG_GET(flag/tts_enabled))
 			if(!client.prefs.tts_seed)
 				to_chat(usr, "<span class='danger'>Вам необходимо настроить голос персонажа! Не забудьте сохранить настройки.</span>")
 				client.prefs.ShowChoices(src)
@@ -280,7 +280,7 @@
 			return
 
 		if(client.prefs.species in GLOB.whitelisted_species)
-			if(!is_alien_whitelisted(src, client.prefs.species) && config.usealienwhitelist)
+			if(!is_alien_whitelisted(src, client.prefs.species) && CONFIG_GET(flag/usealienwhitelist))
 				to_chat(src, alert("You are currently not whitelisted to play [client.prefs.species]."))
 				return FALSE
 
@@ -314,15 +314,14 @@
 	if(!job.can_novice_play(client))
 		return 0
 
-	if(config.assistantlimit)
+	if(CONFIG_GET(flag/assistant_limit))
 		if(job.title == "Civilian")
 			var/count = 0
-			var/datum/job/cadet = SSjobs.GetJob("Security Cadet")
 			var/datum/job/officer = SSjobs.GetJob("Security Officer")
 			var/datum/job/warden = SSjobs.GetJob("Warden")
 			var/datum/job/hos = SSjobs.GetJob("Head of Security")
-			count += (officer.current_positions + warden.current_positions + hos.current_positions + cadet.current_positions)
-			if(job.current_positions > (config.assistantratio * count))
+			count += (officer.current_positions + warden.current_positions + hos.current_positions)
+			if(job.current_positions > (CONFIG_GET(number/assistant_ratio) * count))
 				if(count >= 5) // if theres more than 5 security on the station just let assistants join regardless, they should be able to handle the tide
 					return 1
 				return 0
@@ -357,6 +356,15 @@
 	else
 		return 0
 
+/mob/new_player/proc/random_job()
+	var/jobs_available = list()
+	for(var/datum/job/job in SSjobs.occupations)
+		if(job && IsJobAvailable(job.title) && !job.barred_by_disability(client))
+			jobs_available += job.title
+	if(!length(jobs_available))
+		return FALSE
+	return pick(jobs_available)
+
 /mob/new_player/proc/AttemptLateSpawn(rank,var/spawning_at)
 	if(src != usr)
 		return FALSE
@@ -366,6 +374,13 @@
 	if(!GLOB.enter_allowed)
 		to_chat(usr, "<span class='notice'>Администратор заблокировал вход в игру!</span>")
 		return FALSE
+	if(rank == "RandomJob")
+		rank = random_job()
+		if(!rank)
+			var/msg = "Нет свободных ролей. Пожалуйста, попробуйте позже."
+			to_chat(src, msg)
+			alert(msg)
+			return FALSE
 	if(!IsJobAvailable(rank))
 		var/msg = "Должность [rank] недоступна. Пожалуйста, попробуйте другую."
 		to_chat(src, msg)
@@ -397,6 +412,7 @@
 		AnnounceCyborg(ai_character, rank, "has been downloaded to the empty core in \the [get_area(ai_character)]")
 
 		SSticker.mode.latespawn(ai_character)
+		SSticker?.score?.save_silicon_laws(ai_character, additional_info = "latespawn", log_all_laws = TRUE)
 		qdel(src)
 		return
 
@@ -457,7 +473,7 @@
 	qdel(src)
 
 
-/mob/new_player/proc/AnnounceArrival(var/mob/living/carbon/human/character, var/rank, var/join_message)
+/mob/new_player/proc/AnnounceArrival(mob/living/carbon/human/character, rank, join_message)
 	if(SSticker.current_state == GAME_STATE_PLAYING)
 		var/ailist[] = list()
 		for(var/mob/living/silicon/ai/A in GLOB.alive_mob_list)
@@ -467,21 +483,25 @@
 			var/mob/living/silicon/ai/announcer = pick(ailist)
 			if(character.mind)
 				if((character.mind.assigned_role != "Cyborg") && (character.mind.assigned_role != character.mind.special_role))
-					if(character.mind.role_alt_title)
-						rank = character.mind.role_alt_title
-					var/arrivalmessage = announcer.arrivalmsg
-					arrivalmessage = replacetext(arrivalmessage,"$name",character.real_name)
-					arrivalmessage = replacetext(arrivalmessage,"$rank",rank ? "[rank]" : "visitor")
-					arrivalmessage = replacetext(arrivalmessage,"$species",character.dna.species.name)
-					arrivalmessage = replacetext(arrivalmessage,"$age",num2text(character.age))
-					arrivalmessage = replacetext(arrivalmessage,"$gender",character.gender == FEMALE ? "Female" : "Male")
+					var/arrivalmessage = create_announce_message(character, rank, join_message, announcer.arrivalmsg)
 					announcer.say(";[arrivalmessage]")
+
 		else
 			if(character.mind)
 				if((character.mind.assigned_role != "Cyborg") && (character.mind.assigned_role != character.mind.special_role))
-					if(character.mind.role_alt_title)
-						rank = character.mind.role_alt_title
-					GLOB.global_announcer.autosay("[character.real_name],[rank ? " [rank]," : " visitor," ] [join_message ? join_message : "прибыл на станцию"].", "Arrivals Announcement Computer")
+					var/arrivalmessage = create_announce_message(character, rank, join_message, GLOB.global_announcer_base_text)
+					GLOB.global_announcer.autosay(arrivalmessage, "Arrivals Announcement Computer")
+
+/mob/new_player/proc/create_announce_message(mob/living/carbon/human/arrived, rank, join_message, message)
+	if(arrived.mind.role_alt_title)
+		rank = arrived.mind.role_alt_title
+	message = replacetext(message,"$name",arrived.real_name)
+	message = replacetext(message,"$rank",rank ? "[rank]" : "visitor")
+	message = replacetext(message,"$species",arrived.dna.species.name)
+	message = replacetext(message,"$age",num2text(arrived.age))
+	message = replacetext(message,"$gender",arrived.gender == FEMALE ? "Female" : "Male")
+	message = replacetext(message,"$join_message",join_message)
+	return message
 
 /mob/new_player/proc/AddEmploymentContract(mob/living/carbon/human/employee)
 	spawn(30)
@@ -583,6 +603,8 @@
 			var/color = categorizedJobs[jobcat]["color"]
 			dat += "<fieldset style='border: 2px solid [color]; display: inline'>"
 			dat += "<legend align='center' style='color: [color]'>[jobcat]</legend>"
+			if(jobcat == "Miscellaneous")
+				dat += "<a href='byond://?src=[UID()];SelectedJob=RandomJob'>Random (free jobs)</a><br>"
 			for(var/datum/job/job in categorizedJobs[jobcat]["jobs"])
 				if(job in SSjobs.prioritized_jobs)
 					dat += "<a href='byond://?src=[UID()];SelectedJob=[job.title]'><font color='lime'><B>[job.title] ([job.current_positions]) (Active: [activePlayers[job]])</B></font></a><br>"
@@ -626,7 +648,7 @@
 		else if(mind.assigned_role == "Mime")
 			new_character.real_name = pick(GLOB.mime_names)
 			new_character.rename_self("mime")
-		mind.original = new_character
+		mind.set_original_mob(new_character)
 		mind.transfer_to(new_character)					//won't transfer key since the mind is not active
 		GLOB.human_names_list += new_character.real_name
 
@@ -672,7 +694,7 @@
 
 /mob/new_player/proc/is_species_whitelisted(datum/species/S)
 	if(!S) return 1
-	return is_alien_whitelisted(src, S.name) || !config.usealienwhitelist || !(IS_WHITELISTED in S.species_traits)
+	return is_alien_whitelisted(src, S.name) || !CONFIG_GET(flag/usealienwhitelist) || !(IS_WHITELISTED in S.species_traits)
 
 /mob/new_player/get_gender()
 	if(!client || !client.prefs) ..()

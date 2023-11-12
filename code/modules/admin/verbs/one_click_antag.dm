@@ -48,7 +48,7 @@
 /datum/admins/proc/makeTraitors()
 	var/datum/game_mode/traitor/temp = new
 
-	if(config.protect_roles_from_antagonist)
+	if(CONFIG_GET(flag/protect_roles_from_antagonist))
 		temp.restricted_jobs += temp.protected_jobs
 
 	var/list/mob/living/carbon/human/candidates = list()
@@ -79,7 +79,8 @@
 /datum/admins/proc/makeChangelings()
 
 	var/datum/game_mode/changeling/temp = new
-	if(config.protect_roles_from_antagonist)
+
+	if(CONFIG_GET(flag/protect_roles_from_antagonist))
 		temp.restricted_jobs += temp.protected_jobs
 
 	var/list/mob/living/carbon/human/candidates = list()
@@ -100,16 +101,16 @@
 
 		for(var/i = 0, i<numChangelings, i++)
 			H = pick(candidates)
-			H.mind.make_Changeling()
+			H.mind.add_antag_datum(/datum/antagonist/changeling)
 			candidates.Remove(H)
 
-		return 1
-	return 0
+		return TRUE
+	return FALSE
 
 /datum/admins/proc/makeRevs()
 
 	var/datum/game_mode/revolution/temp = new
-	if(config.protect_roles_from_antagonist)
+	if(CONFIG_GET(flag/protect_roles_from_antagonist))
 		temp.restricted_jobs += temp.protected_jobs
 
 	var/list/mob/living/carbon/human/candidates = list()
@@ -159,7 +160,7 @@
 /datum/admins/proc/makeCult()
 
 	var/datum/game_mode/cult/temp = new
-	if(config.protect_roles_from_antagonist)
+	if(CONFIG_GET(flag/protect_roles_from_antagonist))
 		temp.restricted_jobs += temp.protected_jobs
 
 	var/list/mob/living/carbon/human/candidates = list()
@@ -189,7 +190,7 @@
 /datum/admins/proc/makeClockwork()
 
 	var/datum/game_mode/clockwork/temp = new
-	if(config.protect_roles_from_antagonist)
+	if(CONFIG_GET(flag/protect_roles_from_antagonist))
 		temp.restricted_jobs += temp.protected_jobs
 
 	var/list/mob/living/carbon/human/candidates = list()
@@ -329,15 +330,17 @@
 
 
 /datum/admins/proc/makeSpaceNinja()
+	. = FALSE
 	var/confirm = alert("Are you sure?", "Confirm creation", "Yes", "No")
 	if(confirm != "Yes")
-		return 0
+		return
 	var/datum/objective/custom_objective = null
 	if(alert(usr, "Хотите ли вы выдать этому ниндзя особую цель?","Особая цель","Да", "Нет") == "Да")
 		var/expl = sanitize(copytext_char(input("Custom objective:", "Objective", "") as text|null,1,MAX_MESSAGE_LEN))
 		if(!expl)
 			return
 		custom_objective = new
+		custom_objective.needs_target = FALSE
 		custom_objective.explanation_text = expl
 	var/image/I = new('icons/mob/ninja_previews.dmi', "ninja_preview_new_hood_green")
 	var/list/candidates = SSghost_spawns.poll_candidates("Do you wish to be considered for the position of a Spider Clan Assassin'?", ROLE_NINJA, source = I)
@@ -345,13 +348,13 @@
 	log_admin("[key_name(owner)] tried making a Space Ninja with One-Click-Antag")
 	message_admins("[key_name_admin(owner)] tried making a Space Ninja with One-Click-Antag")
 
-	if(candidates.len)
+	if(length(candidates))
 		var/mob/dead/observer/selected = pick(candidates)
 		candidates -= selected
 		var/mob/living/carbon/human/new_character = makeBody(selected)
 		new_character.mind.make_Space_Ninja(custom_objective)
-		return 1
-	return 0
+		return TRUE
+
 
 /proc/makeBody(var/mob/dead/observer/G_found) // Uses stripped down and bastardized code from respawn character
 	if(!G_found || !G_found.key)	return
@@ -366,33 +369,6 @@
 	new_character.key = G_found.key
 
 	return new_character
-
-/datum/admins/proc/create_syndicate_death_commando(obj/spawn_location, syndicate_leader_selected = 0)
-	var/mob/living/carbon/human/new_syndicate_commando = new(spawn_location.loc)
-	var/syndicate_commando_leader_rank = pick("Лейтенант", "Капитан", "Майор")
-	var/syndicate_commando_rank = pick("Младший Сержант", "Сержант", "Старший Сержант", "Старшина", "Прапорщик", "Старший Прапорщик")
-	var/syndicate_commando_name = pick(GLOB.last_names)
-
-	var/datum/preferences/A = new()//Randomize appearance for the commando.
-	if(syndicate_leader_selected)
-		A.real_name = "[syndicate_commando_leader_rank] [A.gender==FEMALE ? pick(GLOB.last_names_female) : syndicate_commando_name]"
-		A.age = rand(35,45)
-	else
-		A.real_name = "[syndicate_commando_rank] [A.gender==FEMALE ? pick(GLOB.last_names_female) : syndicate_commando_name]"
-	A.copy_to(new_syndicate_commando)
-
-	new_syndicate_commando.dna.ready_dna(new_syndicate_commando)//Creates DNA.
-
-	//Creates mind stuff.
-	new_syndicate_commando.mind_initialize()
-	new_syndicate_commando.mind.assigned_role = SPECIAL_ROLE_SYNDICATE_DEATHSQUAD
-	new_syndicate_commando.mind.special_role = SPECIAL_ROLE_SYNDICATE_DEATHSQUAD
-	new_syndicate_commando.mind.offstation_role = TRUE
-	//Adds them to current traitor list. Which is really the extra antagonist list.
-	SSticker.mode.traitors += new_syndicate_commando.mind
-	new_syndicate_commando.equip_syndicate_commando(syndicate_leader_selected)
-
-	return new_syndicate_commando
 
 /datum/admins/proc/makeVoxRaiders()
 	var/antnum = input(owner, "How many raiders you want to create? Enter 0 to cancel.","Amount:", 0) as num
@@ -435,7 +411,7 @@
 		var/mob/living/carbon/human/new_vox = new /mob/living/carbon/human/vox(GLOB.raider_spawn[index])
 		new_vox.mind = raider
 		raider.current = new_vox
-		raider.original = new_vox
+		raider.set_original_mob(new_vox)
 
 		raider.key = candidate.key
 		new_vox.key = raider.key
@@ -449,7 +425,7 @@
 /datum/admins/proc/makeVampires()
 
 	var/datum/game_mode/vampire/temp = new
-	if(config.protect_roles_from_antagonist)
+	if(CONFIG_GET(flag/protect_roles_from_antagonist))
 		temp.restricted_jobs += temp.protected_jobs
 
 	var/list/mob/living/carbon/human/candidates = list()
@@ -471,7 +447,7 @@
 
 		for(var/i = 0, i<numVampires, i++)
 			H = pick(candidates)
-			H.mind.make_Vampire()
+			H.mind.make_vampire()
 			candidates.Remove(H)
 
 		return 1
@@ -560,7 +536,7 @@
 
 /datum/admins/proc/makeThieves()
 	var/datum/game_mode/thief/temp = new
-	if(config.protect_roles_from_antagonist)
+	if(CONFIG_GET(flag/protect_roles_from_antagonist))
 		temp.restricted_jobs += temp.protected_jobs
 
 	var/list/mob/living/carbon/human/candidates = list()

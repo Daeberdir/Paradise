@@ -99,6 +99,27 @@
 	user.visible_message("<span class='suicide'>[user] is slitting [user.p_their()] stomach open with [src]! It looks like [user.p_theyre()] trying to commit seppuku.</span>")
 	return BRUTELOSS
 
+/obj/item/katana/basalt
+	name = "basalt katana"
+	desc = "a katana made out of hardened basalt. Particularly damaging to lavaland fauna."
+	icon_state = "basalt_katana"
+	item_state = "basalt_katana"
+	force = 30
+	block_chance = 30
+
+	var/fauna_damage_bonus = 40
+	var/fauna_damage_type = BRUTE
+
+/obj/item/katana/basalt/afterattack(atom/target, mob/user, proximity)
+	. = ..()
+	if(!proximity)
+		return
+	if(isliving(target))
+		var/mob/living/L = target
+		if(ismegafauna(L) || istype(L, /mob/living/simple_animal/hostile/asteroid))
+			L.apply_damage(fauna_damage_bonus,fauna_damage_type)
+			playsound(L, 'sound/weapons/sear.ogg', 100, 1)
+
 /obj/item/harpoon
 	name = "harpoon"
 	sharp = 1
@@ -127,7 +148,7 @@
 /obj/item/wirerod/attackby(obj/item/I, mob/user, params)
 	..()
 	if(istype(I, /obj/item/shard))
-		var/obj/item/twohanded/spear/S = new /obj/item/twohanded/spear
+		var/obj/item/twohanded/spear/S = new /obj/item/twohanded/spear(drop_location())
 		if(istype(I, /obj/item/shard/plasma))
 			S.force_wielded = 19
 			S.force_unwielded = 11
@@ -135,22 +156,22 @@
 			S.icon_prefix = "spearplasma"
 			S.update_icon()
 		if(!remove_item_from_storage(user))
-			user.unEquip(src)
-		user.unEquip(I)
+			user.temporarily_remove_item_from_inventory(src)
+		user.temporarily_remove_item_from_inventory(I)
 
-		user.put_in_hands(S)
+		user.put_in_hands(S, ignore_anim = FALSE)
 		to_chat(user, "<span class='notice'>You fasten the glass shard to the top of the rod with the cable.</span>")
 		qdel(I)
 		qdel(src)
 
 	else if(istype(I, /obj/item/assembly/igniter) && !(I.flags & NODROP))
-		var/obj/item/melee/baton/cattleprod/P = new /obj/item/melee/baton/cattleprod
+		var/obj/item/melee/baton/cattleprod/P = new /obj/item/melee/baton/cattleprod(drop_location())
 
 		if(!remove_item_from_storage(user))
-			user.unEquip(src)
-		user.unEquip(I)
+			user.temporarily_remove_item_from_inventory(src)
+		user.temporarily_remove_item_from_inventory(I)
 
-		user.put_in_hands(P)
+		user.put_in_hands(P, ignore_anim = FALSE)
 		to_chat(user, "<span class='notice'>You fasten [I] to the top of the rod with the cable.</span>")
 		qdel(I)
 		qdel(src)
@@ -214,7 +235,7 @@
 				visible_message("<span class='boldwarning'>[owner] Deflects [I] directly back at the thrower! It's a home run!</span>", "<span class='boldwarning'>You deflect the [I] directly back at the thrower! It's a home run!</span>")
 				playsound(get_turf(owner), 'sound/weapons/homerun.ogg', 100, 1)
 				do_attack_animation(I, ATTACK_EFFECT_DISARM)
-				I.throw_at(I.thrownby, 20, 20, owner)
+				I.throw_at(locateUID(I.thrownby), 20, 20, owner)
 				deflectmode = FALSE
 				if(!istype(I, /obj/item/beach_ball))
 					lastdeflect = world.time + 600
@@ -362,19 +383,19 @@
 	attack_verb = on ? attack_verb_on : initial(attack_verb)
 	w_class = on ? WEIGHT_CLASS_HUGE : WEIGHT_CLASS_SMALL
 	homerun_able = on
-	
+
 /obj/item/melee/baseball_bat/homerun/central_command/pickup(mob/living/user)
-	. = ..()
 	if(!(isertmindshielded(user)))
-		user.Weaken(5)
-		user.unEquip(src, 1)
+		user.Weaken(10 SECONDS)
+		user.drop_item_ground(src, force = TRUE)
 		to_chat(user, "<span class='cultlarge'>\"Это - оружие истинного правосудия. Тебе не дано обуздать его мощь.\"</span>")
 		if(ishuman(user))
 			var/mob/living/carbon/human/H = user
 			H.apply_damage(rand(force/2, force), BRUTE, pick("l_arm", "r_arm"))
 		else
 			user.adjustBruteLoss(rand(force/2, force))
-		return
+		return FALSE
+	return ..()
 
 /obj/item/melee/baseball_bat/homerun/central_command/attack_self(mob/user)
 	on = !on
@@ -401,3 +422,15 @@
 		H.update_inv_r_hand()
 	playsound(loc, extend_sound, 50, TRUE)
 	add_fingerprint(user)
+
+/obj/item/claymore/bone
+	name = "bone sword"
+	desc = "Jagged pieces of bone are tied to what looks like a goliath's femur."
+	icon_state = "bone_sword"
+	item_state = "bone_sword"
+	slot_flags = SLOT_BELT | SLOT_BACK
+	force = 18
+	throwforce = 10
+	armour_penetration = 15
+	w_class = WEIGHT_CLASS_BULKY
+	block_chance = 30

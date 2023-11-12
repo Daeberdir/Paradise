@@ -56,6 +56,7 @@
 
 #define ui_alien_storage_l "CENTER-2:14,SOUTH:5"//alien
 #define ui_alien_storage_r "CENTER+1:18,SOUTH:5"//alien
+#define ui_alien_leap "CENTER+2:20,SOUTH:5"//alien
 #define ui_alien_language_menu "EAST-3:25,SOUTH+1:7"//alien
 #define ui_alienlarva_language_menu "EAST-3:26,SOUTH:5"//alien
 
@@ -107,6 +108,7 @@
 #define ui_healthdoll "EAST-1:28,CENTER-1:15"
 #define ui_health "EAST-1:28,CENTER:17"
 #define ui_internal "EAST-1:28,CENTER+1:19"
+#define ui_stamina "EAST-1:28,CENTER-2:13"
 
 //borgs
 #define ui_borg_health "EAST-1:28,CENTER-1:15" //borgs have the health display where humans have the pressure damage indicator.
@@ -115,7 +117,7 @@
 #define ui_alien_health "EAST-1:28,CENTER-1:15" //aliens have the health display where humans have the pressure damage indicator.
 
 //aliens
-#define ui_cogscarab_timer "EAST-1:28,CENTER-3:11" //where the nutrition should be.
+#define ui_cogscarab_timer "EAST-1:27,CENTER+0:16" //Under health tab
 
 //constructs
 #define ui_construct_pull "EAST-1:28,SOUTH+1:10" //above the zone_sel icon
@@ -143,21 +145,23 @@
 
 // AI
 
-#define ui_ai_core "SOUTH:6,WEST"
-#define ui_ai_camera_list "SOUTH:6,WEST+1"
-#define ui_ai_track_with_camera "SOUTH:6,WEST+2"
-#define ui_ai_camera_light "SOUTH:6,WEST+3"
-#define ui_ai_crew_monitor "SOUTH:6,WEST+4"
-#define ui_ai_crew_manifest "SOUTH:6,WEST+5"
-#define ui_ai_alerts "SOUTH:6,WEST+6"
-#define ui_ai_announcement "SOUTH:6,WEST+7"
-#define ui_ai_shuttle "SOUTH:6,WEST+8"
-#define ui_ai_state_laws "SOUTH:6,WEST+9"
-#define ui_ai_pda_send "SOUTH:6,WEST+10"
-#define ui_ai_pda_log "SOUTH:6,WEST+11"
-#define ui_ai_take_picture "SOUTH:6,WEST+12"
-#define ui_ai_view_images "SOUTH:6,WEST+13"
-#define ui_ai_sensor "SOUTH:6,WEST+14"
+#define ui_ai_view_images "BOTTOM+1:6,LEFT"
+#define ui_ai_take_picture "BOTTOM+1:6,LEFT+1"
+#define ui_ai_camera_list "BOTTOM:6,LEFT"
+#define ui_ai_camera_light "BOTTOM:6,LEFT+1"
+#define ui_ai_track_with_camera "BOTTOM:6,LEFT+2"
+
+#define ui_ai_crew_monitor "BOTTOM:6,CENTER-3"
+#define ui_ai_crew_manifest "BOTTOM:6,CENTER-2"
+#define ui_ai_alerts "BOTTOM:6,CENTER-1"
+#define ui_ai_announcement "BOTTOM:6,CENTER"
+#define ui_ai_shuttle "BOTTOM:6,CENTER+1"
+#define ui_ai_pda_log "BOTTOM:6,CENTER+2"
+#define ui_ai_pda_send "BOTTOM:6,CENTER+3"
+
+#define ui_ai_state_laws "SOUTH:6,RIGHT-2"
+#define ui_ai_core "SOUTH:6,RIGHT-1"
+#define ui_ai_sensor "SOUTH:6,RIGHT"
 
 // Bots
 #define ui_bot_radio "EAST-1:28,SOUTH:7"

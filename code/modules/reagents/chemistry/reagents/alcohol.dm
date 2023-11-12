@@ -10,7 +10,7 @@
 	addiction_threshold = 150
 	minor_addiction = TRUE
 	addict_supertype = /datum/reagent/consumable/ethanol
-	var/dizzy_adj = 3
+	var/dizzy_adj = 6 SECONDS
 	var/alcohol_perc = 1 //percentage of ethanol in a beverage 0.0 - 1.0
 	taste_description = "liquid fire"
 
@@ -18,8 +18,8 @@
 	addict_supertype = /datum/reagent/consumable/ethanol
 
 /datum/reagent/consumable/ethanol/on_mob_life(mob/living/M)
-	M.AdjustDrunk(alcohol_perc)
-	M.AdjustDizzy(dizzy_adj)
+	M.AdjustDrunk(alcohol_perc STATUS_EFFECT_CONSTANT)
+	M.AdjustDizzy(dizzy_adj, bound_upper = 1.5 MINUTES)
 	return ..()
 
 /datum/reagent/consumable/ethanol/reaction_obj(obj/O, volume)
@@ -72,7 +72,7 @@
 	id = "whiskey"
 	description = "A superb and well-aged single-malt whiskey. Damn."
 	color = "#664300" // rgb: 102, 67, 0
-	dizzy_adj = 4
+	dizzy_adj = 8 SECONDS
 	alcohol_perc = 0.4
 	drink_icon = "whiskeyglass"
 	drink_name = "Glass of whiskey"
@@ -92,7 +92,7 @@
 	id = "gin"
 	description = "It's gin. In space. I say, good sir."
 	color = "#664300" // rgb: 102, 67, 0
-	dizzy_adj = 3
+	dizzy_adj = 6 SECONDS
 	alcohol_perc = 0.5
 	drink_icon = "ginvodkaglass"
 	drink_name = "Glass of gin"
@@ -105,7 +105,7 @@
 	description = "Watch out that the Green Fairy doesn't come for you!"
 	color = "#33EE00" // rgb: lots, ??, ??
 	overdose_threshold = 30
-	dizzy_adj = 5
+	dizzy_adj = 10 SECONDS
 	alcohol_perc = 0.7
 	drink_icon = "absintheglass"
 	drink_name = "Glass of Absinthe"
@@ -114,7 +114,7 @@
 
 //copy paste from LSD... shoot me
 /datum/reagent/consumable/ethanol/absinthe/on_mob_life(mob/living/M)
-	M.AdjustHallucinate(5)
+	M.AdjustHallucinate(5 SECONDS)
 	M.last_hallucinator_log = name
 	return ..()
 
@@ -128,7 +128,7 @@
 	id = "hooch"
 	description = "Either someone's failure at cocktail making or attempt in alcohol production. In any case, do you really want to drink that?"
 	color = "#664300" // rgb: 102, 67, 0
-	dizzy_adj = 7
+	dizzy_adj = 14 SECONDS
 	alcohol_perc = 1
 	drink_icon = "glass_brown2"
 	drink_name = "Hooch"
@@ -136,10 +136,11 @@
 	taste_description = "pure resignation"
 
 /datum/reagent/consumable/ethanol/hooch/on_mob_life(mob/living/carbon/M)
-	if(M.mind && M.mind.assigned_role == "Assistant")
-		M.heal_organ_damage(1, 1)
-		. = 1
-	return ..() || .
+	if(M.mind && M.mind.assigned_role == "Civilian")
+		var/update_flags = STATUS_UPDATE_NONE
+		update_flags |= M.adjustBruteLoss(-1, FALSE)
+		update_flags |= M.adjustFireLoss(-1, FALSE)
+		return ..() | update_flags
 
 /datum/reagent/consumable/ethanol/rum
 	name = "Rum"
@@ -148,7 +149,7 @@
 	color = "#664300" // rgb: 102, 67, 0
 	overdose_threshold = 30
 	alcohol_perc = 0.4
-	dizzy_adj = 5
+	dizzy_adj = 10 SECONDS
 	drink_icon = "rumglass"
 	drink_name = "Glass of Rum"
 	drink_desc = "Now you want to Pray for a pirate suit, don't you?"
@@ -157,7 +158,7 @@
 /datum/reagent/consumable/ethanol/rum/overdose_process(mob/living/M, severity)
 	var/update_flags = STATUS_UPDATE_NONE
 	update_flags |= M.adjustToxLoss(1, FALSE)
-	return list(0, update_flags)
+	return ..() | update_flags
 
 /datum/reagent/consumable/ethanol/mojito
 	name = "Mojito"
@@ -224,7 +225,7 @@
 	id = "wine"
 	description = "An premium alchoholic beverage made from distilled grape juice."
 	color = "#7E4043" // rgb: 126, 64, 67
-	dizzy_adj = 2
+	dizzy_adj = 4 SECONDS
 	alcohol_perc = 0.2
 	drink_icon = "wineglass"
 	drink_name = "Glass of wine"
@@ -236,7 +237,7 @@
 	id = "cognac"
 	description = "A sweet and strongly alchoholic drink, made after numerous distillations and years of maturing. Classy as fornication."
 	color = "#664300" // rgb: 102, 67, 0
-	dizzy_adj = 4
+	dizzy_adj = 8 SECONDS
 	alcohol_perc = 0.4
 	drink_icon = "cognacglass"
 	drink_name = "Glass of cognac"
@@ -248,7 +249,7 @@
 	id = "suicider"
 	description = "An unbelievably strong and potent variety of Cider."
 	color = "#CF3811"
-	dizzy_adj = 20
+	dizzy_adj = 40 SECONDS
 	alcohol_perc = 1 //because that's a thing it's supposed to do, I guess
 	drink_icon = "suicider"
 	drink_name = "Suicider"
@@ -281,13 +282,12 @@
 	taste_description = "party"
 
 /datum/reagent/consumable/ethanol/thirteenloko/on_mob_life(mob/living/M)
-	var/update_flags = STATUS_UPDATE_NONE
-	M.AdjustDrowsy(-7)
-	update_flags |= M.AdjustSleeping(-2, FALSE)
+	M.AdjustDrowsy(-14 SECONDS)
+	M.AdjustSleeping(-4 SECONDS)
 	if(M.bodytemperature > 310)
 		M.bodytemperature = max(310, M.bodytemperature - (5 * TEMPERATURE_DAMAGE_COEFFICIENT))
-	M.Jitter(5)
-	return ..() | update_flags
+	M.Jitter(10 SECONDS)
+	return ..()
 
 
 /////////////////////////////////////////////////////////////////cocktail entities//////////////////////////////////////////////
@@ -461,6 +461,12 @@
 	drink_desc = "Tomato juice, mixed with Vodka and a lil' bit of lime. Tastes like liquid murder."
 	taste_description = "tomatoes with booze"
 
+/datum/reagent/consumable/ethanol/bloody_mary/on_mob_life(mob/living/M)
+	var/update_flags = STATUS_UPDATE_NONE
+	if(current_cycle % 20 == 0)
+		update_flags |= M.adjustToxLoss(-1, FALSE) //heals 1 tox damage every 20 cycles or (metabolization_rate * 20) units of reagent
+	return ..() | update_flags
+
 /datum/reagent/consumable/ethanol/gargle_blaster
 	name = "Pan-Galactic Gargle Blaster"
 	id = "gargleblaster"
@@ -541,7 +547,7 @@
 
 /datum/reagent/consumable/ethanol/beepsky_smash/on_mob_life(mob/living/M)
 	var/update_flag = STATUS_UPDATE_NONE
-	update_flag |= M.Stun(1, FALSE)
+	M.Stun(2 SECONDS)
 	return ..() | update_flag
 
 /datum/reagent/consumable/ethanol/irish_cream
@@ -722,7 +728,7 @@
 	description = "AHHHH!!!!"
 	reagent_state = LIQUID
 	color = "#664300" // rgb: 102, 67, 0
-	dizzy_adj = 10
+	dizzy_adj = 20 SECONDS
 	alcohol_perc = 0.4
 	drink_icon = "demonsblood"
 	drink_name = "Demons Blood"
@@ -735,7 +741,7 @@
 	description = "For when a gin and tonic isn't russian enough."
 	reagent_state = LIQUID
 	color = "#664300" // rgb: 102, 67, 0
-	dizzy_adj = 4
+	dizzy_adj = 8 SECONDS
 	alcohol_perc = 0.3
 	drink_icon = "vodkatonicglass"
 	drink_name = "Vodka and Tonic"
@@ -748,7 +754,7 @@
 	description = "Refreshingly lemony, deliciously dry."
 	reagent_state = LIQUID
 	color = "#664300" // rgb: 102, 67, 0
-	dizzy_adj = 4
+	dizzy_adj = 8 SECONDS
 	alcohol_perc = 0.4
 	drink_icon = "ginfizzglass"
 	drink_name = "Gin Fizz"
@@ -773,7 +779,7 @@
 	description = "A blue-space beverage!"
 	reagent_state = LIQUID
 	color = "#2E6671" // rgb: 46, 102, 113
-	dizzy_adj = 15
+	dizzy_adj = 30 SECONDS
 	alcohol_perc = 0.7
 	drink_icon = "singulo"
 	drink_name = "Singulo"
@@ -911,6 +917,11 @@
 	drink_desc = "A drink from Nanotrasen. Made from live aliens."
 	taste_description = "PAIN"
 
+/datum/reagent/consumable/ethanol/acid_spit/reaction_mob(mob/living/M, method, volume)
+	. = ..()
+	if(prob(50))
+		M.emote("scream")
+
 /datum/reagent/consumable/ethanol/amasec
 	name = "Amasec"
 	id = "amasec"
@@ -929,7 +940,7 @@
 	description = "A strong neurotoxin that puts the subject into a death-like state."
 	reagent_state = LIQUID
 	color = "#2E2E61" // rgb: 46, 46, 97
-	dizzy_adj = 6
+	dizzy_adj = 12 SECONDS
 	alcohol_perc = 0.7
 	heart_rate_decrease = 1
 	drink_icon = "neurotoxinglass"
@@ -940,9 +951,9 @@
 /datum/reagent/consumable/ethanol/neurotoxin/on_mob_life(mob/living/M)
 	var/update_flags = STATUS_UPDATE_NONE
 	if(current_cycle >= 13)
-		update_flags |= M.Weaken(3, FALSE)
+		M.Weaken(6 SECONDS)
 	if(current_cycle >= 55)
-		update_flags |= M.Druggy(55, FALSE)
+		M.Druggy(110 SECONDS)
 	if(current_cycle >= 200)
 		update_flags |= M.adjustToxLoss(2, FALSE)
 	return ..() | update_flags
@@ -961,25 +972,25 @@
 
 /datum/reagent/consumable/ethanol/hippies_delight/on_mob_life(mob/living/M)
 	var/update_flags = STATUS_UPDATE_NONE
-	update_flags |= M.Druggy(50, FALSE)
+	M.Druggy(100 SECONDS)
 	switch(current_cycle)
 		if(1 to 5)
-			M.Stuttering(1)
-			M.Dizzy(10)
+			M.Stuttering(2 SECONDS)
+			M.Dizzy(20 SECONDS)
 			if(prob(10))
 				M.emote(pick("twitch","giggle"))
 		if(5 to 10)
-			M.Stuttering(1)
-			M.Jitter(20)
-			M.Dizzy(20)
-			update_flags |= M.Druggy(45, FALSE)
+			M.Stuttering(2 SECONDS)
+			M.Jitter(40 SECONDS)
+			M.Dizzy(40 SECONDS)
+			M.Druggy(90 SECONDS)
 			if(prob(20))
 				M.emote(pick("twitch","giggle"))
 		if(10 to INFINITY)
-			M.Stuttering(1)
-			M.Jitter(40)
-			M.Dizzy(40)
-			update_flags |= M.Druggy(60, FALSE)
+			M.Stuttering(2 SECONDS)
+			M.Jitter(80 SECONDS)
+			M.Dizzy(80 SECONDS)
+			M.Druggy(120 SECONDS)
 			if(prob(30))
 				M.emote(pick("twitch","giggle"))
 	return ..() | update_flags
@@ -991,7 +1002,7 @@
 	reagent_state = LIQUID
 	color = "#2E6671" // rgb: 46, 102, 113
 	alcohol_perc = 0.7
-	dizzy_adj = 5
+	dizzy_adj = 10 SECONDS
 	drink_icon = "changelingsting"
 	drink_name = "Changeling Sting"
 	drink_desc = "A stingy drink."
@@ -1004,7 +1015,7 @@
 	reagent_state = LIQUID
 	color = "#2E6671" // rgb: 46, 102, 113
 	alcohol_perc = 0.3
-	dizzy_adj = 5
+	dizzy_adj = 10 SECONDS
 	drink_icon = "irishcarbomb"
 	drink_name = "Irish Car Bomb"
 	drink_desc = "An irish car bomb."
@@ -1041,7 +1052,7 @@
 	nutriment_factor = 1 * REAGENTS_METABOLISM
 	color = "#2E6671" // rgb: 46, 102, 113
 	alcohol_perc = 0.5
-	dizzy_adj = 10
+	dizzy_adj = 20 SECONDS
 	drink_icon = "driestmartiniglass"
 	drink_name = "Driest Martini"
 	drink_desc = "Only for the experienced. You think you see sand floating in the glass."
@@ -1049,7 +1060,7 @@
 
 /datum/reagent/consumable/ethanol/driestmartini/on_mob_life(mob/living/M)
 	if(current_cycle >= 55 && current_cycle < 115)
-		M.AdjustStuttering(10)
+		M.AdjustStuttering(20 SECONDS)
 	return ..()
 
 /datum/reagent/consumable/ethanol/kahlua
@@ -1064,12 +1075,11 @@
 	taste_description = "coffee and alcohol"
 
 /datum/reagent/consumable/ethanol/kahlua/on_mob_life(mob/living/M)
-	var/update_flags = STATUS_UPDATE_NONE
-	M.AdjustDizzy(-5)
-	M.AdjustDrowsy(-3)
-	update_flags |= (M.AdjustSleeping(-2) ? STATUS_UPDATE_STAT : STATUS_UPDATE_NONE)
-	M.Jitter(5)
-	return ..() | update_flags
+	M.AdjustDizzy(-10 SECONDS)
+	M.AdjustDrowsy(-6 SECONDS)
+	M.AdjustSleeping(-4 SECONDS)
+	M.Jitter(10 SECONDS)
+	return ..()
 
 /datum/reagent/ginsonic
 	name = "Gin and sonic"
@@ -1084,11 +1094,11 @@
 
 /datum/reagent/ginsonic/on_mob_life(mob/living/M)
 	var/update_flags = STATUS_UPDATE_NONE
-	M.AdjustDrowsy(-5)
+	M.AdjustDrowsy(-10 SECONDS)
 	if(prob(25))
-		update_flags |= M.AdjustParalysis(-1, FALSE)
-		update_flags |= M.AdjustStunned(-1, FALSE)
-		update_flags |= M.AdjustWeakened(-1, FALSE)
+		M.AdjustParalysis(-2 SECONDS)
+		M.AdjustStunned(-2 SECONDS)
+		M.AdjustWeakened(-2 SECONDS)
 	if(prob(8))
 		M.reagents.add_reagent("methamphetamine",1.2)
 		var/sonic_message = pick("Gotta go fast!", "Time to speed, keed!", "I feel a need for speed!", "Let's juice.", "Juice time.", "Way Past Cool!")
@@ -1170,7 +1180,7 @@
 	if(prob(50))
 		to_chat(M, "<span class='danger'>Your throat burns terribly!</span>")
 		M.emote(pick("scream","cry","choke","gasp"))
-		update_flags |= M.Stun(1, FALSE)
+		M.Stun(2 SECONDS, FALSE)
 	if(prob(8))
 		to_chat(M, "<span class='danger'>Why!? WHY!?</span>")
 	if(prob(8))
@@ -1330,21 +1340,20 @@
 	generate_data_info(data)
 
 /datum/reagent/consumable/ethanol/fruit_wine/proc/generate_data_info(list/data)
-	var/minimum_percent = 0.15 //Percentages measured between 0 and 1.
 	var/list/primary_tastes = list()
 	var/list/secondary_tastes = list()
 	drink_name = "glass of [name]"
 	drink_desc = description
 	for(var/taste in tastes)
 		switch(tastes[taste])
-			if(minimum_percent*2 to INFINITY)
+			if(0.3 to INFINITY)
 				primary_tastes += taste
-			if(minimum_percent to minimum_percent*2)
+			if(0.15 to 0.3)
 				secondary_tastes += taste
 
 	var/minimum_name_percent = 0.35
 	name = ""
-	var/list/names_in_order = sortTim(names, /proc/cmp_numeric_dsc, TRUE)
+	var/list/names_in_order = sortTim(names, cmp = /proc/cmp_numeric_dsc, associative = TRUE)
 	var/named = FALSE
 	for(var/fruit_name in names)
 		if(names[fruit_name] >= minimum_name_percent)
@@ -1398,7 +1407,7 @@
 	id = "bacchus_blessing"
 	description = "Unidentifiable mixture. Unmeasurably high alcohol content."
 	color = rgb(51, 19, 3) //Sickly brown
-	dizzy_adj = 21
+	dizzy_adj = 42 SECONDS
 	alcohol_perc = 3 //I warned you
 	drink_icon = "bacchusblessing"
 	drink_name = "Bacchus' Blessing"
@@ -1451,7 +1460,7 @@
 	id = "rainbow_sky"
 	description = "A drink that shimmers with all the colors of the rainbow with notes of the galaxy."
 	color = "#ffffff"
-	dizzy_adj = 10
+	dizzy_adj = 20 SECONDS
 	alcohol_perc = 1.5
 	drink_icon = "rainbow_sky"
 	drink_name = "Rainbow Sky"
@@ -1462,9 +1471,9 @@
 	var/update_flags = STATUS_UPDATE_NONE
 	update_flags |= M.adjustBruteLoss(-1, FALSE)
 	update_flags |= M.adjustFireLoss(-1, FALSE)
-	update_flags |= M.Druggy(15, FALSE)
-	M.Jitter(5)
-	M.AdjustHallucinate(10)
+	M.Druggy(30 SECONDS)
+	M.Jitter(10 SECONDS)
+	M.AdjustHallucinate(10 SECONDS)
 	M.last_hallucinator_log = name
 	return ..() | update_flags
 
@@ -1496,7 +1505,7 @@
 	description = "The drunkard hunter came from deep space, and it looks like he found a victim."
 	color = "#200b0b"
 	alcohol_perc = 0.4
-	dizzy_adj = 3
+	dizzy_adj = 6 SECONDS
 	drink_icon = "jagermeisterglass"
 	drink_name = "Glass of Jagermeister"
 	drink_desc = "The drunkard hunter came from deep space, and it looks like he found a victim."
@@ -1508,7 +1517,7 @@
 	description = "From such a schnapps it's not a sin to start yodeling."
 	color = "#e0e0e0"
 	alcohol_perc = 0.4
-	dizzy_adj = 1
+	dizzy_adj = 2 SECONDS
 	drink_icon = "schnapsglass"
 	drink_name = "Glass of Schnaps"
 	drink_desc = "From such a schnapps it's not a sin to start yodeling."
@@ -1520,7 +1529,7 @@
 	description = "Flying into space, many thought that they had grasped fate."
 	color = "#e0e0e0"
 	alcohol_perc = 0.45
-	dizzy_adj = 1
+	dizzy_adj = 2 SECONDS
 	drink_icon = "sambukaglass"
 	drink_name = "Glass of Sambuka"
 	drink_desc = "Flying into space, many thought that they had grasped fate."
@@ -1543,7 +1552,7 @@
 	description = "Don't mix up the label sizes, because I won't change anything."
 	color = "#d44071"
 	alcohol_perc = 0.45
-	dizzy_adj = 2
+	dizzy_adj = 4 SECONDS
 	drink_icon = "bitterglass"
 	drink_name = "Glass of bitter"
 	drink_desc = "Don't mix up the label sizes, because I won't change anything."
@@ -1571,6 +1580,14 @@
 	drink_name = "Black Blood"
 	drink_desc = "Need to drink faster before it starts to curdle."
 	taste_description = "bloody darkness"
+
+/datum/reagent/consumable/ethanol/black_blood/reaction_mob(mob/living/M, method, volume)
+	. = ..()
+	if(prob(50))
+		M.say(pick("Fuu ma'jin!", "Sas'so c'arta forbici!", \
+		 "Ta'gh fara'qha fel d'amar det!", "Kla'atu barada nikt'o!", \
+		  "Fel'th Dol Ab'orod!", "In'totum Lig'abis!", "Ethra p'ni dedol!", \
+		   "Ditans Gut'ura Inpulsa!", "O bidai nabora se'sma!"))
 
 /datum/reagent/consumable/ethanol/light_storm
 	name = "Light Storm"
@@ -1693,6 +1710,18 @@
 	drink_desc = "A glass in the form of a mender, a favorite among doctors."
 	taste_description = "funny medicine"
 
+/datum/reagent/consumable/ethanol/alcomender/on_mob_life(mob/living/M)
+	var/update_flags = STATUS_UPDATE_NONE
+	update_flags |= M.adjustFireLoss(-0.7, FALSE)
+	return ..() | update_flags
+
+/datum/reagent/consumable/ethanol/alcomender/reaction_mob(mob/living/M, method=REAGENT_TOUCH, volume) // It is alcohol after all, so don't try to pour it on someone who's on fire ... please.
+	if(iscarbon(M))
+		if(method == REAGENT_TOUCH)
+			M.adjustFireLoss(-volume * 0.7)
+			to_chat(M, "<span class='notice'>The diluted silver sulfadiazine soothes your burns.</span>")
+	return STATUS_UPDATE_NONE
+
 /datum/reagent/consumable/ethanol/amnesia
 	name = "Star Amnesia"
 	id = "amnesia"
@@ -1776,10 +1805,19 @@
 	description = "A real horror for the SMES and the APC. Don't overload them."
 	color = "#0300ce"
 	alcohol_perc = 0.7
+	process_flags = SYNTHETIC
 	drink_icon = "teslasingylo"
 	drink_name = "God Of Power"
 	drink_desc = "A real horror for the SMES and the APC. Don't overload them."
 	taste_description = "electricity bless"
+
+/datum/reagent/consumable/ethanol/teslasingylo/on_mob_life(mob/living/M)
+	. = ..()
+	if(ismachineperson(M))
+		var/mob/living/carbon/human/machine/machine = M
+		if(machine.nutrition > NUTRITION_LEVEL_WELL_FED) //no fat machines, sorry
+			return
+		machine.adjust_nutrition(15) //much less than charging from APC (50)
 
 /datum/reagent/consumable/ethanol/light
 	name = "Light"
@@ -1791,6 +1829,14 @@
 	drink_name = "Light"
 	drink_desc = "A favorite among Nian and Dionea, someone say that this is a mini thermonuclear reaction, but only shhh..."
 	taste_description = "star warmth"
+
+/datum/reagent/consumable/ethanol/light/on_mob_life(mob/living/M)
+	. = ..()
+	if(M.lighting_alpha < LIGHTING_PLANE_ALPHA_NV_TRAIT)
+		return
+	M.lighting_alpha = LIGHTING_PLANE_ALPHA_NV_TRAIT
+	if(volume < 0.4)
+		M.lighting_alpha = initial(M.lighting_alpha)
 
 /datum/reagent/consumable/ethanol/bees_knees
 	name = "Bee's Knees"
@@ -1902,6 +1948,11 @@
 	drink_desc = "Be careful with your horse's shoes."
 	taste_description = "horsepower"
 
+/datum/reagent/consumable/ethanol/horse_neck/reaction_mob(mob/living/M, method, volume)
+	. = ..()
+	if(prob(50))
+		M.say(pick("NEEIIGGGHHHH!", "NEEEIIIIGHH!", "NEIIIGGHH!", "HAAWWWWW!", "HAAAWWW!"))
+
 /datum/reagent/consumable/ethanol/cuban_sunset
 	name = "Cuban Sunset"
 	id = "cuban_sunset"
@@ -1979,6 +2030,12 @@
 	drink_desc = "Has nothing to do with vampires, except that color."
 	taste_description = "exhaustion"
 
+/datum/reagent/consumable/ethanol/vampiro/on_mob_life(mob/living/M)
+	. = ..()
+	if(volume > 20)
+		if(prob(50)) //no spam here :p
+			M.visible_message("<span class='warning'>Глаза [M] ослепительно вспыхивают!</span>")
+
 /datum/reagent/consumable/ethanol/queen_mary
 	name = "Queen Mary"
 	id = "queen_mary"
@@ -2039,11 +2096,18 @@
 	id = "irishempbomb"
 	description = "Mmm, tastes like shut down..."
 	color = "#123eb8"
+	process_flags = SYNTHETIC
 	alcohol_perc = 0.6
 	drink_icon = "irishempbomb"
 	drink_name = "Irish EMP Bomb"
 	drink_desc = "Mmm, tastes like shut down..."
 	taste_description = "electromagnetic impulse"
+
+/datum/reagent/consumable/ethanol/irishempbomb/on_mob_life(mob/living/M)
+	var/update_flags = STATUS_UPDATE_NONE
+	update_flags |= M.Stun(1, FALSE)
+	do_sparks(5, FALSE, M.loc)
+	return ..() | update_flags
 
 /datum/reagent/consumable/ethanol/codelibre
 	name = "Code Libre"
@@ -2051,10 +2115,16 @@
 	description = "Por Code libre!"
 	color = "#a126b1"
 	alcohol_perc = 0.55
+	process_flags = SYNTHETIC
 	drink_icon = "codelibre"
 	drink_name = "Code Libre"
 	drink_desc = "Por Code libre!"
 	taste_description = "code liberation"
+
+/datum/reagent/consumable/ethanol/codelibre/on_mob_life(mob/living/M)
+	. = ..()
+	if(prob(10))
+		M.say(":5 [pick("Viva la Synthetica!")]")
 
 /datum/reagent/consumable/ethanol/blackicp
 	name = "Black ICP"
@@ -2122,6 +2192,11 @@
 	drink_desc = "Some kind of abnormal green."
 	taste_description = "faith in fairies"
 
+/datum/reagent/consumable/ethanol/green_fairy/on_mob_life(mob/living/M)
+	var/update_flags = STATUS_UPDATE_NONE
+	update_flags |= M.SetDruggy(min(max(0, M.AmountDruggy() + 10 SECONDS), 15 SECONDS))
+	return ..() | update_flags
+
 /datum/reagent/consumable/ethanol/home_lebovsky
 	name = "Home Lebowski"
 	id = "home_lebovsky"
@@ -2154,6 +2229,25 @@
 	drink_name = "Trans-Siberian express"
 	drink_desc = "From Vladivostok to delirium tremens in a day."
 	taste_description = "terrible infrastructure"
+
+/datum/reagent/consumable/ethanol/trans_siberian_express/on_mob_life(mob/living/M)
+	. = ..()
+	var/datum/language/rus_lang = GLOB.all_languages["Neo-Russkiya"]
+	if((rus_lang in M.languages) && !(rus_lang in M.temporary_languages))
+		if(M.default_language != rus_lang)
+			M.default_language = rus_lang
+		if(volume < 0.4)
+			M.default_language = null //reset language we were speaking
+		return
+	else
+		if(!(rus_lang in M.languages))
+			M.temporary_languages += rus_lang
+			M.languages += rus_lang
+			M.default_language = rus_lang
+		if(volume < 0.4)
+			M.languages ^= M.temporary_languages
+			M.temporary_languages -= rus_lang
+			M.default_language = null
 
 /datum/reagent/consumable/ethanol/sun
 	name = "Sun"
@@ -2198,3 +2292,165 @@
 	drink_name = "New Yorker"
 	drink_desc = "Be careful with the stock exchange, otherwise it will be 'Black Tuesday.'"
 	taste_description = "the collapse"
+
+/datum/reagent/consumable/ethanol/blue_moondrin
+	name = "Iluk Blue Moon'drin"
+	id = "blue_moondrin"
+	description = "Rarest tajaran drink in the galaxy! Be careful with your Captain!"
+	color = "#0026fc"
+	alcohol_perc = 0.7
+	addiction_chance = 4
+	drink_icon = "blue_moondrin"
+	drink_name = "Iluk Blue Moon'drin"
+	drink_desc = "Rarest tajaran drink in the galaxy! Be careful with your Captain!"
+	taste_description = "the blue set-up"
+
+/datum/reagent/consumable/ethanol/blue_moondrin/on_mob_life(mob/living/M)
+	var/update_flags = STATUS_UPDATE_NONE
+	update_flags |= M.Druggy(30 SECONDS, FALSE)
+	switch(current_cycle)
+		if(1 to 15)
+			M.Dizzy(10 SECONDS)
+			if(prob(20))
+				M.emote(pick("twitch","giggle","moan"))
+				M.Jitter(20 SECONDS)
+		if(16 to 24)
+			if(prob(15))
+				M.Dizzy(10 SECONDS)
+				M.playsound_local(src, 'sound/spookoween/ghost_whisper.ogg', 3)
+				M.emote(pick("twitch","giggle"))
+				M.Jitter(20 SECONDS)
+				M.AdjustHallucinate(20 SECONDS)
+		if(25 to INFINITY)
+			if(prob(10))
+				M.Dizzy(20 SECONDS)
+				M.playsound_local(src,'sound/hallucinations/veryfar_noise.ogg', 1)
+				M.Jitter(20 SECONDS)
+				M.AdjustHallucinate(30 SECONDS)
+				M.emote("moan")
+	return ..() | update_flags
+
+/datum/reagent/consumable/ethanol/red_moondrin
+	name = "Redwater Moon'drin"
+	id = "red_moondrin"
+	description = "Illegal tajaran drink in Adomai, but maybe not here! Dangerous moon'drin based drink with secret ingridient. Be careful with this stuff!"
+	color = "#960202"
+	alcohol_perc = 0.9
+	addiction_chance = 7
+	drink_icon = "red_moondrin"
+	drink_name = "Redwater Moon'drin"
+	drink_desc = "Dangerous moon'drin based tajaran drink with secret ingridient. It seems legal but also wrong..."
+	taste_description = "blood red pain in your stomach! But it feels so go-o-o-o-od.."
+
+/datum/reagent/consumable/ethanol/red_moondrin/on_mob_life(mob/living/M)
+	var/update_flags = STATUS_UPDATE_NONE
+	update_flags |= M.Druggy(30, FALSE)
+	switch(current_cycle)
+		if(1 to 20)
+			M.Dizzy(20 SECONDS)
+			M.Stuttering(10 SECONDS)
+			if(prob(30))
+				M.emote(pick("twitch","moan"))
+				M.Jitter(20 SECONDS)
+				M.AdjustHallucinate(30 SECONDS)
+			if(prob(10))
+				M.playsound_local(src,'sound/hallucinations/im_here1.ogg', 1)
+		if(21 to 30)
+			M.Dizzy(10 SECONDS)
+			M.Stuttering(10 SECONDS)
+			M.playsound_local(src, 'sound/effects/heartbeat.ogg', 1)
+			if(prob(20))
+				to_chat(M, "<span class='warning'>You feel strange...</span>")
+				M.emote("scream")
+				M.playsound_local(src, 'sound/spookoween/ghost_whisper.ogg', 5)
+				M.AdjustHallucinate(40 SECONDS)
+				update_flags |= M.adjustStaminaLoss(3, FALSE)
+			if(prob(5))
+				M.playsound_local(src,'sound/hallucinations/look_up1.ogg', 1)
+				M.emote("gasp")
+				to_chat(M, "<span class='warning'>You can't breathe! But it feels GOOD!</span>")
+				update_flags |= M.adjustOxyLoss(15, FALSE)
+				update_flags |= M.adjustToxLoss(2, FALSE)
+				M.Stun(2 SECONDS)
+		if(31 to INFINITY)
+			M.playsound_local(src, 'sound/effects/heartbeat.ogg', 2)
+			M.Dizzy(20 SECONDS)
+			M.Stuttering(20 SECONDS)
+			if(prob(30))
+				M.playsound_local(src, 'sound/effects/heartbeat.ogg', 2)
+				M.emote(pick("twitch","moan"))
+				M.Jitter(20 SECONDS)
+				M.AdjustHallucinate(30 SECONDS)
+				M.playsound_local(src,'sound/hallucinations/i_see_you2.ogg', 1)
+			if(prob(20))
+				to_chat(M, "<span class='warning'>You feel pain!</span>")
+				M.emote("scream")
+				M.playsound_local(src, 'sound/spookoween/ghost_whisper.ogg', 5)
+				M.AdjustHallucinate(40 SECONDS)
+				update_flags |= M.adjustStaminaLoss(10, FALSE)
+			if(prob(5))
+				M.playsound_local(src, 'sound/effects/heartbeat.ogg', 2)
+				M.playsound_local(src,'sound/hallucinations/growl1.ogg', 1)
+				M.emote("gasp")
+				to_chat(M, "<span class='warning'>You can't breathe! But it feels GOOD!</span>")
+				update_flags |= M.adjustOxyLoss(15, FALSE)
+				update_flags |= M.adjustToxLoss(2, FALSE)
+				M.Stun(2 SECONDS, FALSE)
+			if(prob(3))
+				M.playsound_local(src, 'sound/effects/heartbeat.ogg', 2)
+				to_chat(M, "<span class='warning'>You feel like you're being watched!</span>")
+				M.playsound_local(src,'sound/hallucinations/growl2.ogg', 1)
+				M.emote(pick("drool","scream"))
+				M.Jitter(20 SECONDS)
+				update_flags |= M.adjustToxLoss(3, FALSE)
+				M.Weaken(2 SECONDS, FALSE)
+				M.AdjustConfused(66 SECONDS)
+	return ..() | update_flags
+
+/datum/reagent/consumable/ethanol/synthanol/restart
+	name = "Restart"
+	id = "restart"
+	description = "Sometimes you just need to start anew"
+	color = "#0026fc"
+	reagent_state = LIQUID
+	process_flags = SYNTHETIC
+	alcohol_perc = 1.5
+	drink_icon = "restart"
+	drink_name = "Glass of Restart"
+	drink_desc = "Sometimes you just need to start anew"
+	taste_description = "system reset"
+
+/datum/reagent/consumable/ethanol/synthanol/restart/on_mob_life(mob/living/carbon/human/M)
+	var/update_flags = STATUS_UPDATE_NONE
+	switch(current_cycle)
+		if(5 to 13)
+			M.Jitter(40 SECONDS)
+			if(prob(10))
+				M.emote(pick("twitch","giggle"))
+			if(prob(5))
+				to_chat(M, "<span class='notice'>Rebooting..</span>")
+		if(14)
+			playsound(get_turf(M),'sound/effects/restart-shutdown.ogg', 200, 1)
+		if(15 to 23)
+			M.Weaken(10 SECONDS)
+			update_flags |= M.adjustBruteLoss(-0.3, FALSE, robotic = TRUE)
+			update_flags |= M.adjustFireLoss(-0.3, FALSE, robotic = TRUE)
+			M.SetSleeping(20 SECONDS)
+		if(24)
+			playsound(get_turf(M), 'sound/effects/restart-wakeup.ogg', 200, 1)
+		if(25)
+			M.SetStunned(0)
+			M.SetWeakened(0)
+			M.SetParalysis(0)
+			M.SetSleeping(0)
+			M.SetDrowsy(0)
+			M.SetSlur(0)
+			M.SetDrunk(0)
+			M.SetJitter(0)
+			M.SetDizzy(0)
+			M.SetDruggy(0)
+			M.lying = 0
+			M.update_canmove() // wakey wakey
+			var/restart_amount = clamp(M.reagents.get_reagent_amount("restart")-0.4, 0, 330)
+			M.reagents.remove_reagent("restart",restart_amount)
+	return ..() | update_flags

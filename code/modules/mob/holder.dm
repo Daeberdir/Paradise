@@ -35,9 +35,10 @@
 
 /obj/item/holder/attack(mob/living/target, mob/living/user, def_zone)
 	if(ishuman(user))	//eating holder
-		for(var/mob/M in src.contents)
-			if(devoured(M, user))
-				return TRUE
+		if(target == user)
+			for(var/mob/M in src.contents)
+				if(devoured(M, user))
+					return TRUE
 	. = ..()
 
 /obj/item/holder/proc/show_message(var/message, var/m_type)
@@ -56,7 +57,7 @@
 	var/mob/M = src.loc                      //Get our mob holder (if any).
 
 	if(istype(M))
-		M.unEquip(src)
+		M.drop_item_ground(src)
 		to_chat(M, "[src.name] вырывается из вашей хватки!")
 		to_chat(L, "Вы вырываетесь из хвата [M.name]!")
 	else if(istype(loc,/obj/item))
@@ -73,17 +74,20 @@
 	return
 
 //Mob procs and vars for scooping up
-/mob/living/var/holder_type
+/mob/living
+	var/holder_type = null
 
 /mob/living/proc/get_scooped(var/mob/living/carbon/grabber)
-	if(!holder_type)	return
+	if(!holder_type)
+		return
 
 	var/obj/item/holder/H = new holder_type(loc)
 	src.forceMove(H)
 	H.name = name
-	if(istype(H, /obj/item/holder/mouse))	H.icon_state = icon_state
-	if(istype(H, /obj/item/holder/chicken))	H.icon_state = icon_state
-	if(desc)	H.desc = desc
+	H.icon = icon
+	H.icon_state = icon_state
+	if(desc)
+		H.desc = desc
 	H.attack_hand(grabber)
 
 	to_chat(grabber, "<span class='notice'>Вы подняли [src.name].")
@@ -234,6 +238,12 @@
 	icon = 'icons/mob/pets.dmi'
 	icon_state = "cat"
 
+/obj/item/holder/crusher
+	name = "pet"
+	desc = "It's a pet"
+	icon = 'icons/mob/pets.dmi'
+	icon_state = "crusher"
+
 /obj/item/holder/cat2
 	name = "pet"
 	desc = "It's a pet"
@@ -262,7 +272,7 @@
 /obj/item/holder/fatcat
 	name = "pet"
 	desc = "It's a pet"
-	icon = 'icons/mob/pets.dmi'
+	icon = 'icons/mob/iriska.dmi'
 	icon_state = "iriska"
 	slot_flags = null
 
@@ -290,6 +300,7 @@
 	desc = "It's a pet"
 	icon = 'icons/mob/animal.dmi'
 	icon_state = "snake"
+	slot_flags = SLOT_HEAD | SLOT_NECK
 
 /obj/item/holder/parrot
 	name = "pet"
@@ -364,7 +375,7 @@
 /obj/item/holder/headslug
 	name = "headslug"
 	desc = "It's a headslug. Ewwww..."
-	icon = 'icons/mob/animal.dmi'
+	icon = 'icons/mob/mob.dmi'
 	icon_state = "headslug"
 	origin_tech = "biotech=6"
 
@@ -379,7 +390,7 @@
 	name = "poppy"
 	desc = "It's a possum Poppy. Ewwww..."
 	icon = 'icons/mob/pets.dmi'
-	icon_state = "poppy"
+	icon_state = "possum_poppy"
 
 /obj/item/holder/frog
 	name = "frog"
@@ -397,12 +408,14 @@
 	desc = "Slooooow"
 	icon = 'icons/mob/animal.dmi'
 	icon_state = "snail"
+	slot_flags = null
 
 /obj/item/holder/turtle
 	name = "yeeslow"
 	desc = "Slooooow"
 	icon = 'icons/mob/animal.dmi'
 	icon_state = "yeeslow"
+	slot_flags = null
 
 /obj/item/holder/clowngoblin
 	name = "clowngoblin"

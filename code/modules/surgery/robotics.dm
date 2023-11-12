@@ -12,7 +12,7 @@
 /datum/surgery/cybernetic_repair/internal
 	name = "Internal Component Manipulation"
 	steps = list(/datum/surgery_step/robotics/external/unscrew_hatch,/datum/surgery_step/robotics/external/open_hatch,/datum/surgery_step/robotics/manipulate_robotic_organs)
-	possible_locs = list("eyes", "mouth", "chest","head","groin","l_arm","r_arm")
+	possible_locs = list("eyes", "mouth", "chest","head","groin","l_arm","r_arm", "l_leg", "r_leg")
 	requires_organic_bodypart = 0
 
 /datum/surgery/cybernetic_amputation
@@ -319,7 +319,7 @@
 			to_chat(user, "<span class='notice'> \The [I] is in no state to be transplanted.</span>")
 			return -1
 
-		if(target.get_int_organ(I))
+		if(target.get_int_organ(I) && !affected)
 			to_chat(user, "<span class='warning'> \The [target] already has [I].</span>")
 			return -1
 
@@ -432,11 +432,11 @@
 	else if(current_type == "insert")
 		var/obj/item/organ/internal/I = tool
 
-		if(!user.canUnEquip(I, 0))
+		if(!user.can_unEquip(I))
 			to_chat(user, "<span class='warning'>[I] is stuck to your hand, you can't put it in [target]!</span>")
 			return 0
 
-		user.drop_item()
+		user.drop_from_active_hand()
 		I.insert(target)
 		user.visible_message("<span class='notice'> [user] has reattached [target]'s [I].</span>" , \
 		"<span class='notice'> You have reattached [target]'s [I].</span>")
@@ -447,7 +447,7 @@
 
 		var/obj/item/mmi/M = tool
 
-		user.unEquip(tool)
+		user.drop_item_ground(tool)
 		M.attempt_become_organ(affected,target)
 
 	else if(current_type == "extract")
@@ -461,7 +461,8 @@
 			if(!istype(thing))
 				thing.forceMove(get_turf(target))
 			else
-				user.put_in_hands(thing)
+				thing.forceMove(get_turf(target))
+				user.put_in_hands(thing, ignore_anim = FALSE)
 		else
 			user.visible_message("[user] can't seem to extract anything from [target]'s [parse_zone(target_zone)]!",
 				"<span class='notice'>You can't extract anything from [target]'s [parse_zone(target_zone)]!</span>")
@@ -535,7 +536,8 @@
 
 	var/atom/movable/thing = affected.droplimb(1,DROPLIMB_SHARP)
 	if(istype(thing,/obj/item))
-		user.put_in_hands(thing)
+		thing.forceMove(get_turf(target))
+		user.put_in_hands(thing, ignore_anim = FALSE)
 
 	return 1
 

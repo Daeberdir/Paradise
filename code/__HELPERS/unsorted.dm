@@ -254,34 +254,6 @@ Turf and target are seperate in case you want to teleport some distance from a t
 /proc/format_frequency(var/f)
 	return "[round(f / 10)].[f % 10]"
 
-/obj/proc/atmosanalyzer_scan(var/datum/gas_mixture/air_contents, mob/user, var/obj/target = src)
-	var/obj/icon = target
-	user.visible_message("[user] has used the analyzer on [target].", "<span class='notice'>You use the analyzer on [target].</span>")
-	var/pressure = air_contents.return_pressure()
-	var/total_moles = air_contents.total_moles()
-
-	user.show_message("<span class='notice'>Results of analysis of [bicon(icon)] [target].</span>", 1)
-	if(total_moles>0)
-		var/o2_concentration = air_contents.oxygen/total_moles
-		var/n2_concentration = air_contents.nitrogen/total_moles
-		var/co2_concentration = air_contents.carbon_dioxide/total_moles
-		var/plasma_concentration = air_contents.toxins/total_moles
-
-		var/unknown_concentration =  1-(o2_concentration+n2_concentration+co2_concentration+plasma_concentration)
-
-		user.show_message("<span class='notice'>Pressure: [round(pressure,0.1)] kPa</span>", 1)
-		user.show_message("<span class='notice'>Nitrogen: [round(n2_concentration*100)] % ([round(air_contents.nitrogen,0.01)] moles)</span>", 1)
-		user.show_message("<span class='notice'>Oxygen: [round(o2_concentration*100)] % ([round(air_contents.oxygen,0.01)] moles)</span>", 1)
-		user.show_message("<span class='notice'>CO2: [round(co2_concentration*100)] % ([round(air_contents.carbon_dioxide,0.01)] moles)</span>", 1)
-		user.show_message("<span class='notice'>Plasma: [round(plasma_concentration*100)] % ([round(air_contents.toxins,0.01)] moles)</span>", 1)
-		if(unknown_concentration>0.01)
-			user.show_message("<span class='danger'>Unknown: [round(unknown_concentration*100)] % ([round(unknown_concentration*total_moles,0.01)] moles)</span>", 1)
-		user.show_message("<span class='notice'>Total: [round(total_moles,0.01)] moles</span>", 1)
-		user.show_message("<span class='notice'>Temperature: [round(air_contents.temperature-T0C)] &deg;C</span>", 1)
-	else
-		user.show_message("<span class='notice'>[target] is empty!</span>", 1)
-	return
-
 //Picks a string of symbols to display as the law number for hacked or ion laws
 /proc/ionnum()
 	return "[pick("!","@","#","$","%","^","&","*")][pick("!","@","#","$","%","^","&","*")][pick("!","@","#","$","%","^","&","*")][pick("!","@","#","$","%","^","&","*")]"
@@ -469,12 +441,6 @@ Returns 1 if the chain up to the area contains the given typepath
 		A = A.loc
 	return 0
 
-// the on-close client verb
-// called when a browser popup window is closed after registering with proc/onclose()
-// if a valid atom reference is supplied, call the atom's Topic() with "close=1"
-// otherwise, just reset the client mob's machine var.
-
-
 // returns the turf located at the map edge in the specified direction relative to A
 // used for mass driver
 /proc/get_edge_target_turf(var/atom/A, var/direction)
@@ -583,14 +549,20 @@ Returns 1 if the chain up to the area contains the given typepath
 
 	return 1
 
-/proc/is_blocked_turf(turf/T, exclude_mobs)
-	if(T.density)
-		return 1
-	for(var/i in T)
-		var/atom/A = i
-		if(A.density && (!exclude_mobs || !ismob(A)))
-			return 1
-	return 0
+
+/proc/is_blocked_turf(turf/target_turf, exclude_mobs)
+	if(target_turf.density)
+		return TRUE
+
+	if(locate(/mob/living/silicon/ai) in target_turf) //Prevents jaunting onto the AI core cheese, AI should always block a turf due to being a dense mob even when unanchored
+		return TRUE
+
+	for(var/atom/target in target_turf)
+		if(target.density && (!exclude_mobs || !ismob(target)))
+			return TRUE
+
+	return FALSE
+
 
 /proc/get_step_towards2(var/atom/ref , var/atom/trg)
 	var/base_dir = get_dir(ref, get_step_towards(ref,trg))
@@ -620,11 +592,17 @@ Returns 1 if the chain up to the area contains the given typepath
 
 	else return get_step(ref, base_dir)
 
-//Takes: Anything that could possibly have variables and a varname to check.
-//Returns: 1 if found, 0 if not.
-/proc/hasvar(var/datum/A, var/varname)
-	if(A.vars.Find(lowertext(varname))) return 1
-	else return 0
+
+/**
+ * Takes: Anything that could possibly have variables and a varname to check.
+ * Returns: `TRUE` if found, `FALSE` if not.
+ */
+/proc/has_variable(datum/check, varname)
+	if(check.vars.Find(lowertext(varname)))
+		return TRUE
+
+	return FALSE
+
 
 //Returns: all the areas in the world
 /proc/return_areas()
@@ -1068,8 +1046,8 @@ Returns 1 if the chain up to the area contains the given typepath
 	var/turf/T = get_turf(AM) //use AM's turfs, as it's coords are the same as AM's AND AM's coords are lost if it is inside another atom
 	if(!T)
 		return null
-	var/final_x = T.x + rough_x
-	var/final_y = T.y + rough_y
+	var/final_x = clamp(T.x + rough_x, 1, world.maxx)
+	var/final_y = clamp(T.y + rough_y, 1, world.maxy)
 
 	if(final_x || final_y)
 		return locate(final_x, final_y, T.z)
@@ -1402,7 +1380,7 @@ GLOBAL_DATUM_INIT(dview_mob, /mob/dview, new)
 	GLOB.dview_mob.loc = null
 
 /mob/dview
-	invisibility = 101
+	invisibility = INVISIBILITY_ABSTRACT
 	density = 0
 	move_force = 0
 	pull_force = 0
@@ -1540,7 +1518,7 @@ GLOBAL_DATUM_INIT(dview_mob, /mob/dview, new)
 			loc = targetloc
 		lastloc = loc
 		var/atom/movable/B = A
-		if(B?.glide_size)
+		if(istype(B))
 			glide_size = B.glide_size
 		sleep(0.6)
 
@@ -1921,7 +1899,7 @@ GLOBAL_DATUM_INIT(dview_mob, /mob/dview, new)
 
 	return pois
 
-/proc/flash_color(mob_or_client, flash_color="#960000", flash_time=20)
+/proc/flash_color(mob_or_client, flash_color=COLOR_CULT_RED, flash_time=20)
 	var/client/C
 	if(istype(mob_or_client, /mob))
 		var/mob/M = mob_or_client
@@ -2085,3 +2063,41 @@ GLOBAL_DATUM_INIT(dview_mob, /mob/dview, new)
 			return "TTS Local"
 		if(CHANNEL_TTS_RADIO)
 			return "TTS Radio"
+
+/proc/get_compass_dir(atom/start, atom/end) //get_dir() only considers an object to be north/south/east/west if there is zero deviation. This uses rounding instead. // Ported from CM-SS13
+	if(!start || !end)
+		return 0
+	if(!start.z || !end.z)
+		return 0 //Atoms are not on turfs.
+
+	var/dy = end.y - start.y
+	var/dx = end.x - start.x
+	if(!dy)
+		return (dx >= 0) ? 4 : 8
+
+	var/angle = arctan(dx / dy)
+	if(dy < 0)
+		angle += 180
+	else if(dx < 0)
+		angle += 360
+
+	switch(angle) //diagonal directions get priority over straight directions in edge cases
+		if (22.5 to 67.5)
+			return NORTHEAST
+		if (112.5 to 157.5)
+			return SOUTHEAST
+		if (202.5 to 247.5)
+			return SOUTHWEST
+		if (292.5 to 337.5)
+			return NORTHWEST
+		if (0 to 22.5)
+			return NORTH
+		if (67.5 to 112.5)
+			return EAST
+		if (157.5 to 202.5)
+			return SOUTH
+		if (247.5 to 292.5)
+			return WEST
+		else
+			return NORTH
+

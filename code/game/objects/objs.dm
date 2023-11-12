@@ -239,9 +239,6 @@
 /obj/proc/container_resist(mob/living)
 	return
 
-/obj/proc/CanAStarPass(ID, dir, caller)
-	. = !density
-
 /obj/proc/on_mob_move(dir, mob/user)
 	return
 
@@ -277,6 +274,10 @@
 /obj/proc/cult_reveal() //Called by cult reveal spell and chaplain's bible
 	return
 
+/obj/proc/is_mob_spawnable() //Called by spawners_menu methods to determine if you can use an object through spawn-menu
+	//just override it to return TRUE in your object if you want to use it through spawn menu
+	return
+
 /obj/proc/force_eject_occupant(mob/target)
 	// This proc handles safely removing occupant mobs from the object if they must be teleported out (due to being SSD/AFK, by admin teleport, etc) or transformed.
 	// In the event that the object doesn't have an overriden version of this proc to do it, log a runtime so one can be added.
@@ -291,3 +292,18 @@
 	return locate(/obj) in A
 
 
+#define CARBON_DAMAGE_FROM_OBJECTS_MODIFIER 0.75
+
+/obj/hit_by_thrown_carbon(mob/living/carbon/human/C, datum/thrownthing/throwingdatum, damage, mob_hurt, self_hurt)
+	damage *= CARBON_DAMAGE_FROM_OBJECTS_MODIFIER
+	playsound(src, 'sound/weapons/punch1.ogg', 35, TRUE)
+	if(mob_hurt) //Density check probably not needed, one should only bump into something if it is dense, and blob tiles are not dense, because of course they are not.
+		return
+	C.visible_message(span_danger("[C] slams into [src]!"),
+					span_userdanger("You slam into [src]!"))
+	C.take_organ_damage(damage)
+	if(!self_hurt)
+		take_damage(damage, BRUTE)
+	C.Weaken(3 SECONDS)
+
+#undef CARBON_DAMAGE_FROM_OBJECTS_MODIFIER

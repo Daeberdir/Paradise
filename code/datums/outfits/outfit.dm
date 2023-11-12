@@ -56,13 +56,13 @@
 /datum/outfit/proc/equip(mob/living/carbon/human/H, visualsOnly = FALSE)
 	pre_equip(H, visualsOnly)
 
-	//Start with uniform,suit,backpack for additional slots
+	//Start with backpack,suit,uniform for additional slots
+	if(back)
+		equip_item(H, back, slot_back)
 	if(uniform)
 		equip_item(H, uniform, slot_w_uniform)
 	if(suit)
 		equip_item(H, suit, slot_wear_suit)
-	if(back)
-		equip_item(H, back, slot_back)
 	if(belt)
 		equip_item(H, belt, slot_belt)
 	if(gloves)
@@ -182,12 +182,6 @@
 	if(H.wear_pda)
 		H.wear_pda.add_fingerprint(H, 1)
 	return 1
-
-/datum/outfit/proc/get_chameleon_disguise_info()
-	var/list/types = list(uniform, suit, back, belt, gloves, shoes, head, mask, neck, l_ear, r_ear, glasses, id, l_pocket, r_pocket, suit_store, r_hand, l_hand, pda)
-	types += chameleon_extras
-	listclearnulls(types)
-	return types
 
 /datum/outfit/proc/save_to_file(mob/admin)
 	var/stored_data = get_json_data()

@@ -190,7 +190,7 @@
 		var/mob/living/carbon/C = M
 
 		var/feed_mod = round(age_state.feed/3)
-		if(C.dna.species.clone_mod > 0)
+		if((C.dna.species.clone_mod + C.get_vampire_bonus(CLONE)) > 0)
 			C.adjustCloneLoss(rand(2, 4) + feed_mod)
 			C.adjustToxLoss(rand(1, 2) + feed_mod)
 		else
@@ -392,7 +392,7 @@
 				else if(canmove && isturf(loc) && prob(33))
 					step(src, pick(GLOB.cardinal))
 		else if(!AIproc)
-			INVOKE_ASYNC(src, .proc/AIprocess)
+			INVOKE_ASYNC(src, PROC_REF(AIprocess))
 
 /mob/living/simple_animal/slime/handle_automated_movement()
 	return //slime random movement is currently handled in handle_targets()
@@ -500,18 +500,18 @@
 					for(var/mob/living/L in view(7,src)-list(src,who))
 						if(findtext(phrase, lowertext(L.name)))
 							if(isslime(L))
-								to_say = "NO... [L] slime friend"
+								to_say = "NO... [L] slime friend..."
 								--Friends[who] //Don't ask a slime to attack its friend
 							else if(!Friends[L] || Friends[L] < 1)
 								Target = L
 								AIprocess()//Wake up the slime's Target AI, needed otherwise this doesn't work
-								to_say = "Ok... I attack [Target]"
+								to_say = "Ok... I attack [Target]..."
 							else
-								to_say = "No... like [L] ..."
+								to_say = "No... like [L]..."
 								--Friends[who] //Don't ask a slime to attack its friend
 							break
 				else
-					to_say = "No... no listen"
+					to_say = "No... no listen..."
 
 		speech_buffer = list()
 

@@ -16,44 +16,15 @@ Gunshots/explosions/opening doors/less rare audio (done)
 #define SCREWYHUD_DEAD 2
 #define SCREWYHUD_HEALTHY 3
 
-/mob/living/carbon
+GLOBAL_LIST_INIT(minor_hallutinations, list("sounds"=25,"bolts_minor"=5,"whispers"=15,"message"=10,"hudscrew"=15))
+GLOBAL_LIST_INIT(medium_hallutinations, list("fake_alert"=15,"items"=10,"items_other"=10,"dangerflash"=10,"bolts"=5,"flood"=5,"husks"=10,"battle"=15,"self_delusion"=10))
+GLOBAL_LIST_INIT(major_hallutinations, list("fake"=20,"death"=10,"xeno"=10,"singulo"=10,"borer"=10,"delusion"=20,"koolaid"=10))
+
+/mob/living
 	var/image/halimage
 	var/image/halbody
 	var/obj/halitem
 	var/hal_screwyhud = SCREWYHUD_NONE
-	var/handling_hal = FALSE
-
-	var/genetic_mutable = 'icons/effects/genetics.dmi'
-
-
-/mob/living/carbon/proc/handle_hallucinations()
-	if(handling_hal)
-		return
-
-	//Least obvious
-	var/list/minor = list("sounds"=25,"bolts_minor"=5,"whispers"=15,"message"=10,"hudscrew"=15)
-	//Something's wrong here
-	var/list/medium = list("fake_alert"=15,"items"=10,"items_other"=10,"dangerflash"=10,"bolts"=5,"flood"=5,"husks"=10,"battle"=15,"self_delusion"=10)
-	//AAAAHg
-	var/list/major = list("fake"=20,"death"=10,"xeno"=10,"singulo"=10,"borer"=10,"delusion"=20,"koolaid"=10)
-
-	handling_hal = TRUE
-	while(hallucination > 20)
-		sleep(rand(200, 500) / (hallucination * 0.04))
-		if(prob(20))
-			continue
-		var/list/current = list()
-		switch(rand(100))
-			if(0 to 50)
-				current = minor
-			if(51 to 85)
-				current = medium
-			if(86 to 100)
-				current = major
-
-		hallucinate(pickweight(current))
-	handling_hal = FALSE
-
 
 /obj/effect/hallucination
 	invisibility = INVISIBILITY_OBSERVER
@@ -114,7 +85,7 @@ Gunshots/explosions/opening doors/less rare audio (done)
 	Show()
 
 /obj/effect/hallucination/simple/Move()
-	..()
+	. = ..()
 	Show()
 
 /obj/effect/hallucination/simple/Destroy()
@@ -160,7 +131,7 @@ Gunshots/explosions/opening doors/less rare audio (done)
 			return
 		Expand()
 		if((get_turf(target) in flood_turfs) && !target.internal)
-			target.hallucinate("fake_alert", "too_much_tox")
+			target.hallucinate_living("fake_alert", "too_much_tox")
 		next_expand = world.time + FAKE_FLOOD_EXPAND_TIME
 
 /obj/effect/hallucination/fake_flood/proc/Expand()
@@ -191,10 +162,10 @@ Gunshots/explosions/opening doors/less rare audio (done)
 	..()
 	name = "alien hunter ([rand(1, 1000)])"
 
-/obj/effect/hallucination/simple/xeno/throw_impact(A)
+/obj/effect/hallucination/simple/xeno/throw_impact(atom/A, datum/thrownthing/throwingdatum)
 	update_icon("alienh_pounce")
 	if(A == target)
-		target.Weaken(5)
+		target.Weaken(10 SECONDS)
 		target.visible_message("<span class='danger'>[target] flails around wildly.</span>","<span class ='userdanger'>[name] pounces on you!</span>")
 
 /obj/effect/hallucination/xeno_attack
@@ -265,7 +236,7 @@ Gunshots/explosions/opening doors/less rare audio (done)
 			walk_to(borer, get_step(borer, get_cardinal_dir(borer, T)))
 			if(borer.Adjacent(T))
 				to_chat(T, "<span class='userdanger'>You feel a creeping, horrible sense of dread come over you, freezing your limbs and setting your heart racing.</span>")
-				T.Stun(4)
+				T.Stun(8 SECONDS)
 				sleep(50)
 				qdel(borer)
 				sleep(rand(60, 90))
@@ -309,18 +280,18 @@ Gunshots/explosions/opening doors/less rare audio (done)
 		target.client.images |= fakerune
 	target.playsound_local(wall,'sound/effects/meteorimpact.ogg', 150, 1)
 	bubblegum = new(wall, target)
-	addtimer(CALLBACK(src, .proc/bubble_attack, landing), 10)
+	addtimer(CALLBACK(src, PROC_REF(bubble_attack), landing), 10)
 
 /obj/effect/hallucination/oh_yeah/proc/bubble_attack(turf/landing)
 	var/charged = FALSE //only get hit once
-	while(get_turf(bubblegum) != landing && target && target.stat != DEAD)
+	while(get_turf(bubblegum) != landing && target && target.stat != DEAD && get_dist(landing, get_turf(bubblegum)) <= 7)
 		bubblegum.forceMove(get_step_towards(bubblegum, landing))
 		bubblegum.setDir(get_dir(bubblegum, landing))
 		target.playsound_local(get_turf(bubblegum), 'sound/effects/meteorimpact.ogg', 150, 1)
 		shake_camera(target, 2, 1)
 		if(bubblegum.Adjacent(target) && !charged)
 			charged = TRUE
-			target.Weaken(4)
+			target.Weaken(8 SECONDS)
 			target.adjustStaminaLoss(40)
 			step_away(target, bubblegum)
 			shake_camera(target, 4, 3)
@@ -356,7 +327,7 @@ Gunshots/explosions/opening doors/less rare audio (done)
 		s.loc = get_step(get_turf(s), get_dir(s, target))
 		s.Show()
 		s.Eat()
-		addtimer(CALLBACK(src, .proc/wake_and_restore), rand(50, 100))
+		addtimer(CALLBACK(src, PROC_REF(wake_and_restore)), rand(50, 100))
 	qdel(s)
 
 /obj/effect/hallucination/simple/singularity
@@ -370,7 +341,7 @@ Gunshots/explosions/opening doors/less rare audio (done)
 	var/target_dist = get_dist(src, target)
 	if(target_dist <= 3) //"Eaten"
 		target.hal_screwyhud = SCREWYHUD_CRIT
-		target.SetSleeping(8, no_alert = TRUE)
+		target.SetSleeping(16 SECONDS)
 
 /obj/effect/hallucination/battle
 
@@ -383,9 +354,9 @@ Gunshots/explosions/opening doors/less rare audio (done)
 			for(var/i in 0 to hits)
 				target.playsound_local(null, 'sound/weapons/laser.ogg', 25, 1)
 				if(prob(75))
-					addtimer(CALLBACK(target, /mob/.proc/playsound_local, null, 'sound/weapons/sear.ogg', 25, 1), rand(10,20))
+					addtimer(CALLBACK(target, TYPE_PROC_REF(/mob, playsound_local), null, 'sound/weapons/sear.ogg', 25, 1), rand(10,20))
 				else
-					addtimer(CALLBACK(target, /mob/.proc/playsound_local, null, 'sound/weapons/effects/searwall.ogg', 25, 1), rand(10,20))
+					addtimer(CALLBACK(target, TYPE_PROC_REF(/mob, playsound_local), null, 'sound/weapons/effects/searwall.ogg', 25, 1), rand(10,20))
 				sleep(rand(CLICK_CD_RANGE, CLICK_CD_RANGE + 8))
 			target.playsound_local(null, get_sfx("bodyfall"), 25)
 		if(2) //Esword fight
@@ -399,9 +370,9 @@ Gunshots/explosions/opening doors/less rare audio (done)
 			for(var/i in 0 to hits)
 				target.playsound_local(null, get_sfx("gunshot"), 25)
 				if(prob(75))
-					addtimer(CALLBACK(target, /mob/.proc/playsound_local, null, 'sound/weapons/pierce.ogg', 25, 1), rand(10,20))
+					addtimer(CALLBACK(target, TYPE_PROC_REF(/mob, playsound_local), null, 'sound/weapons/pierce.ogg', 25, 1), rand(10,20))
 				else
-					addtimer(CALLBACK(target, /mob/.proc/playsound_local, null, "ricochet", 25, 1), rand(10,20))
+					addtimer(CALLBACK(target, TYPE_PROC_REF(/mob, playsound_local), null, "ricochet", 25, 1), rand(10,20))
 				sleep(rand(CLICK_CD_RANGE, CLICK_CD_RANGE + 8))
 			target.playsound_local(null, get_sfx("bodyfall"), 25, 1)
 		if(4) //Stunprod + cablecuff
@@ -464,22 +435,22 @@ Gunshots/explosions/opening doors/less rare audio (done)
 /obj/effect/hallucination/delusion
 	var/list/image/delusions = list()
 
-/obj/effect/hallucination/delusion/New(loc, mob/living/carbon/T, force_kind = null, duration = 300,skip_nearby = 1, custom_icon = null, custom_icon_file = null)
+/obj/effect/hallucination/delusion/New(loc, mob/living/carbon/T, force_kind = null, duration = 30 SECONDS, skip_nearby = TRUE, custom_icon = null, custom_icon_file = null)
 	. = ..()
 	target = T
-	var/image/A = null
-	var/kind = force_kind ? force_kind : pick("clown", "corgi", "carp", "skeleton", "demon","zombie")
 	for(var/thing in GLOB.human_list)
 		var/mob/living/carbon/human/H = thing
 		if(H.stat == DEAD || H == target)
 			continue
 		if(skip_nearby && (H in view(target)))
 			continue
+		var/image/A = null
+		var/kind = force_kind ? force_kind : pick("clown", "carp", "corgi", "skeleton", "zombie", "demon", "bear", "goat", "alien", "faithless", "pink", "migo", "horror", "blob", "fly", "legion", "morph", "pirate", "wizard", "eskimo", "syndie1", "syndie2", "fleshling")
 		switch(kind)
 			if("clown")//Clown
-				A = image('icons/mob/animal.dmi',H,"clown")
+				A = image('icons/mob/simple_human.dmi',H,"clown")
 			if("carp")//Carp
-				A = image('icons/mob/animal.dmi',H,"carp")
+				A = image('icons/mob/livestock.dmi',H,"spesscarp")
 			if("corgi")//Corgi
 				A = image('icons/mob/pets.dmi',H,"corgi")
 			if("skeleton")//Skeletons
@@ -488,14 +459,48 @@ Gunshots/explosions/opening doors/less rare audio (done)
 				A = image('icons/mob/human.dmi',H,"zombie2_s")
 			if("demon")//Demon
 				A = image('icons/mob/mob.dmi',H,"daemon")
+			if("bear")//Bear
+				A = image('icons/mob/animal.dmi',H,"bear")
+			if("goat")//Goat
+				A = image('icons/mob/animal.dmi',H,"goat")
+			if("alien")//Alien weirdo
+				A = image('icons/mob/alien.dmi',H,"alienother")
+			if("faithless")//Faithless
+				A = image('icons/mob/animal.dmi',H,"faithlessold")
+			if("pink")//Pink monstrosity
+				A = image('icons/mob/animal.dmi',H,"blank-body")
+			if("migo")//Mi-go
+				A = image('icons/mob/animal.dmi',H,"mi-go")
+			if("horror")//Horror
+				A = image('icons/mob/mob.dmi',H,"horror")
+			if("blob")//Blobbernaut
+				A = image('icons/mob/blob.dmi',H,"blobbernaut")
+			if("fly")//Fly mutant
+				A = image('icons/mob/human.dmi',H,"fly_f_s")
+			if("legion")//Legion
+				A = image('icons/mob/lavaland/lavaland_monsters.dmi',H,"legion")
+			if("morph")//Morph
+				A = image('icons/mob/animal.dmi',H,"otherthing")
+			if("pirate")//Pirate
+				A = image('icons/mob/simple_human.dmi',H,"piratemelee")
+			if("wizard")//Wizard
+				A = image('icons/mob/simple_human.dmi',H,"wizard")
+			if("eskimo")//Eskimo
+				A = image('icons/mob/simple_human.dmi',H,"eskimo")
+			if("syndie1")//Syndies
+				A = image('icons/mob/simple_human.dmi',H,"syndicate_space_sword")
+			if("syndie2")//Syndies
+				A = image('icons/mob/simple_human.dmi',H,"syndicate_stormtrooper_shotgun")
+			if("fleshling")//Fleshling
+				A = image('icons/mob/simple_human.dmi',H,"fleshling3")
 			if("custom")
 				A = image(custom_icon_file, H, custom_icon)
 		A.override = 1
 		if(target.client)
 			delusions |= A
 			target.client.images |= A
-	sleep(duration)
-	qdel(src)
+	QDEL_IN(src, duration)
+
 
 /obj/effect/hallucination/delusion/Destroy()
 	for(var/image/I in delusions)
@@ -626,9 +631,9 @@ Gunshots/explosions/opening doors/less rare audio (done)
 /obj/effect/fake_attacker/New(loc, mob/living/carbon/T)
 	..()
 	my_target = T
-	addtimer(CALLBACK(GLOBAL_PROC, .proc/qdel, src), 300)
+	addtimer(CALLBACK(GLOBAL_PROC, /proc/qdel, src), 300)
 	step_away(src,my_target,2)
-	INVOKE_ASYNC(src, .proc/attack_loop)
+	INVOKE_ASYNC(src, PROC_REF(attack_loop))
 
 /obj/effect/fake_attacker/proc/updateimage()
 //	qdel(src.currentimage)
@@ -666,7 +671,7 @@ Gunshots/explosions/opening doors/less rare audio (done)
 					my_target.show_message("<span class='danger'>[src.name] has attacked [my_target] with [weapon_name]!</span>", 1)
 					my_target.adjustStaminaLoss(30)
 					if(prob(20))
-						my_target.AdjustEyeBlurry(3)
+						my_target.AdjustEyeBlurry(6 SECONDS)
 					if(prob(33))
 						if(!locate(/obj/effect/overlay) in my_target.loc)
 							fake_blood(my_target)
@@ -691,10 +696,10 @@ Gunshots/explosions/opening doors/less rare audio (done)
 	O.name = "blood"
 	var/image/I = image('icons/effects/blood.dmi',O,"floor[rand(1,7)]",O.dir,1)
 	target << I
-	addtimer(CALLBACK(GLOBAL_PROC, .proc/qdel, O), 300)
+	addtimer(CALLBACK(GLOBAL_PROC, /proc/qdel, O), 300)
 	return
 
-GLOBAL_LIST_INIT(non_fakeattack_weapons, list(/obj/item/gun/projectile, /obj/item/ammo_box/a357,\
+GLOBAL_LIST_INIT(non_fakeattack_weapons, list(/obj/item/gun/projectile, /obj/item/ammo_box/speedloader/a357,\
 	/obj/item/gun/energy/kinetic_accelerator/crossbow,\
 	/obj/item/storage/box/syndicate, /obj/item/storage/box/emps,\
 	/obj/item/cartridge/syndicate, /obj/item/clothing/under/chameleon,\
@@ -791,7 +796,14 @@ GLOBAL_LIST_INIT(non_fakeattack_weapons, list(/obj/item/gun/projectile, /obj/ite
 	to_chat(target, chosen)
 	qdel(src)
 
-/mob/living/carbon/proc/hallucinate(hal_type, specific) // specific is used to specify a particular hallucination
+/**
+  * Spawns an hallucination for the mob.
+  *
+  * Arguments:
+  * * H - The name of the hallucination. "xeno", etc.
+  * * specific - used to specify a particular hallucination
+  */
+/mob/living/proc/hallucinate_living(hal_type, specific) // specific is used to specify a particular hallucination
 	investigate_log("was afflicted with a hallucination of type [hal_type] by [last_hallucinator_log ? last_hallucinator_log : "Unknown source"].", INVESTIGATE_HALLUCINATIONS)
 	switch(hal_type)
 		if("xeno")
@@ -852,16 +864,16 @@ GLOBAL_LIST_INIT(non_fakeattack_weapons, list(/obj/item/gun/projectile, /obj/ite
 					//To make it more realistic, I added two gunshots (enough to kill)
 					playsound_local(null, 'sound/weapons/gunshots/gunshot.ogg', 25, 1)
 					var/timer_pause = rand(10,30)
-					addtimer(CALLBACK(src, /mob/.proc/playsound_local, null, 'sound/weapons/gunshots/gunshot.ogg', 25, 1), timer_pause)
-					addtimer(CALLBACK(src, /mob/.proc/playsound_local, null, sound(get_sfx("bodyfall"), 25), 25, 1), timer_pause+rand(5,10))
+					addtimer(CALLBACK(src, TYPE_PROC_REF(/mob, playsound_local), null, 'sound/weapons/gunshots/gunshot.ogg', 25, 1), timer_pause)
+					addtimer(CALLBACK(src, TYPE_PROC_REF(/mob, playsound_local), null, sound(get_sfx("bodyfall"), 25), 25, 1), timer_pause+rand(5,10))
 				if(10)
 					playsound_local(null, 'sound/effects/pray_chaplain.ogg', 50)
 				if(11)
 					//Same as above, but with tasers.
 					playsound_local(null, 'sound/weapons/taser.ogg', 25, 1)
 					var/timer_pause = rand(10,30)
-					addtimer(CALLBACK(src, /mob/.proc/playsound_local, null, 'sound/weapons/taser.ogg', 25, 1), timer_pause)
-					addtimer(CALLBACK(src, /mob/.proc/playsound_local, null, sound(get_sfx("bodyfall"), 25), 25, 1), timer_pause+rand(5,10))
+					addtimer(CALLBACK(src, TYPE_PROC_REF(/mob, playsound_local), null, 'sound/weapons/taser.ogg', 25, 1), timer_pause)
+					addtimer(CALLBACK(src, TYPE_PROC_REF(/mob, playsound_local), null, sound(get_sfx("bodyfall"), 25), 25, 1), timer_pause+rand(5,10))
 			//Rare audio
 				if(12)
 			//These sounds are (mostly) taken from Hidden: Source
@@ -889,7 +901,7 @@ GLOBAL_LIST_INIT(non_fakeattack_weapons, list(/obj/item/gun/projectile, /obj/ite
 					for(var/i in 0 to rand(1,3))
 						playsound_local(null, 'sound/weapons/empty.ogg', 15, 1)
 						sleep(rand(10,30))
-					playsound_local(null, 'sound/machines/airlockforced.ogg', 15, 1)
+					playsound_local(null, 'sound/machines/airlock_force_open.ogg', 15, 1)
 				if(17)
 					playsound_local(null, 'sound/weapons/saberon.ogg', 35, 1)
 				if(18)
@@ -929,9 +941,9 @@ GLOBAL_LIST_INIT(non_fakeattack_weapons, list(/obj/item/gun/projectile, /obj/ite
 					throw_alert("too_much_tox", /obj/screen/alert/too_much_tox, override = TRUE)
 				if("nutrition")
 					if(prob(50))
-						throw_alert("nutrition", /obj/screen/alert/fat, override = TRUE)
+						throw_alert("nutrition", /obj/screen/alert/hunger/fat, override = TRUE, icon_override = dna.species.hunger_icon)
 					else
-						throw_alert("nutrition", /obj/screen/alert/starving, override = TRUE)
+						throw_alert("nutrition", /obj/screen/alert/hunger/starving, override = TRUE, icon_override = dna.species.hunger_icon)
 				if("weightless")
 					throw_alert("weightless", /obj/screen/alert/weightless, override = TRUE)
 				if("fire")
@@ -981,7 +993,7 @@ GLOBAL_LIST_INIT(non_fakeattack_weapons, list(/obj/item/gun/projectile, /obj/ite
 					halitem.plane = HUD_PLANE
 					switch(rand(1,6))
 						if(1) //revolver
-							halitem.icon = 'icons/obj/guns/projectile.dmi'
+							halitem.icon = 'icons/obj/weapons/projectile.dmi'
 							halitem.icon_state = "revolver"
 							halitem.name = "Revolver"
 						if(2) //c4
@@ -1003,16 +1015,17 @@ GLOBAL_LIST_INIT(non_fakeattack_weapons, list(/obj/item/gun/projectile, /obj/ite
 							halitem.icon_state = "emag"
 							halitem.name = "Cryptographic Sequencer"
 						if(6) //flashbang
-							halitem.icon = 'icons/obj/grenade.dmi'
+							halitem.icon = 'icons/obj/weapons/grenade.dmi'
 							halitem.icon_state = "flashbang1"
 							halitem.name = "Flashbang"
 					if(client) client.screen += halitem
-					addtimer(CALLBACK(GLOBAL_PROC, .proc/qdel, halitem), rand(100,250))
+					addtimer(CALLBACK(GLOBAL_PROC, /proc/qdel, halitem), rand(100,250))
 		if("dangerflash")
 			//Flashes of danger
 			if(!halimage)
 				var/list/possible_points = list()
-				for(var/turf/simulated/floor/F in view(src,world.view))
+				var/list/actual_view = client ? view(client) : view(src)
+				for(var/turf/simulated/floor/F in actual_view)
 					possible_points += F
 				if(possible_points.len)
 					var/turf/simulated/floor/target = pick(possible_points)
@@ -1035,7 +1048,7 @@ GLOBAL_LIST_INIT(non_fakeattack_weapons, list(/obj/item/gun/projectile, /obj/ite
 					halimage = null
 		if("death")
 			hal_screwyhud = SCREWYHUD_DEAD
-			SetSleeping(20, no_alert = TRUE)
+			SetSleeping(40 SECONDS)
 			if(prob(50))
 				var/list/dead_people = list()
 				for(var/mob/dead/observer/G in GLOB.player_list)
@@ -1051,7 +1064,8 @@ GLOBAL_LIST_INIT(non_fakeattack_weapons, list(/obj/item/gun/projectile, /obj/ite
 		if("husks")
 			if(!halbody)
 				var/list/possible_points = list()
-				for(var/turf/simulated/floor/F in view(src,world.view))
+				var/list/actual_view = client ? view(client) : view(src)
+				for(var/turf/simulated/floor/F in actual_view)
 					possible_points += F
 				if(possible_points.len)
 					var/turf/simulated/floor/target = pick(possible_points)

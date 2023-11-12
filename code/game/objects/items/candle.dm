@@ -72,7 +72,7 @@
 		new/obj/item/trash/candle(src.loc)
 		if(istype(src.loc, /mob))
 			var/mob/M = src.loc
-			M.unEquip(src, 1) //src is being deleted anyway
+			M.temporarily_remove_item_from_inventory(src, force = TRUE) //src is being deleted anyway
 		qdel(src)
 	update_icon()
 	if(isturf(loc)) //start a fire if possible
@@ -90,3 +90,10 @@
 /obj/item/candle/eternal
 	desc = "A candle. This one seems to have an odd quality about the wax."
 	infinite = 1
+
+
+/obj/item/candle/extinguish_light(force = FALSE)
+	if(!force)
+		return
+	infinite = FALSE
+	wax = 1 // next process will burn it out

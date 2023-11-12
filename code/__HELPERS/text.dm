@@ -10,7 +10,7 @@
 
 
 /proc/format_table_name(table as text)
-	return sqlfdbktableprefix + table
+	return CONFIG_GET(string/feedback_tableprefix) + table
 
 /*
  * Text sanitization
@@ -39,10 +39,10 @@
 	return t
 
 /proc/sanitize_censored_patterns(var/t)
-	if(!config || !config.twitch_censor || !config.twich_censor_list)
+	if(!global.config || !CONFIG_GET(flag/twitch_censor) || !GLOB.twitch_censor_list)
 		return t
 
-	var/text = sanitize_simple(t, config.twich_censor_list)
+	var/text = sanitize_simple(t, GLOB.twitch_censor_list)
 	if(t != text)
 		message_admins("CENSOR DETECTION: [ADMIN_FULLMONTY(usr)] inputs: \"[html_encode(t)]\"")
 		log_adminwarn("CENSOR DETECTION: [key_name_log(usr)] inputs: \"[t]\"")
@@ -424,16 +424,6 @@
 /proc/sanitizeSafe(var/input, var/max_length = MAX_MESSAGE_LEN, var/encode = 1, var/trim = 1, var/extra = 1)
 	return sanitize(replace_characters(input, list(">"=" ","<"=" ", "\""="'")), max_length, encode, trim, extra)
 
-
-//Replace BYOND text macros with span classes for to_chat
-/proc/replace_text_macro(match, code, rest)
-	var/regex/text_macro = new("(\\xFF.)(.*)$")
-	return text_macro.Replace(rest, /proc/replace_text_macro)
-
-/proc/macro2html(text)
-    var/static/regex/text_macro = new("(\\xFF.)(.*)$")
-    return text_macro.Replace(text, /proc/replace_text_macro)
-
 /proc/dmm_encode(text)
 	// First, go through and nix out any of our escape sequences so we don't leave ourselves open to some escape sequence attack
 	// Some coder will probably despise me for this, years down the line
@@ -545,6 +535,7 @@
 		text = replacetext(text, "\[cell\]",	"<td>")
 		text = replacetext(text, "\[logo\]",	"&ZeroWidthSpace;<img src = ntlogo.png>")
 		text = replacetext(text, "\[slogo\]",	"&ZeroWidthSpace;<img src = syndielogo.png>")
+		text = replacetext(text, "\[ussplogo\]", "&ZeroWidthSpace;<img src = ussplogo.png>")
 		text = replacetext(text, "\[time\]",	"[station_time_timestamp()]") // TO DO
 		text = replacetext(text, "\[date\]",	"[GLOB.current_date_string]")
 		text = replacetext(text, "\[station\]", "[station_name()]")
@@ -631,6 +622,7 @@
 	text = replacetext(text, "<td>",					"\[cell\]")
 	text = replacetext(text, "<img src = ntlogo.png>",	"\[logo\]")
 	text = replacetext(text, "<img src = syndielogo.png>",	"\[slogo\]")
+	text = replacetext(text, "<img src = ussplogo.png>",	"\[ussplogo\]")
 	return text
 
 /datum/html/split_holder
@@ -711,3 +703,64 @@
 			if(1085 to 1097, 1053 to 1065)
 				ascii -= 13
 		. += ascii2text(ascii)
+
+//Used for applying byonds text macros to strings that are loaded at runtime
+/proc/apply_text_macros(string)
+	var/next_backslash = findtext(string, "\\")
+	if(!next_backslash)
+		return string
+
+	var/leng = length(string)
+
+	var/next_space = findtext(string, " ", next_backslash + length(string[next_backslash]))
+	if(!next_space)
+		next_space = leng - next_backslash
+
+	if(!next_space)	//trailing bs
+		return string
+
+	var/base = next_backslash == 1 ? "" : copytext(string, 1, next_backslash)
+	var/macro = lowertext(copytext(string, next_backslash + length(string[next_backslash]), next_space))
+	var/rest = next_backslash > leng ? "" : copytext(string, next_space + length(string[next_space]))
+
+	//See https://secure.byond.com/docs/ref/info.html#/DM/text/macros
+	switch(macro)
+		//prefixes/agnostic
+		if("the")
+			rest = text("\the []", rest)
+		if("a")
+			rest = text("\a []", rest)
+		if("an")
+			rest = text("\an []", rest)
+		if("proper")
+			rest = text("\proper []", rest)
+		if("improper")
+			rest = text("\improper []", rest)
+		if("roman")
+			rest = text("\roman []", rest)
+		//postfixes
+		if("th")
+			base = text("[]\th", rest)
+		if("s")
+			base = text("[]\s", rest)
+		if("he")
+			base = text("[]\he", rest)
+		if("she")
+			base = text("[]\she", rest)
+		if("his")
+			base = text("[]\his", rest)
+		if("himself")
+			base = text("[]\himself", rest)
+		if("herself")
+			base = text("[]\herself", rest)
+		if("hers")
+			base = text("[]\hers", rest)
+
+	. = base
+	if(rest)
+		. += .(rest)
+
+/// Removes characters incompatible with file names.
+/proc/sanitize_filename(text)
+	var/static/regex/regex = regex(@{""|[\\\n\t/?%*:|<>]|\.\."}, "g")
+	return regex.Replace(text, "")

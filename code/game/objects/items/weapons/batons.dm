@@ -16,12 +16,12 @@
 	// Settings
 	/// Whether the baton can stun silicon mobs
 	var/affect_silicon = FALSE
-	/// The stun time (in life cycles) for non-silicons
-	var/stun_time = 2 SECONDS_TO_LIFE_CYCLES
+	/// The stun time (in seconds) for non-silicons
+	var/stun_time = 2 SECONDS
 	/// Stamina damage
 	var/staminaforce = 15
-	/// The stun time (in life cycles) for silicons
-	var/stun_time_silicon = 10 SECONDS_TO_LIFE_CYCLES
+	/// The stun time (in seconds) for silicons
+	var/stun_time_silicon = 10 SECONDS
 	/// Cooldown in deciseconds between two knockdowns
 	var/cooldown = 2 SECONDS
 	/// Sound to play when knocking someone down
@@ -40,7 +40,7 @@
 	if((CLUMSY in user.mutations) && prob(50))
 		user.visible_message("<span class='danger'>[user] accidentally clubs [user.p_them()]self with [src]!</span>", \
 							 "<span class='userdanger'>You accidentally club yourself with [src]!</span>")
-		user.Weaken(force * 3)
+		user.Weaken(stun_time)
 		if(ishuman(user))
 			var/mob/living/carbon/human/H = user
 			H.apply_damage(force * 2, BRUTE, "head")
@@ -65,10 +65,17 @@
   * * user - The attacking user
   */
 /obj/item/melee/classic_baton/proc/stun(mob/living/target, mob/living/user)
-	if(issilicon(target))
-		user.visible_message("<span class='danger'>[user] pulses [target]'s sensors with [src]!</span>",\
-							 "<span class='danger'>You pulse [target]'s sensors with [src]!</span>")
+	if(isbot(target))
+		user.visible_message(span_danger("[user] pulses [target]'s sensors with [src]!"),\
+							span_danger("You pulse [target]'s sensors with [src]!"))
+		var/mob/living/simple_animal/bot/bot = target
+		bot.disable(stun_time_silicon)
+
+	else if(issilicon(target))
+		user.visible_message(span_danger("[user] pulses [target]'s sensors with [src]!"),\
+							 span_danger("You pulse [target]'s sensors with [src]!"))
 		on_silicon_stun(target, user)
+
 	else
 		// Check for shield/countering
 		if(ishuman(target))
@@ -77,8 +84,8 @@
 				return FALSE
 			if(check_martial_counter(H, user))
 				return FALSE
-		user.visible_message("<span class='danger'>[user] knocks down [target] with [src]!</span>",\
-							 "<span class='danger'>You knock down [target] with [src]!</span>")
+		user.visible_message(span_danger("[user] knocks down [target] with [src]!"),\
+							 span_danger("You knock down [target] with [src]!"))
 		on_non_silicon_stun(target, user)
 	// Visuals and sound
 	user.do_attack_animation(target)
@@ -90,9 +97,9 @@
 	if(prob(75))
 		target.Weaken(stun_time)
 	else
-		target.Weaken(stun_time + 1)
+		target.Weaken(stun_time + 2 SECONDS)
 	on_cooldown = TRUE
-	addtimer(CALLBACK(src, .proc/cooldown_finished), cooldown)
+	addtimer(CALLBACK(src, PROC_REF(cooldown_finished)), cooldown)
 	return TRUE
 
 /**

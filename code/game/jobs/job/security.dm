@@ -22,6 +22,7 @@
 	exp_requirements = 3000
 	exp_type = EXP_TYPE_SECURITY
 	disabilities_allowed = 0
+	money_factor = 7
 	outfit = /datum/outfit/job/hos
 
 /datum/outfit/job/hos
@@ -50,6 +51,7 @@
 	backpack = /obj/item/storage/backpack/security
 	satchel = /obj/item/storage/backpack/satchel_sec
 	dufflebag = /obj/item/storage/backpack/duffel/security
+	box = /obj/item/storage/box/survival_security/hos
 
 
 
@@ -65,10 +67,12 @@
 	selection_color = "#ffeeee"
 	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_ARMORY, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_WEAPONS)
 	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_ARMORY, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_WEAPONS)
+	alt_titles = list("Brig Sergeant")
 	minimal_player_age = 21
 	min_age_allowed = 30
 	exp_requirements = 2100
 	exp_type = EXP_TYPE_SECURITY
+	money_factor = 6
 	outfit = /datum/outfit/job/warden
 
 /datum/outfit/job/warden
@@ -96,6 +100,7 @@
 	backpack = /obj/item/storage/backpack/security
 	satchel = /obj/item/storage/backpack/satchel_sec
 	dufflebag = /obj/item/storage/backpack/duffel/security
+	box = /obj/item/storage/box/survival_security/warden
 
 
 
@@ -115,6 +120,7 @@
 	minimal_player_age = 14
 	exp_requirements = 1200
 	exp_type = EXP_TYPE_SECURITY
+	money_factor = 4
 	outfit = /datum/outfit/job/detective
 
 /datum/outfit/job/detective
@@ -138,6 +144,7 @@
 		/obj/item/melee/classic_baton/telescopic = 1
 	)
 	satchel = /obj/item/storage/backpack/satchel_detective
+	box = /obj/item/storage/box/survival_security/detective
 
 	implants = list(/obj/item/implant/mindshield)
 
@@ -170,10 +177,11 @@
 	selection_color = "#ffeeee"
 	access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_MORGUE, ACCESS_WEAPONS)
 	minimal_access = list(ACCESS_SECURITY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_COURT, ACCESS_MAINT_TUNNELS, ACCESS_WEAPONS)
-	alt_titles = list("Security Trainer")
+	alt_titles = list("Security Trainer","Patrol Officer")
 	minimal_player_age = 14
 	exp_requirements = 600
-	exp_type = EXP_TYPE_SECURITY
+	exp_type = EXP_TYPE_CREW
+	money_factor = 3
 	outfit = /datum/outfit/job/officer
 
 /datum/outfit/job/officer
@@ -196,32 +204,17 @@
 	backpack = /obj/item/storage/backpack/security
 	satchel = /obj/item/storage/backpack/satchel_sec
 	dufflebag = /obj/item/storage/backpack/duffel/security
-
-
-/datum/job/officer/cadet
-	title = "Security Cadet"
-	flag = JOB_CADET
-	total_positions = 3
-	spawn_positions = 3
-	department_head = list("Head of Security", "Security Officer")
-	selection_color = "#ffeeee"
-	alt_titles = list("Security Assistant", "Security Graduate")
-	exp_requirements = 180
-	exp_type = EXP_TYPE_CREW
-	exp_max	= 600
-	exp_type_max = EXP_TYPE_SECURITY
-	is_novice = TRUE
-	outfit = /datum/outfit/job/officer/cadet
+	box = /obj/item/storage/box/survival_security
 
 /datum/outfit/job/officer/cadet
 	name = "Security Cadet"
-	jobtype = /datum/job/officer/cadet
 	uniform = /obj/item/clothing/under/rank/security/cadet
 	head = /obj/item/clothing/head/soft/sec
 	id = /obj/item/card/id/security/cadet
 	l_pocket = /obj/item/reagent_containers/spray/pepper
 	r_pocket = /obj/item/paper/deltainfo
 	suit_store = /obj/item/gun/energy/gun/advtaser
+	box = /obj/item/storage/box/survival_security/cadet
 
 /datum/outfit/job/officer/cadet/pre_equip(mob/living/carbon/human/H, visualsOnly = FALSE)
 	. = ..()
@@ -248,8 +241,10 @@
 	selection_color = "#ffeeee"
 	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_SURGERY, ACCESS_CHEMISTRY, ACCESS_VIROLOGY, ACCESS_GENETICS, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_COURT, ACCESS_MAINT_TUNNELS)
 	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_SURGERY, ACCESS_SEC_DOORS, ACCESS_BRIG, ACCESS_COURT, ACCESS_MAINT_TUNNELS)
+	alt_titles = list("Security Medic")
 	exp_requirements = 1800
 	exp_type = EXP_TYPE_MEDICAL
+	money_factor = 4
 	outfit = /datum/outfit/job/brigdoc
 
 /datum/outfit/job/brigdoc
@@ -268,6 +263,7 @@
 	backpack = /obj/item/storage/backpack/medic
 	satchel = /obj/item/storage/backpack/satchel_med
 	dufflebag = /obj/item/storage/backpack/duffel/medical
+	box = /obj/item/storage/box/survival/brigphys
 
 
 /datum/job/pilot
@@ -285,6 +281,7 @@
 	minimal_player_age = 7
 	exp_requirements = 1200
 	exp_type = EXP_TYPE_SECURITY
+	money_factor = 4
 	outfit = /datum/outfit/job/pilot
 
 /datum/outfit/job/pilot
@@ -306,4 +303,4 @@
 	backpack = /obj/item/storage/backpack/security
 	satchel = /obj/item/storage/backpack/satchel_sec
 	dufflebag = /obj/item/storage/backpack/duffel/security
-	box = /obj/item/storage/box/engineer
+	box = /obj/item/storage/box/survival_security/pilot

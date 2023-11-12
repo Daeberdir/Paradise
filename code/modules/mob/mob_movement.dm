@@ -39,6 +39,11 @@
 
 #define MOVEMENT_DELAY_BUFFER 0.75
 #define MOVEMENT_DELAY_BUFFER_DELTA 1.25
+#define CONFUSION_LIGHT_COEFFICIENT		0.15
+#define CONFUSION_HEAVY_COEFFICIENT		0.075
+#define CONFUSION_MAX					80 SECONDS
+
+
 /client/Move(n, direct)
 	if(world.time < move_delay)
 		return
@@ -124,7 +129,7 @@
 	if(!istype(get_turf(mob), /turf/space) && mob.pulling)
 		var/mob/living/M = mob
 		var/mob/living/silicon/robot/R = mob
-		if(!(STRONG in M.mutations) && !istype(M, /mob/living/simple_animal/hostile/construct) && !istype(M, /mob/living/simple_animal/hostile/clockwork) && !(istype(R) && (/obj/item/borg/upgrade/vtec in R.upgrades))) //No slowdown for STRONG gene //Blood cult constructs //Clockwork constructs //Borgs with VTEC
+		if(!(STRONG in M.mutations) && !istype(M, /mob/living/simple_animal/hostile/construct) && !istype(M, /mob/living/simple_animal/hostile/clockwork) && !istype(M, /mob/living/simple_animal/hostile/guardian) && !(istype(R) && (/obj/item/borg/upgrade/vtec in R.upgrades))) //No slowdown for STRONG gene //Blood cult constructs //Clockwork constructs //Borgs with VTEC //Holopigs
 			current_move_delay *= min(1.4, mob.pulling.get_pull_push_speed_modifier(current_move_delay))
 
 	if(old_move_delay + (current_move_delay * MOVEMENT_DELAY_BUFFER_DELTA) + MOVEMENT_DELAY_BUFFER > world.time)
@@ -135,17 +140,20 @@
 
 	if(locate(/obj/item/grab, mob))
 		current_move_delay += 7
-	else if(mob.confused)
-		var/newdir = NONE
-		if(mob.confused > 40)
-			newdir = pick(GLOB.alldirs)
-		else if(prob(mob.confused * 1.5))
-			newdir = angle2dir(dir2angle(direct) + pick(90, -90))
-		else if(prob(mob.confused * 3))
-			newdir = angle2dir(dir2angle(direct) + pick(45, -45))
-		if(newdir)
-			direct = newdir
-			n = get_step(mob, direct)
+	else if(isliving(mob))
+		var/mob/living/L = mob
+		if(L.get_confusion())
+			var/newdir = NONE
+			var/confusion = L.get_confusion()
+			if(confusion > CONFUSION_MAX)
+				newdir = pick(GLOB.alldirs)
+			else if(prob(confusion * CONFUSION_HEAVY_COEFFICIENT))
+				newdir = angle2dir(dir2angle(direct) + pick(90, -90))
+			else if(prob(confusion * CONFUSION_LIGHT_COEFFICIENT))
+				newdir = angle2dir(dir2angle(direct) + pick(45, -45))
+			if(newdir)
+				direct = newdir
+				n = get_step(mob, direct)
 
 	. = mob.SelfMove(n, direct, current_move_delay)
 	mob.setDir(direct)
@@ -165,6 +173,10 @@
 
 	for(var/obj/O in mob)
 		O.on_mob_move(direct, mob)
+
+#undef CONFUSION_LIGHT_COEFFICIENT
+#undef CONFUSION_HEAVY_COEFFICIENT
+#undef CONFUSION_MAX
 
 
 /mob/proc/SelfMove(turf/n, direct, movetime)
@@ -482,7 +494,7 @@
 		if(C.legcuffed)
 			to_chat(C, "<span class='notice'>Ваши ноги скованы! Вы не можете бежать, пока не снимете [C.legcuffed]!</span>")
 			C.m_intent = MOVE_INTENT_WALK	//Just incase
-			C.hud_used.move_intent.icon_state = "walking"
+			C.hud_used?.move_intent.icon_state = "walking"
 			return
 
 	var/icon_toggle

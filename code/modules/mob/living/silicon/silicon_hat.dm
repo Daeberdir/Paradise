@@ -23,7 +23,7 @@
 		/obj/item/clothing/head/cardborg
 	)
 
-	var/hat_icon_file = 'icons/mob/head.dmi'
+	var/hat_icon_file = 'icons/mob/clothing/head.dmi'
 	var/hat_icon_state
 	var/hat_alpha
 	var/hat_color
@@ -106,7 +106,7 @@
 			isCentered = TRUE
 			canWearBlacklistedHats = TRUE
 			hat_offset_y = -3
-		if("landmate", "syndi-engi") //Высотой: 24 пикселя макушка
+		if("landmate", "chiefmate", "syndi-engi") //Высотой: 24 пикселя макушка
 			canBeHatted = TRUE
 			hat_offset_y = -3
 		if("mopgearrex") //Высотой: 22
@@ -220,7 +220,7 @@
 			to_chat(user, "<span class='warning'>Нельзя надеть больше одного головного убора на голову [src]!</span>")
 		return 0
 
-	if(user && !user.unEquip(item_to_add))
+	if(user && !user.drop_item_ground(item_to_add))
 		to_chat(user, "<span class='warning'>[item_to_add] застрял в ваших руках, вы не можете его надеть на голову [src]!</span>")
 		return 0
 
@@ -257,7 +257,7 @@
 
 /mob/living/silicon/proc/drop_hat()
 	if(inventory_head)
-		unEquip(inventory_head)
+		drop_item_ground(inventory_head)
 		null_hat()
 		regenerate_icons()
 

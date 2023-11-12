@@ -20,7 +20,6 @@
 
 /obj/structure/railing/attackby(obj/item/I, mob/living/user, params)
 	..()
-	add_fingerprint(user)
 
 /obj/structure/railing/welder_act(mob/living/user, obj/item/I)
 	if(user.intent != INTENT_HELP)
@@ -55,13 +54,18 @@
 	if(flags & NODECONSTRUCT)
 		return
 	to_chat(user, "<span class='notice'>You begin to [anchored ? "unfasten the railing from":"fasten the railing to"] the floor...</span>")
-	if(I.use_tool(src, user, volume = 75, extra_checks = CALLBACK(src, .proc/check_anchored, anchored)))
+	if(I.use_tool(src, user, volume = 75, extra_checks = CALLBACK(src, PROC_REF(check_anchored), anchored)))
 		anchored = !anchored
 		to_chat(user, "<span class='notice'>You [anchored ? "fasten the railing to":"unfasten the railing from"] the floor.</span>")
 	return TRUE
 
 /obj/structure/railing/corner/CanPass()
 	return TRUE
+
+
+/obj/structure/railing/corner/CanPathfindPass(obj/item/card/id/ID, to_dir, caller, no_id = FALSE)
+	return TRUE
+
 
 /obj/structure/railing/corner/CheckExit()
 	return TRUE
@@ -84,6 +88,16 @@
 	if(mover_dir != dir)
 		return density
 	return FALSE
+
+
+/obj/structure/railing/CanPathfindPass(obj/item/card/id/ID, to_dir, caller, no_id = FALSE)
+	if(to_dir == dir)
+		return FALSE
+	if(ordinal_direction_check(to_dir))
+		return FALSE
+
+	return TRUE
+
 
 /obj/structure/railing/CheckExit(atom/movable/O, target)
 	var/mob/living/M = O
@@ -110,17 +124,17 @@
 // Checks if the direction the mob is trying to move towards would be blocked by a corner railing
 /obj/structure/railing/proc/ordinal_direction_check()
 	switch(dir)
-		if(5)
-			if(mover_dir == 1 || mover_dir == 4)
+		if(NORTHEAST)
+			if(mover_dir == NORTH || mover_dir == EAST)
 				return TRUE
-		if(6)
-			if(mover_dir == 2 || mover_dir == 4)
+		if(SOUTHEAST)
+			if(mover_dir == SOUTH || mover_dir == EAST)
 				return TRUE
-		if(9)
-			if(mover_dir == 1 || mover_dir == 8)
+		if(NORTHWEST)
+			if(mover_dir == NORTH || mover_dir == WEST)
 				return TRUE
-		if(10)
-			if(mover_dir == 2 || mover_dir == 8)
+		if(SOUTHWEST)
+			if(mover_dir == SOUTH || mover_dir == WEST)
 				return TRUE
 	return FALSE
 
@@ -172,7 +186,7 @@
 	handle_layer()
 
 /obj/structure/railing/Move(newloc, direct, movetime)
-	..()
+	. = ..()
 	handle_layer()
 
 /obj/structure/railing/proc/handle_layer()
@@ -229,16 +243,12 @@
 
 /obj/structure/railing/wooden/cornerr
 	icon_state = "right_corner_railing_wood"
-	anchored = FALSE
 
 /obj/structure/railing/wooden/cornerl
 	icon_state = "left_corner_railing_wood"
-	anchored = FALSE
 
 /obj/structure/railing/wooden/endr
 	icon_state = "right_end_railing_wood"
-	anchored = FALSE
 
 /obj/structure/railing/wooden/endl
 	icon_state = "left_end_railing_wood"
-	anchored = FALSE

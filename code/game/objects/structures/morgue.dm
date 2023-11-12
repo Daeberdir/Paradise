@@ -111,7 +111,6 @@
 		playsound(loc, open_sound, 50, 1)
 		connected = new /obj/structure/m_tray( loc )
 		step(connected, dir)
-		connected.layer = OBJ_LAYER
 		var/turf/T = get_step(src, dir)
 		if(T.contents.Find(connected))
 			connected.connected = src
@@ -143,7 +142,6 @@
 		return
 	connected = new /obj/structure/m_tray( loc )
 	step(connected, dir)
-	connected.layer = OBJ_LAYER
 	var/turf/T = get_step(src, dir)
 	if(T.contents.Find(connected))
 		connected.connected = src
@@ -188,7 +186,7 @@
 	icon = 'icons/obj/stationobjs.dmi'
 	icon_state = "morguet"
 	density = 1
-	layer = 2.0
+	layer = BELOW_OBJ_LAYER
 	var/obj/structure/morgue/connected = null
 	anchored = 1.0
 	pass_flags = LETPASSTHROW
@@ -208,12 +206,12 @@
 		return
 	return
 
-/obj/structure/m_tray/MouseDrop_T(atom/movable/O as mob|obj, mob/user as mob)
+/obj/structure/m_tray/MouseDrop_T(atom/movable/O, mob/living/user)
 	if((!( istype(O, /atom/movable) ) || O.anchored || get_dist(user, src) > 1 || get_dist(user, O) > 1 || user.contents.Find(src) || user.contents.Find(O)))
 		return
 	if(!ismob(O) && !istype(O, /obj/structure/closet/body_bag))
 		return
-	if(!ismob(user) || user.stat || user.lying || user.stunned)
+	if(!ismob(user) || user.stat || user.lying || user.IsStunned())
 		return
 	O.forceMove(loc)
 	if(user != O)
@@ -237,7 +235,7 @@
 	else
 		return 0
 
-/obj/structure/tray/m_tray/CanAStarPass(ID, dir, caller)
+/obj/structure/tray/m_tray/CanPathfindPass(obj/item/card/id/ID, dir, caller, no_id = FALSE)
 	. = !density
 	if(ismovable(caller))
 		var/atom/movable/mover = caller
@@ -309,7 +307,6 @@
 		playsound(loc, open_sound, 50, 1)
 		connected = new /obj/structure/c_tray( loc )
 		step(connected, SOUTH)
-		connected.layer = OBJ_LAYER
 		var/turf/T = get_step(src, SOUTH)
 		if(T.contents.Find(connected))
 			connected.connected = src
@@ -334,7 +331,6 @@
 		return
 	connected = new /obj/structure/c_tray( loc )
 	step(connected, SOUTH)
-	connected.layer = OBJ_LAYER
 	var/turf/T = get_step(src, SOUTH)
 	if(T.contents.Find(connected))
 		connected.connected = src
@@ -449,12 +445,12 @@
 		return
 	return
 
-/obj/structure/c_tray/MouseDrop_T(atom/movable/O as mob|obj, mob/user as mob)
+/obj/structure/c_tray/MouseDrop_T(atom/movable/O, mob/living/user)
 	if((!( istype(O, /atom/movable) ) || O.anchored || get_dist(user, src) > 1 || get_dist(user, O) > 1 || user.contents.Find(src) || user.contents.Find(O)))
 		return
 	if(!ismob(O) && !istype(O, /obj/structure/closet/body_bag))
 		return
-	if(!ismob(user) || user.stat || user.lying || user.stunned)
+	if(!ismob(user) || user.stat || user.lying || user.IsStunned())
 		return
 	O.forceMove(loc)
 	if(user != O)
@@ -472,7 +468,7 @@
 /obj/machinery/crema_switch
 	desc = "Burn baby burn!"
 	name = "crematorium igniter"
-	icon = 'icons/obj/power.dmi'
+	icon = 'icons/obj/engines_and_power/power.dmi'
 	icon_state = "crema_switch"
 	anchored = 1.0
 	req_access = list(ACCESS_CREMATORIUM)
@@ -490,6 +486,7 @@
 		for(var/obj/structure/crematorium/C in world)
 			if(C.id == id)
 				if(!C.cremating)
+					add_fingerprint(user)
 					C.cremate(user)
 	else
 		to_chat(usr, span_warning("Access denied."))

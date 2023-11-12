@@ -29,9 +29,11 @@
 		wrapped.forceMove(get_turf(src))
 		if(istype(wrapped, /obj/structure/closet))
 			var/obj/structure/closet/O = wrapped
+			O.add_fingerprint(user)
 			O.welded = init_welded
 	var/turf/T = get_turf(src)
 	for(var/atom/movable/AM in src)
+		AM.add_fingerprint(user)
 		AM.loc = T
 
 	qdel(src)
@@ -41,6 +43,7 @@
 		var/obj/item/destTagger/O = W
 
 		if(sortTag != O.currTag)
+			add_fingerprint(user)
 			var/tag = uppertext(GLOB.TAGGERLOCATIONS[O.currTag])
 			to_chat(user, "<span class='notice'>*[tag]*</span>")
 			sortTag = O.currTag
@@ -53,6 +56,7 @@
 		if(sp.sealed)
 			return
 		else
+			add_fingerprint(user)
 			sortTag = sp.sortTag
 			if(iconLabeled)
 				icon_state = iconLabeled
@@ -61,11 +65,13 @@
 			playsound(loc, 'sound/items/poster_ripped.ogg', 50, 1)
 
 	else if(istype(W, /obj/item/pen))
+		add_fingerprint(user)
 		rename_interactive(user, W)
 
 	else if(istype(W, /obj/item/stack/wrapping_paper) && !giftwrapped)
 		var/obj/item/stack/wrapping_paper/WP = W
 		if(WP.use(3))
+			add_fingerprint(user)
 			user.visible_message("<span class='notice'>[user] wraps the package in festive paper!</span>")
 			giftwrapped = 1
 			if(istype(wrapped, /obj/structure/closet/crate))
@@ -73,7 +79,8 @@
 			else
 				icon_state = "giftcloset"
 			if(WP.amount <= 0 && !WP.loc) //if we used our last wrapping paper, drop a cardboard tube
-				new /obj/item/c_tube( get_turf(user) )
+				var/obj/item/c_tube/tube = new(get_turf(user))
+				tube.add_fingerprint(user)
 		else
 			to_chat(user, "<span class='notice'>You need more paper.</span>")
 	else
@@ -117,6 +124,7 @@
 		var/obj/item/destTagger/O = W
 
 		if(sortTag != O.currTag)
+			add_fingerprint(user)
 			var/tag = uppertext(GLOB.TAGGERLOCATIONS[O.currTag])
 			to_chat(user, "<span class='notice'>*[tag]*</span>")
 			sortTag = O.currTag
@@ -129,6 +137,7 @@
 		if(sp.sealed)
 			return
 		else
+			add_fingerprint(user)
 			sortTag = sp.sortTag
 			if(iconLabeled)
 				icon_state = iconLabeled
@@ -137,6 +146,7 @@
 			playsound(loc, 'sound/items/poster_ripped.ogg', 50, 1)
 
 	else if(istype(W, /obj/item/pen))
+		add_fingerprint(user)
 		rename_interactive(user, W)
 
 	else if(istype(W, /obj/item/stack/wrapping_paper) && !giftwrapped)
@@ -146,7 +156,8 @@
 			giftwrapped = 1
 			user.visible_message("<span class='notice'>[user] wraps the package in festive paper!</span>")
 			if(WP.amount <= 0 && !WP.loc) //if we used our last wrapping paper, drop a cardboard tube
-				new /obj/item/c_tube( get_turf(user) )
+				var/obj/item/c_tube/tube = new(get_turf(user))
+				tube.add_fingerprint(user)
 		else
 			to_chat(user, "<span class='notice'>You need more paper.</span>")
 	else
@@ -161,10 +172,21 @@
 	amount = 25
 	max_amount = 25
 	resistance_flags = FLAMMABLE
-	var/static/list/no_wrap = list(/obj/item/smallDelivery, /obj/structure/bigDelivery, /obj/item/evidencebag, /obj/structure/closet/body_bag, /obj/item/twohanded/required)
+	var/static/list/no_wrap = list(
+		/obj/item/shippingPackage,
+		/obj/item/smallDelivery,
+		/obj/structure/bigDelivery,
+		/obj/item/evidencebag,
+		/obj/structure/closet/body_bag,
+		/obj/item/twohanded/required,
+		/obj/item/storage,
+		/obj/item/mecha_parts/chassis
+	)
 
-/obj/item/stack/packageWrap/afterattack(var/obj/target as obj, mob/user as mob, proximity)
-	if(!proximity) return
+
+/obj/item/stack/packageWrap/afterattack(obj/target, mob/user, proximity)
+	if(!proximity)
+		return
 	if(!istype(target))	//this really shouldn't be necessary (but it is).	-Pete
 		return
 	if(is_type_in_list(target, no_wrap))
@@ -174,65 +196,88 @@
 	if(target in user)
 		return
 
-	if(istype(target, /obj/item) && !(istype(target, /obj/item/storage) && !istype(target,/obj/item/storage/box) && !istype(target, /obj/item/shippingPackage)))
-		var/obj/item/O = target
-		if(use(1))
-			var/obj/item/smallDelivery/P = new /obj/item/smallDelivery(get_turf(O.loc))	//Aaannd wrap it up!
-			if(!istype(O.loc, /turf))
-				if(user.client)
-					user.client.screen -= O
-			P.wrapped = O
-			O.loc = P
-			var/i = round(O.w_class)
-			if(i in list(1,2,3,4,5))
-				P.icon_state = "deliverycrate[i]"
-				P.iconLabeled = "deliverycrate[i]_labeled"
-				P.w_class = i
-			P.add_fingerprint(usr)
-			O.add_fingerprint(usr)
-			add_fingerprint(usr)
-		else
+	if(isitem(target))
+		var/obj/item/item = target
+		if(!use(1))
 			return
+
+		var/obj/item/smallDelivery/package = new(get_turf(item))	//Aaannd wrap it up!
+		if(!isturf(item.loc) && user.client)
+			user.client.screen -= item
+
+		package.wrapped = item
+		item.loc = package
+		var/i = round(item.w_class)
+		if(i > 5)
+			package.icon_state = "deliverycrate5"
+			package.iconLabeled = "deliverycrate5_labeled"
+		else if(i < 1)
+			package.icon_state = "deliverycrate1"
+			package.iconLabeled = "deliverycrate1_labeled"
+		else
+			package.icon_state = "deliverycrate[i]"
+			package.iconLabeled = "deliverycrate[i]_labeled"
+		package.w_class = i
+		package.add_fingerprint(user)
+		item.add_fingerprint(user)
+
 	else if(istype(target, /obj/structure/closet/crate))
-		var/obj/structure/closet/crate/O = target
-		if(O.opened)
+		var/obj/structure/closet/crate/crate = target
+		if(crate.opened)
 			return
-		if(amount >= 3 && do_after_once(user, 15, target = target))
-			if(O.opened || !use(3))
-				return
-			var/obj/structure/bigDelivery/P = new /obj/structure/bigDelivery(get_turf(O.loc))
-			P.icon_state = "deliverycrate"
-			P.iconLabeled = "deliverycrate_labeled"
-			P.wrapped = O
-			O.loc = P
-		else
-			to_chat(user, "<span class='notice'>You need more paper.</span>")
+
+		if(amount < 3)
+			to_chat(user, span_notice("You need more paper."))
 			return
+
+		if(!do_after_once(user, 1.5 SECONDS, target = crate))
+			return
+
+		if(crate.opened || !use(3))
+			return
+
+		var/obj/structure/bigDelivery/package = new(get_turf(crate))
+		package.icon_state = "deliverycrate"
+		package.iconLabeled = "deliverycrate_labeled"
+		package.wrapped = crate
+		crate.loc = package
+		package.add_fingerprint(user)
+		crate.add_fingerprint(user)
+
 	else if(istype (target, /obj/structure/closet))
-		var/obj/structure/closet/O = target
-		if(O.opened)
+		var/obj/structure/closet/closet = target
+		if(closet.opened)
 			return
-		if(amount >= 3 && do_after_once(user, 15, target = target))
-			if(O.opened || !use(3))
-				return
-			var/obj/structure/bigDelivery/P = new /obj/structure/bigDelivery(get_turf(O.loc))
-			P.wrapped = O
-			P.init_welded = O.welded
-			O.welded = 1
-			O.loc = P
-		else
-			to_chat(user, "<span class='notice'>You need more paper.</span>")
+
+		if(amount < 3)
+			to_chat(user, span_notice("You need more paper."))
 			return
+
+		if(!do_after_once(user, 1.5 SECONDS, target = closet))
+			return
+
+		if(closet.opened || !use(3))
+			return
+
+		var/obj/structure/bigDelivery/package = new(get_turf(closet))
+		package.wrapped = closet
+		package.init_welded = closet.welded
+		closet.welded = TRUE
+		closet.loc = package
+		package.add_fingerprint(user)
+		closet.add_fingerprint(user)
+
 	else
-		to_chat(user, "<span class='notice'>The object you are trying to wrap is unsuitable for the sorting machinery.</span>")
+		to_chat(user, span_notice("The object you are trying to wrap is unsuitable for the sorting machinery."))
 		return
 
-	user.visible_message("<span class='notice'>[user] wraps [target].</span>")
+	user.visible_message(span_notice("[user] wraps [target]."))
 	add_attack_logs(user, target, "used [name]", ATKLOG_ALL)
 
 	if(amount <= 0 && !src.loc) //if we used our last wrapping paper, drop a cardboard tube
-		new /obj/item/c_tube( get_turf(user) )
-	return
+		var/obj/item/c_tube/tube = new(get_turf(user))
+		tube.add_fingerprint(user)
+
 
 /obj/item/destTagger
 	name = "destination tagger"
@@ -306,15 +351,14 @@
 		to_chat(user, "<span class='notice'>[src] already contains \a [wrapped].</span>")
 		return
 	if(istype(O, /obj/item) && !istype(O, /obj/item/storage) && !istype(O, /obj/item/shippingPackage))
-		if(!user.canUnEquip(O))
+		if(!user.can_unEquip(O))
 			to_chat(user, "<span class='warning'>[O] is stuck to your hand, you cannot put it in [src]!</span>")
 			return
 		if(O.w_class > 3)
 			to_chat(user, "<span class='notice'>[O] is too large to fit in [src].</span>")
 		else
 			wrapped = O
-			user.unEquip(O)
-			O.forceMove(src)
+			user.drop_transfer_item_to_loc(O, src)
 			O.add_fingerprint(usr)
 			add_fingerprint(usr)
 			to_chat(user, "<span class='notice'>You put [O] in [src].</span>")
@@ -323,7 +367,7 @@
 	if(sealed)
 		to_chat(user, "<span class='notice'>You tear open [src], dropping the contents onto the floor.</span>")
 		playsound(loc, 'sound/items/poster_ripped.ogg', 50, 1)
-		user.unEquip(src)
+		user.temporarily_remove_item_from_inventory(src)
 		wrapped.forceMove(get_turf(user))
 		wrapped = null
 		qdel(src)
@@ -342,7 +386,7 @@
 		if(alert("Do you want to tear up the package?",, "Yes", "No") == "Yes")
 			to_chat(user, "<span class='notice'>You shred [src].</span>")
 			playsound(loc, 'sound/items/poster_ripped.ogg', 50, 1)
-			user.unEquip(src)
+			user.temporarily_remove_item_from_inventory(src)
 			qdel(src)
 
 /obj/item/shippingPackage/proc/update_desc()

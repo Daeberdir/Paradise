@@ -20,7 +20,19 @@
 
 	A.attack_hand(src)
 
-/atom/proc/attack_hand(mob/user as mob)
+/mob/living/carbon/human/beforeAdjacentClick(atom/A, params)
+	if(prob(dna.species.fragile_bones_chance * 3))
+		var/zone = "[hand ? "l" : "r"]_[pick("hand", "arm")]"
+		var/obj/item/organ/external/active_hand = get_organ(zone)
+		if(!(active_hand.status & ORGAN_BROKEN))
+			var/used_item_name = get_active_hand()
+			var/message = "[used_item_name? "You try to use [used_item_name], but y": "Y"]our [active_hand] don't withstand the load!"
+			to_chat(src, "<span class='danger'>[message]</span>")
+			active_hand.fracture()
+			return
+
+/atom/proc/attack_hand(mob/user)
+	SEND_SIGNAL(src, COMSIG_ATOM_ATTACK_HAND, user)
 	return
 
 /*
@@ -38,11 +50,12 @@
 		if(istype(G) && G.Touch(A, 0)) // for magic gloves
 			return
 
-	if((LASER in mutations) && a_intent == INTENT_HARM)
-		LaserEyes(A)
+	if(!GLOB.pacifism_after_gt)
+		if(HAS_TRAIT(src, TRAIT_LASEREYES) && a_intent == INTENT_HARM)
+			LaserEyes(A)
 
-	if(TK in mutations)
-		A.attack_tk(src)
+		if(TK in mutations)
+			A.attack_tk(src)
 
 	if(isturf(A) && get_dist(src, A) <= 1)
 		Move_Pulled(A)
@@ -82,7 +95,6 @@
 
 /atom/proc/attack_larva(mob/user)
 	return
-
 
 /*
 	Slimes

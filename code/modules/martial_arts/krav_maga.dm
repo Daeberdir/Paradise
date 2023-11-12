@@ -69,6 +69,9 @@
 
 /datum/martial_art/krav_maga/teach(var/mob/living/carbon/human/H,var/make_temporary=0)
 	..()
+	if(HAS_TRAIT(H, TRAIT_PACIFISM))
+		to_chat(H, "<span class='warning'>The arts of Krav Maga echo uselessly in your head, the thought of their violence repulsive to you!</span>")
+		return
 	to_chat(H, "<span class = 'userdanger'>You know the arts of Krav Maga!</span>")
 	to_chat(H, "<span class = 'danger'>Place your cursor over a move at the top of the screen to see what it does.</span>")
 	neutral.Grant(H)
@@ -112,13 +115,13 @@
 		if(D.hand)
 			if(istype(D.l_hand, /obj/item))
 				var/obj/item/I = D.l_hand
-				if(D.drop_item())
-					A.put_in_hands(I)
+				if(D.drop_from_active_hand())
+					A.put_in_hands(I, ignore_anim = FALSE)
 		else
 			if(istype(D.r_hand, /obj/item))
 				var/obj/item/I = D.r_hand
-				if(D.drop_item())
-					A.put_in_hands(I)
+				if(D.drop_from_active_hand())
+					A.put_in_hands(I, ignore_anim = FALSE)
 		D.visible_message("<span class='danger'>[A] has disarmed [D]!</span>", \
 							"<span class='userdanger'>[A] has disarmed [D]!</span>")
 		playsound(D, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
@@ -135,14 +138,18 @@
 	can_be_cut = FALSE
 	resistance_flags = NONE
 
-/obj/item/clothing/gloves/color/black/krav_maga/equipped(mob/user, slot)
+/obj/item/clothing/gloves/color/black/krav_maga/equipped(mob/user, slot, initial)
+	. = ..()
+
 	if(!ishuman(user))
 		return
 	if(slot == slot_gloves)
 		var/mob/living/carbon/human/H = user
 		style.teach(H,1)
 
-/obj/item/clothing/gloves/color/black/krav_maga/dropped(mob/user)
+/obj/item/clothing/gloves/color/black/krav_maga/dropped(mob/user, silent = FALSE)
+	. = ..()
+
 	if(!ishuman(user))
 		return
 	var/mob/living/carbon/human/H = user

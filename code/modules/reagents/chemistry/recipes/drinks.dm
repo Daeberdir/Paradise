@@ -7,6 +7,48 @@
 	result_amount = 5
 	mix_sound = 'sound/goonstation/misc/drinkfizz.ogg'
 
+/datum/chemical_reaction/hot_coco
+	name = "Hot Coco"
+	id = "hot_coco"
+	result = "hot_coco"
+	required_reagents = list("chocolate" = 1)
+	result_amount = 1
+	min_temp = T0C + 100
+	mix_sound = 'sound/goonstation/misc/drinkfizz.ogg'
+
+/datum/chemical_reaction/chocolate
+	name = "Chocolate"
+	id = "chocolate"
+	result = "chocolate"
+	required_reagents = list("hot_coco" = 1, "cryostylane" = 1)
+	result_amount = 2
+	mix_sound = 'sound/goonstation/misc/drinkfizz.ogg'
+
+/datum/chemical_reaction/cocoa
+	name = "Chocolate"
+	id = "chocolate"
+	result = "chocolate"
+	required_reagents = list("icecoco" = 1)
+	result_amount = 1
+	min_temp = T0C + 100
+	mix_sound = 'sound/goonstation/misc/drinkfizz.ogg'
+
+/datum/chemical_reaction/icecoco
+	name = "Iced Cocoa"
+	id = "icecoco"
+	result = "icecoco"
+	required_reagents = list("chocolate" = 1, "ice" = 1)
+	result_amount = 1
+	mix_sound = 'sound/goonstation/misc/drinkfizz.ogg'
+
+/datum/chemical_reaction/icecoco
+	name = "Iced Cocoa"
+	id = "icecoco"
+	result = "icecoco"
+	required_reagents = list("ice" = 1, "hot_coco" = 3)
+	result_amount = 4
+	mix_sound = 'sound/goonstation/misc/drinkfizz.ogg'
+
 /datum/chemical_reaction/chocolate_milk
 	name = "Chocolate Milk"
 	id = "chocolate_milk"
@@ -869,14 +911,6 @@
 	result_amount = 4
 	mix_message = "<span class='warning'>The mixture turns to a sickening froth.</span>"
 
-/datum/chemical_reaction/icecoco
-	name = "Iced Cocoa"
-	id = "icecoco"
-	result = "icecoco"
-	required_reagents = list("ice" = 1, "hot_coco" = 3)
-	result_amount = 4
-	mix_sound = 'sound/goonstation/misc/drinkfizz.ogg'
-
 /datum/chemical_reaction/fernet_cola
 	name = "Fernet Cola"
 	id = "fernet_cola"
@@ -967,7 +1001,7 @@
 	name = "Nagasaki"
 	id = "nagasaki"
 	result = "nagasaki"
-	required_reagents = list("nagasaki" = 1, "uranium" = 10)
+	required_reagents = list("hirosima" = 10, "uranium" = 1)
 	result_amount = 10
 	mix_sound = 'sound/goonstation/misc/drinkfizz.ogg'
 
@@ -1079,7 +1113,7 @@
 	name = "God Of Power"
 	id = "teslasingylo"
 	result = "teslasingylo"
-	required_reagents = list("teslium" = 2, "radium" = 2, "whiskey" = 1)
+	required_reagents = list("teslium" = 2, "radium" = 2, "synthanol" = 1)
 	result_amount = 5
 	mix_sound = 'sound/goonstation/misc/drinkfizz.ogg'
 
@@ -1416,4 +1450,28 @@
 	result = "new_yorker"
 	required_reagents = list("whiskey" = 3, "bitter" = 1, "grapejuice" = 2, "limejuice" = 1,  )
 	result_amount = 7
+	mix_sound = 'sound/goonstation/misc/drinkfizz.ogg'
+
+/datum/chemical_reaction/blue_moondrin
+	name = "Iluk Blue Moon'drin"
+	id = "blue_moondrin"
+	result = "blue_moondrin"
+	required_reagents = list("moonlight_skuma" = 3, "blue_lagoon" = 1, "martini" = 2, "ice" = 1,  )
+	result_amount = 7
+	mix_sound = 'sound/goonstation/misc/drinkfizz.ogg'
+
+/datum/chemical_reaction/red_moondrin
+	name = "Redwater Moon'drin"
+	id = "red_moondrin"
+	result = "red_moondrin"
+	required_reagents = list("moonlight_skuma" = 3, "devilskiss" = 1, "manhattan" = 2, "watermelonjuice" = 1, "ice" = 1  )
+	result_amount = 8
+	mix_sound = 'sound/goonstation/misc/drinkfizz.ogg'
+
+/datum/chemical_reaction/restart
+	name = "Restart"
+	id = "restart"
+	result = "restart"
+	required_reagents = list("trinary" = 1, "codelibre" = 1, "rewriter" = 1, "irishempbomb" = 1, "synthanol" = 1  )
+	result_amount = 5
 	mix_sound = 'sound/goonstation/misc/drinkfizz.ogg'

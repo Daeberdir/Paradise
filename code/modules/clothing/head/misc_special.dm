@@ -26,18 +26,22 @@
 	actions_types = list(/datum/action/item_action/toggle)
 	visor_flags_inv = HIDEMASK|HIDEHEADSETS|HIDEGLASSES|HIDENAME
 	resistance_flags = FIRE_PROOF
+	var/paint = null
 
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/head.dmi',
-		"Unathi" = 'icons/mob/species/unathi/helmet.dmi',
-		"Tajaran" = 'icons/mob/species/tajaran/helmet.dmi',
-		"Vulpkanin" = 'icons/mob/species/vulpkanin/helmet.dmi',
-		"Grey" = 'icons/mob/species/grey/helmet.dmi',
-		"Monkey" = 'icons/mob/species/monkey/head.dmi',
-		"Farwa" = 'icons/mob/species/monkey/head.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/head.dmi',
-		"Neara" = 'icons/mob/species/monkey/head.dmi',
-		"Stok" = 'icons/mob/species/monkey/head.dmi'
+		"Vox" = 'icons/mob/clothing/species/vox/head.dmi',
+		"Unathi" = 'icons/mob/clothing/species/unathi/helmet.dmi',
+		"Ash Walker" = 'icons/mob/clothing/species/unathi/helmet.dmi',
+		"Ash Walker Shaman" = 'icons/mob/clothing/species/unathi/helmet.dmi',
+		"Draconid" = 'icons/mob/clothing/species/unathi/helmet.dmi',
+		"Tajaran" = 'icons/mob/clothing/species/tajaran/helmet.dmi',
+		"Vulpkanin" = 'icons/mob/clothing/species/vulpkanin/helmet.dmi',
+		"Grey" = 'icons/mob/clothing/species/grey/helmet.dmi',
+		"Monkey" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/head.dmi'
 		)
 
 /obj/item/clothing/head/welding/attack_self(mob/user)
@@ -53,7 +57,7 @@
 	desc = "A welding helmet with blue flame decals on it."
 	icon_state = "welding_blueflame"
 
-/obj/item/clothing/head/welding/white
+/obj/item/clothing/head/welding/flamedecal/white
 	name = "white decal welding helmet"
 	desc = "A white welding helmet with a character written across it."
 	icon_state = "welding_white"
@@ -61,12 +65,48 @@
 /obj/item/clothing/head/welding/attack_self()
 	toggle()
 
+/obj/item/clothing/head/welding/attackby(obj/item/I, mob/living/user)
+	if(istype(I, /obj/item/toy/crayon/spraycan))
+		if(icon_state != "welding")
+			to_chat(user, "<span class = 'warning'>Похоже, тут уже есть слой краски!</span>")
+			return
+		var/obj/item/toy/crayon/spraycan/C = I
+		if(C.capped)
+			to_chat(user, "<span class = 'warning'>Вы не можете раскрасить [src], если крышка на банке закрыта!</span>")
+			return
+		var/list/weld_icons = list("Flame" = image(icon = src.icon, icon_state = "welding_redflame"),
+									"Blue Flame" = image(icon = src.icon, icon_state = "welding_blueflame"),
+									"White Flame" = image(icon = src.icon, icon_state = "welding_white"))
+		var/list/weld = list("Flame" = "welding_redflame",
+							"Blue Flame" = "welding_blueflame",
+							"White Flame" = "welding_white")
+		var/choice = show_radial_menu(user, src, weld_icons)
+		if(!choice || I.loc != user || !Adjacent(user))
+			return
+		if(C.uses <= 0)
+			to_chat(user, "<span class = 'warning'>Не похоже что бы осталось достаточно краски.</span>")
+			return
+		icon_state = weld[choice]
+		paint = weld[choice]
+		C.uses--
+		update_icon()
+	if(istype(I, /obj/item/soap) && (icon_state != initial(icon_state)))
+		icon_state = initial(icon_state)
+		paint = null
+		update_icon()
+	else
+		return ..()
+
+
 /obj/item/clothing/head/welding/proc/toggle()
 	if(up)
 		up = !up
 		flags_cover |= (HEADCOVERSEYES | HEADCOVERSMOUTH)
 		flags_inv |= (HIDEMASK|HIDEHEADSETS|HIDEGLASSES|HIDENAME)
-		icon_state = initial(icon_state)
+		if(paint)
+			icon_state = paint
+		else
+			icon_state = initial(icon_state)
 		to_chat(usr, "You flip the [src] down to protect your eyes.")
 		flash_protect = 2
 		tint = 2
@@ -74,7 +114,10 @@
 		up = !up
 		flags_cover &= ~(HEADCOVERSEYES | HEADCOVERSMOUTH)
 		flags_inv &= ~(HIDEMASK|HIDEHEADSETS|HIDEGLASSES|HIDENAME)
-		icon_state = "[initial(icon_state)]up"
+		if(paint)
+			icon_state = "[paint]up"
+		else
+			icon_state = "[initial(icon_state)]up"
 		to_chat(usr, "You push the [src] up out of your face.")
 		flash_protect = 0
 		tint = 0
@@ -145,12 +188,12 @@
 	min_cold_protection_temperature = FIRE_HELM_MIN_TEMP_PROTECT
 	dog_fashion = /datum/dog_fashion/head/ushanka
 	sprite_sheets = list(
-		"Grey" = 'icons/mob/species/grey/head.dmi',
-		"Monkey" = 'icons/mob/species/monkey/head.dmi',
-		"Farwa" = 'icons/mob/species/monkey/head.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/head.dmi',
-		"Neara" = 'icons/mob/species/monkey/head.dmi',
-		"Stok" = 'icons/mob/species/monkey/head.dmi'
+		"Grey" = 'icons/mob/clothing/species/grey/head.dmi',
+		"Monkey" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/head.dmi'
 	)
 
 /obj/item/clothing/head/ushanka/attack_self(mob/user as mob)
@@ -181,6 +224,16 @@
 	icon_state = "sovietadmiralhat"
 	item_state = "sovietadmiralhat"
 
+/obj/item/clothing/head/soviethelmet
+	name = "SSh-68"
+	desc = "Soviet steel combat helmet."
+	icon_state = "soviethelm"
+	item_state = "soviethelm"
+	flags = BLOCKHAIR
+	flags_inv = HIDEHEADSETS
+	armor = list("melee" = 25, "bullet" = 35, "laser" = 15, "energy" = 10, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 30, "acid" = 30)
+	materials = list(MAT_METAL=2500)
+
 /*
  * Pumpkin head
  */
@@ -195,12 +248,13 @@
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 
 	sprite_sheets = list(
-		"Grey" = 'icons/mob/species/grey/head.dmi',
-		"Monkey" = 'icons/mob/species/monkey/head.dmi',
-		"Farwa" = 'icons/mob/species/monkey/head.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/head.dmi',
-		"Neara" = 'icons/mob/species/monkey/head.dmi',
-		"Stok" = 'icons/mob/species/monkey/head.dmi'
+		"Vulpkanin" = 'icons/mob/clothing/species/vulpkanin/head.dmi',
+		"Grey" = 'icons/mob/clothing/species/grey/head.dmi',
+		"Monkey" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/head.dmi'
 	)
 
 	armor = list("melee" = 0, "bullet" = 0, "laser" = 0,"energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 0, "acid" = 0)
@@ -233,16 +287,17 @@
 	if(!istype(user)) return
 	var/obj/item/organ/external/head/head_organ = user.get_organ("head")
 
-	mob = new/icon("icon" = 'icons/mob/head.dmi', "icon_state" = "kitty")
+	mob = new/icon("icon" = 'icons/mob/clothing/head.dmi', "icon_state" = "kitty")
 	mob.Blend(head_organ.hair_colour, ICON_ADD)
 
-	var/icon/earbit = new/icon("icon" = 'icons/mob/head.dmi', "icon_state" = "kittyinner")
+	var/icon/earbit = new/icon("icon" = 'icons/mob/clothing/head.dmi', "icon_state" = "kittyinner")
 	mob.Blend(earbit, ICON_OVERLAY)
 
 	icon_override = mob
 
-/obj/item/clothing/head/kitty/equipped(var/mob/M, slot)
+/obj/item/clothing/head/kitty/equipped(mob/M, slot, initial)
 	. = ..()
+
 	if(ishuman(M) && slot == slot_head)
 		update_icon(M)
 
@@ -255,10 +310,10 @@
 /obj/item/clothing/head/kitty/mouse/update_icon(var/mob/living/carbon/human/user)
 	if(!istype(user)) return
 	var/obj/item/organ/external/head/head_organ = user.get_organ("head")
-	mob = new/icon("icon" = 'icons/mob/head.dmi', "icon_state" = "mousey")
+	mob = new/icon("icon" = 'icons/mob/clothing/head.dmi', "icon_state" = "mousey")
 	mob.Blend(head_organ.hair_colour, ICON_ADD)
 
-	var/icon/earbit = new/icon("icon" = 'icons/mob/head.dmi', "icon_state" = "mouseyinner")
+	var/icon/earbit = new/icon("icon" = 'icons/mob/clothing/head.dmi', "icon_state" = "mouseyinner")
 	mob.Blend(earbit, ICON_OVERLAY)
 
 	icon_override = mob
@@ -273,24 +328,26 @@
 	species_disguise = "High-tech robot"
 	dog_fashion = /datum/dog_fashion/head/cardborg
 	sprite_sheets = list(
-		"Grey" = 'icons/mob/species/grey/head.dmi',
-		"Monkey" = 'icons/mob/species/monkey/head.dmi',
-		"Farwa" = 'icons/mob/species/monkey/head.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/head.dmi',
-		"Neara" = 'icons/mob/species/monkey/head.dmi',
-		"Stok" = 'icons/mob/species/monkey/head.dmi'
+		"Vulpkanin" = 'icons/mob/clothing/species/vulpkanin/head.dmi',
+		"Grey" = 'icons/mob/clothing/species/grey/head.dmi',
+		"Monkey" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/head.dmi'
 	)
 
 
-/obj/item/clothing/head/cardborg/equipped(mob/living/user, slot)
-	..()
+/obj/item/clothing/head/cardborg/equipped(mob/living/user, slot, initial)
+	. = ..()
+
 	if(ishuman(user) && slot == slot_head)
 		var/mob/living/carbon/human/H = user
 		if(istype(H.wear_suit, /obj/item/clothing/suit/cardborg))
 			var/obj/item/clothing/suit/cardborg/CB = H.wear_suit
 			CB.disguise(user, src)
 
-/obj/item/clothing/head/cardborg/dropped(mob/living/user)
+/obj/item/clothing/head/cardborg/dropped(mob/living/user, silent = FALSE)
 	..()
 	user.remove_alt_appearance("standard_borg_disguise")
 
@@ -304,13 +361,13 @@
 	item_state = "head_mirror"
 
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/head.dmi',
-		"Drask" = 'icons/mob/species/drask/head.dmi',
-		"Grey" = 'icons/mob/species/grey/head.dmi',
-		"Monkey" = 'icons/mob/species/monkey/head.dmi',
-		"Farwa" = 'icons/mob/species/monkey/head.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/head.dmi',
-		"Neara" = 'icons/mob/species/monkey/head.dmi',
-		"Stok" = 'icons/mob/species/monkey/head.dmi'
+		"Vox" = 'icons/mob/clothing/species/vox/head.dmi',
+		"Drask" = 'icons/mob/clothing/species/drask/head.dmi',
+		"Grey" = 'icons/mob/clothing/species/grey/head.dmi',
+		"Monkey" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/head.dmi'
 	)
 

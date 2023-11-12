@@ -13,7 +13,7 @@ emp_act
 	if(!dna.species.bullet_act(P, src))
 		add_attack_logs(P.firer, src, "hit by [P.type] but got deflected by species '[dna.species]'")
 		return FALSE
-	if(P.is_reflectable)
+	if(P.is_reflectable(REFLECTABILITY_ENERGY))
 		var/can_reflect = check_reflect(def_zone)
 		var/reflected = FALSE
 
@@ -53,10 +53,22 @@ emp_act
 			return FALSE
 
 	if(mind?.martial_art?.deflection_chance) //Some martial arts users can deflect projectiles!
-		if(!lying && !(HULK in mutations) && prob(mind.martial_art.deflection_chance)) //But only if they're not lying down, and hulks can't do it
+		if(!lying && !(HULK in mutations) && mind.martial_art.try_deflect(src)) //But only if they're not lying down, and hulks can't do it
 			add_attack_logs(P.firer, src, "hit by [P.type] but got deflected by martial arts '[mind.martial_art]'")
-			visible_message("<span class='danger'>[src] deflects the projectile; [p_they()] can't be hit with ranged weapons!</span>", "<span class='userdanger'>You deflect the projectile!</span>")
-			return FALSE
+			if(HAS_TRAIT(src, TRAIT_PACIFISM) || !P.is_reflectable(REFLECTABILITY_PHYSICAL)) //if it cannot be reflected, it hits the floor. This is the exception to the rule
+				// Pacifists can deflect projectiles, but not reflect them.
+				// Instead, they deflect them into the ground below them.
+				var/turf/T = get_turf(src)
+				P.firer = src
+				T.bullet_act(P)
+				visible_message("<span class='danger'>[src] deflects the projectile into the ground!</span>", "<span class='userdanger'>You deflect the projectile towards the ground beneath your feet!</span>")
+				playsound(src, pick('sound/weapons/bulletflyby.ogg', 'sound/weapons/bulletflyby2.ogg', 'sound/weapons/bulletflyby3.ogg'), 75, TRUE)
+			if(mind.martial_art.reroute_deflection)
+				P.firer = src
+				P.set_angle(rand(0, 360))
+				return -1
+			else
+				return FALSE
 
 	var/obj/item/organ/external/organ = get_organ(check_zone(def_zone))
 	if(isnull(organ))
@@ -128,12 +140,14 @@ emp_act
 	var/obj/item/organ/external/affecting = get_organ(check_zone(def_zone))
 	if(affecting && !affecting.cannot_amputate && affecting.get_damage() >= (affecting.max_damage - P.dismemberment))
 		var/damtype = DROPLIMB_SHARP
-		switch(P.damage_type)
-			if(BRUTE)
-				damtype = DROPLIMB_BLUNT
-			if(BURN)
-				damtype = DROPLIMB_BURN
-
+		if(!P.dismember_limbs)
+			switch(P.damage_type)
+				if(BRUTE)
+					damtype = DROPLIMB_BLUNT
+				if(BURN)
+					damtype = DROPLIMB_BURN
+		if(P.dismember_head && istype(affecting, /obj/item/organ/external/head))
+			damtype = DROPLIMB_SHARP
 		affecting.droplimb(FALSE, damtype)
 
 /mob/living/carbon/human/getarmor(var/def_zone, var/type)
@@ -242,9 +256,9 @@ emp_act
 			return 1
 	return 0
 
-/mob/living/carbon/human/proc/check_block()
-	if(mind && mind.martial_art && prob(mind.martial_art.block_chance) && mind.martial_art.can_use(src) && in_throw_mode && !incapacitated(FALSE, TRUE))
-		return TRUE
+/mob/living/carbon/human/proc/check_martial_art_defense(var/mob/living/carbon/human/defender, var/mob/living/carbon/human/attacker, var/obj/item/I, var/visible_message, var/self_message)
+	if(mind && mind.martial_art)
+		return mind.martial_art.attack_reaction(defender, attacker, I, visible_message, self_message)
 
 /mob/living/carbon/human/acid_act(acidpwr, acid_volume, bodyzone_hit) //todo: update this to utilize check_obscured_slots() //and make sure it's check_obscured_slots(TRUE) to stop aciding through visors etc
 	var/list/damaged = list()
@@ -441,8 +455,7 @@ emp_act
 		if(check_shields(I, I.force, "the [I.name]", MELEE_ATTACK, I.armour_penetration))
 			return 0
 
-	if(check_block())
-		visible_message("<span class='warning'>[src] blocks [I]!</span>")
+	if(check_martial_art_defense(src, user, I, "<span class='warning'>[src] blocks [I]!</span>"))
 		return FALSE
 
 	if(istype(I,/obj/item/card/emag))
@@ -465,8 +478,9 @@ emp_act
 
 	apply_damage(I.force * weakness, I.damtype, affecting, armor, sharp = weapon_sharp, used_weapon = I)
 
-	if(mind && user?.mind?.objectives)
-		for(var/datum/objective/pain_hunter/objective in user.mind.objectives)
+	var/all_objectives = user?.mind?.get_all_objectives()
+	if(mind && all_objectives)
+		for(var/datum/objective/pain_hunter/objective in all_objectives)
 			if(mind == objective.target)
 				objective.take_damage(I.force * weakness, I.damtype)
 
@@ -490,8 +504,8 @@ emp_act
 						if(prob(I.force))
 							visible_message("<span class='combat danger'>[src] has been knocked down!</span>", \
 											"<span class='combat userdanger'>[src] has been knocked down!</span>")
-							apply_effect(2, WEAKEN, armor)
-							AdjustConfused(15)
+							apply_effect(4 SECONDS, WEAKEN, armor)
+							AdjustConfused(30 SECONDS)
 						if(mind && mind.special_role == SPECIAL_ROLE_REV && prob(I.force + ((100 - health)/2)) && src != user && I.damtype == BRUTE)
 							SSticker.mode.remove_revolutionary(mind)
 
@@ -511,7 +525,7 @@ emp_act
 					if(stat == CONSCIOUS && I.force && prob(I.force + 10))
 						visible_message("<span class='combat danger'>[src] has been knocked down!</span>", \
 										"<span class='combat userdanger'>[src] has been knocked down!</span>")
-						apply_effect(2, WEAKEN, armor)
+						apply_effect(4 SECONDS, WEAKEN, armor)
 
 					if(bloody)
 						if(wear_suit)
@@ -528,42 +542,51 @@ emp_act
 
 	dna.species.spec_attacked_by(I, user, affecting, user.a_intent, src)
 
-//this proc handles being hit by a thrown atom
+
+/**
+ * This proc handles being hit by a thrown atom.
+ */
 /mob/living/carbon/human/hitby(atom/movable/AM, skipcatch = FALSE, hitpush = TRUE, blocked = FALSE, datum/thrownthing/throwingdatum)
+	var/spec_return = dna.species.spec_hitby(AM, src)
+	if(spec_return)
+		return spec_return
+
 	var/obj/item/I
 	var/throwpower = 30
-	if(istype(AM, /obj/item))
+	if(isitem(AM))
 		I = AM
 		throwpower = I.throwforce
-		if(I.thrownby == src) //No throwing stuff at yourself to trigger reactions
+		if(locateUID(I.thrownby) == src) //No throwing stuff at yourself to trigger reactions
 			return ..()
+
 	SEND_SIGNAL(src, COMSIG_CARBON_HITBY)
+
 	if(check_shields(AM, throwpower, "\the [AM.name]", THROWN_PROJECTILE_ATTACK))
 		hitpush = FALSE
 		skipcatch = TRUE
 		blocked = TRUE
-	else if(I)
-		if(((throwingdatum ? throwingdatum.speed : I.throw_speed) >= EMBED_THROWSPEED_THRESHOLD) || I.embedded_ignore_throwspeed_threshold)
-			if(can_embed(I))
-				if(prob(I.embed_chance) && !(PIERCEIMMUNE in dna.species.species_traits))
-					embed_item_inside(I)
-					hitpush = FALSE
-					skipcatch = TRUE //can't catch the now embedded item
-	if(!blocked)
-		dna.species.spec_hitby(AM, src)
-	return ..()
 
-/mob/living/carbon/human/proc/embed_item_inside(var/obj/item/I)
+	else if(I && (((throwingdatum ? throwingdatum.speed : I.throw_speed) >= EMBED_THROWSPEED_THRESHOLD) || I.embedded_ignore_throwspeed_threshold) && can_embed(I) && !(PIERCEIMMUNE in dna.species.species_traits) && prob(I.embed_chance))
+		embed_item_inside(I)
+		hitpush = FALSE
+		skipcatch = TRUE //can't catch the now embedded item
+
+	return ..(AM, skipcatch, hitpush, blocked, throwingdatum)
+
+
+/mob/living/carbon/human/proc/embed_item_inside(obj/item/I)
 	if(ismob(I.loc))
 		var/mob/M = I.loc
-		M.remove_from_mob(I)
+		M.drop_item_ground(I)
 	throw_alert("embeddedobject", /obj/screen/alert/embeddedobject)
 	var/obj/item/organ/external/L = pick(bodyparts)
 	L.embedded_objects |= I
 	I.add_mob_blood(src)//it embedded itself in you, of course it's bloody!
 	I.forceMove(src)
 	L.receive_damage(I.w_class*I.embedded_impact_pain_multiplier)
-	visible_message("<span class='danger'>[I] embeds itself in [src]'s [L.name]!</span>","<span class='userdanger'>[I] embeds itself in your [L.name]!</span>")
+	visible_message(span_danger("[I] embeds itself in [src]'s [L.name]!"),
+					span_userdanger("[I] embeds itself in your [L.name]!"))
+
 
 /mob/living/carbon/human/proc/bloody_hands(var/mob/living/source, var/amount = 2)
 
@@ -610,13 +633,13 @@ emp_act
 		if(M.a_intent == INTENT_HARM)
 			if(w_uniform)
 				w_uniform.add_fingerprint(M)
-			var/damage = prob(90) ? 20 : 0
+			var/damage = prob(90) ? M.attack_damage : 0
 			if(!damage)
 				playsound(loc, 'sound/weapons/slashmiss.ogg', 50, TRUE, -1)
 				visible_message("<span class='danger'>[M] has lunged at [src]!</span>")
 				return 0
 			var/obj/item/organ/external/affecting = get_organ(ran_zone(M.zone_selected))
-			var/armor_block = run_armor_check(affecting, "melee", armour_penetration = 10)
+			var/armor_block = run_armor_check(affecting, "melee", armour_penetration = M.armour_penetration)
 
 			playsound(loc, 'sound/weapons/slice.ogg', 25, TRUE, -1)
 			visible_message("<span class='danger'>[M] has slashed at [src]!</span>", \
@@ -628,16 +651,16 @@ emp_act
 
 		if(M.a_intent == INTENT_DISARM) //Always drop item in hand, if no item, get stun instead.
 			var/obj/item/I = get_active_hand()
-			if(I && unEquip(I))
+			if(I && drop_item_ground(I))
 				playsound(loc, 'sound/weapons/slash.ogg', 25, TRUE, -1)
 				visible_message("<span class='danger'>[M] disarms [src]!</span>", "<span class='userdanger'>[M] disarms you!</span>", "<span class='hear'>You hear aggressive shuffling!</span>")
 				to_chat(M, "<span class='danger'>You disarm [src]!</span>")
 			else
 				var/obj/item/organ/external/affecting = get_organ(ran_zone(M.zone_selected))
 				playsound(loc, 'sound/weapons/pierce.ogg', 25, 1, -1)
-				src.adjustStaminaLoss(rand(10,20))
+				src.adjustStaminaLoss(M.disarm_stamina_damage)
 				if(prob(40))
-					apply_effect(1, WEAKEN, run_armor_check(affecting, "melee"))
+					apply_effect(2 SECONDS, WEAKEN, run_armor_check(affecting, "melee"))
 					add_attack_logs(M, src, "Alien tackled")
 					visible_message("<span class='danger'>[M] has tackled down [src]!</span>")
 				else
@@ -678,7 +701,7 @@ emp_act
 
 /mob/living/carbon/human/mech_melee_attack(obj/mecha/M)
 	if(M.occupant.a_intent == INTENT_HARM)
-		if(HAS_TRAIT(M.occupant, TRAIT_PACIFISM))
+		if(HAS_TRAIT(M.occupant, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
 			to_chat(M.occupant, "<span class='warning'>You don't want to harm other living beings!</span>")
 			return
 		M.do_attack_animation(src)
@@ -691,9 +714,9 @@ emp_act
 			switch(M.damtype)
 				if("brute")
 					if(M.force > 35) // durand and other heavy mechas
-						Paralyse(1)
+						Paralyse(2 SECONDS)
 					else if(M.force > 20 && !IsWeakened()) // lightweight mechas like gygax
-						Weaken(2)
+						Weaken(4 SECONDS)
 					update |= affecting.receive_damage(dmg, 0)
 					playsound(src, 'sound/weapons/punch4.ogg', 50, TRUE)
 				if("fire")

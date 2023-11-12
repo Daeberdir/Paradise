@@ -19,10 +19,10 @@ GLOBAL_VAR_INIT(admin_ooc_colour, "#b82e00")
 		return
 
 	if(!check_rights(R_ADMIN|R_MOD, 0))
-		if(!config.ooc_allowed)
+		if(!CONFIG_GET(flag/ooc_allowed))
 			to_chat(src, "<span class='danger'>OOC is globally muted.</span>")
 			return
-		if(!config.dooc_allowed && (mob.stat == DEAD))
+		if(!CONFIG_GET(flag/dooc_allowed) && (mob.stat == DEAD))
 			to_chat(usr, "<span class='danger'>OOC for dead mobs has been turned off.</span>")
 			return
 		if(prefs.muted & MUTE_OOC)
@@ -41,7 +41,7 @@ GLOBAL_VAR_INIT(admin_ooc_colour, "#b82e00")
 		return
 
 	if(!check_rights(R_ADMIN|R_MOD,0))
-		if(!config.ooc_allowed)
+		if(!CONFIG_GET(flag/ooc_allowed))
 			to_chat(src, "<span class='danger'>OOC is globally muted.</span>")
 			return
 		if(handle_spam_prevention(msg, MUTE_OOC, OOC_COOLDOWN))
@@ -66,7 +66,7 @@ GLOBAL_VAR_INIT(admin_ooc_colour, "#b82e00")
 		if(check_rights(R_MOD,0) && !check_rights(R_ADMIN,0))
 			display_colour = GLOB.moderator_ooc_colour
 		else if(check_rights(R_ADMIN,0))
-			if(config.allow_admin_ooccolor)
+			if(CONFIG_GET(flag/allow_admin_ooccolor))
 				display_colour = src.prefs.ooccolor
 			else
 				display_colour = GLOB.admin_ooc_colour
@@ -87,7 +87,7 @@ GLOBAL_VAR_INIT(admin_ooc_colour, "#b82e00")
 
 			if(donator_level > 0)
 				if((prefs.toggles & PREFTOGGLE_DONATOR_PUBLIC))
-					var/icon/donator = icon('icons/ooc_tag_16x.dmi', "donator")
+					var/icon/donator = icon('icons/ooc_tag_16x.png')
 					display_name = "[bicon(donator)][display_name]"
 
 			if(holder)
@@ -97,20 +97,24 @@ GLOBAL_VAR_INIT(admin_ooc_colour, "#b82e00")
 					else
 						display_name = holder.fakekey
 
-			if(!config.disable_ooc_emoji)
+			if(!CONFIG_GET(flag/disable_ooc_emoji))
 				msg = "<span class='emoji_enabled'>[msg]</span>"
 
 			to_chat(C, "<font color='[display_colour]'><span class='ooc'><span class='prefix'>OOC:</span> <EM>[display_name]:</EM> <span class='message'>[msg]</span></span></font>")
 
 /proc/toggle_ooc()
-	config.ooc_allowed = ( !config.ooc_allowed )
-	if(config.ooc_allowed)
+	CONFIG_SET(flag/ooc_allowed, !CONFIG_GET(flag/ooc_allowed))
+	if(CONFIG_GET(flag/ooc_allowed))
 		to_chat(world, "<B>The OOC channel has been globally enabled!</B>")
+		log_admin("OOC was toggled on automatically.")
+		message_admins("OOC has been toggled on automatically.")
 	else
 		to_chat(world, "<B>The OOC channel has been globally disabled!</B>")
+		log_admin("OOC was toggled off automatically.")
+		message_admins("OOC has been toggled off automatically.")
 
 /proc/auto_toggle_ooc(var/on)
-	if(config.auto_toggle_ooc_during_round && config.ooc_allowed != on)
+	if(CONFIG_GET(flag/auto_toggle_ooc_during_round) && CONFIG_GET(flag/ooc_allowed) != on)
 		toggle_ooc()
 
 /client/proc/set_ooc(newColor as color)
@@ -180,10 +184,10 @@ GLOBAL_VAR_INIT(admin_ooc_colour, "#b82e00")
 		return
 
 	if(!check_rights(R_ADMIN|R_MOD,0))
-		if(!config.looc_allowed)
+		if(!CONFIG_GET(flag/looc_allowed))
 			to_chat(src, "<span class='danger'>LOOC is globally muted.</span>")
 			return
-		if(!config.dooc_allowed && (mob.stat == DEAD))
+		if(!CONFIG_GET(flag/dooc_allowed) && (mob.stat == DEAD))
 			to_chat(usr, "<span class='danger'>LOOC for dead mobs has been turned off.</span>")
 			return
 		if(prefs.muted & MUTE_OOC)

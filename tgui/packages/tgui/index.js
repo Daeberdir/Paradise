@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @copyright 2020 Aleksej Komarov
+ * @license MIT
+ */
+
 // Polyfills
 import 'core-js/es';
 import 'core-js/web/immediate';
@@ -32,6 +38,7 @@ import './styles/themes/syndicate.scss';
 import './styles/themes/nologo.scss';
 import './styles/themes/spider_clan.scss';
 
+import { captureExternalLinks } from './links';
 
 
 const enteredBundleAt = Date.now();
@@ -130,6 +137,8 @@ const setupApp = () => {
   store.subscribe(() => {
     renderLayout();
   });
+
+  captureExternalLinks();
 
   // Subscribe for bankend updates
   window.update = stateJson => {

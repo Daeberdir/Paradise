@@ -144,3 +144,29 @@
 		var/mineral = pick("copper", "iron", "gold", "carbon", "silver", "aluminum", "silicon", "sodiumchloride", "plasma")
 		M.reagents.add_reagent(mineral, amount)
 	return ..()
+
+/datum/reagent/consumable/ethanol/moonlight_skuma
+	name = "Moon'drin"
+	id = "moonlight_skuma"
+	description = "Double distilled Moon'lin. Soft mint taste which is loved by all tajarans. Used in cocktails."
+	reagent_state = LIQUID
+	color = "#6734df"
+	taste_description = "alcohol, mint and you feel funny"
+	drink_icon = "moonlight_skuma"
+	drink_name = "Moon'drin"
+	drink_desc = "Double distilled Moon'lin. Soft mint taste which is loved by all tajarans. Used in cocktails."
+	addiction_chance = 2
+	alcohol_perc = 0.5
+
+/datum/reagent/consumable/ethanol/moonlight_skuma/on_mob_life(mob/living/M)
+	var/update_flags = STATUS_UPDATE_NONE
+	M.Druggy(60 SECONDS)
+	M.Dizzy(10 SECONDS)
+	if(prob(15))
+		M.emote(pick("twitch","giggle"))
+		M.Dizzy(6 SECONDS)
+	if(prob(5))
+		M.Jitter(10 SECONDS)
+		M.emote("smile")
+		to_chat(M, "<span class='notice'>Вы испытываете приятные, теплые чувства, словно вы дома...</span>")
+	return ..() | update_flags

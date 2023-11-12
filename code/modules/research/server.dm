@@ -83,7 +83,7 @@
 			health = min(100, health + 1)
 		if(T0C to (T20C + 20))
 			health = clamp(health, 0, 100)
-		if((T20C + 20) to (T0C + 70))
+		if((T20C + 20) to INFINITY)
 			health = max(0, health - 1)
 	if(health <= 0)
 		/*griefProtection() This seems to get called twice before running any code that deletes/damages the server or it's files anwyay.
@@ -145,12 +145,15 @@
 
 /obj/machinery/r_n_d/server/attackby(var/obj/item/O as obj, var/mob/user as mob, params)
 	if(disabled)
+		add_fingerprint(user)
 		return
 
 	if(shocked)
+		add_fingerprint(user)
 		shock(user,50)
 
 	if(istype(O, /obj/item/screwdriver))
+		add_fingerprint(user)
 		default_deconstruction_screwdriver(user, icon_open, icon_closed, O)
 		return 1
 
@@ -166,10 +169,14 @@
 		return ..()
 
 /obj/machinery/r_n_d/server/attack_hand(mob/user as mob)
+	if(..())
+		return TRUE
+
 	if(disabled)
 		return
 
 	if(shocked)
+		add_fingerprint(user)
 		shock(user,50)
 	return
 
@@ -338,6 +345,9 @@
 /obj/machinery/computer/rdservercontrol/attack_hand(mob/user as mob)
 	if(stat & (BROKEN|NOPOWER))
 		return
+	if(..())
+		return TRUE
+	add_fingerprint(user)
 	user.set_machine(src)
 	var/dat = ""
 

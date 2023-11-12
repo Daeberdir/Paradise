@@ -160,7 +160,7 @@
 /mob/living/simple_animal/cow/attack_hand(mob/living/carbon/M as mob)
 	if(!stat && M.a_intent == INTENT_DISARM && icon_state != icon_dead)
 		M.visible_message("<span class='warning'>[M] tips over [src].</span>","<span class='notice'>You tip over [src].</span>")
-		Weaken(30)
+		Weaken(60 SECONDS)
 		icon_state = icon_dead
 		spawn(rand(20,50))
 			if(!stat && M)
@@ -189,7 +189,7 @@
 	density = 0
 	speak_chance = 2
 	turns_per_move = 2
-	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat = 1)
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/bird = 1)
 	response_help  = "pets the"
 	response_disarm = "gently pushes aside the"
 	response_harm   = "kicks the"
@@ -197,6 +197,7 @@
 	death_sound = 'sound/creatures/mouse_squeak.ogg'
 	health = 3
 	maxHealth = 3
+	blood_nutrients = 20
 	ventcrawler = 2
 	var/amount_grown = 0
 	pass_flags = PASSTABLE | PASSGRILLE | PASSMOB
@@ -244,7 +245,7 @@ GLOBAL_VAR_INIT(chicken_count, 0)
 	density = 0
 	speak_chance = 2
 	turns_per_move = 3
-	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat = 2)
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/bird = 2)
 	var/egg_type = /obj/item/reagent_containers/food/snacks/egg
 	var/food_type = /obj/item/reagent_containers/food/snacks/grown/wheat
 	response_help  = "pets the"
@@ -256,6 +257,7 @@ GLOBAL_VAR_INIT(chicken_count, 0)
 	talk_sound = list('sound/creatures/chicken_talk.ogg')
 	health = 15
 	maxHealth = 15
+	blood_nutrients = 30
 	ventcrawler = 2
 	var/eggsleft = 0
 	var/eggsFertile = TRUE
@@ -295,7 +297,7 @@ GLOBAL_VAR_INIT(chicken_count, 0)
 		if(!stat && eggsleft < 8)
 			var/feedmsg = "[user] feeds [O] to [name]! [pick(feedMessages)]"
 			user.visible_message(feedmsg)
-			user.drop_item()
+			user.drop_transfer_item_to_loc(O, src)
 			qdel(O)
 			eggsleft += rand(1, 4)
 			//world << eggsleft
@@ -343,7 +345,7 @@ GLOBAL_VAR_INIT(chicken_count, 0)
 	density = 0
 	speak_chance = 2
 	turns_per_move = 3
-	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat = 4)
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/bird = 4)
 	response_help  = "pets the"
 	response_disarm = "gently pushes aside the"
 	response_harm   = "kicks the"
@@ -406,7 +408,7 @@ GLOBAL_VAR_INIT(chicken_count, 0)
 	speak_chance = 1
 	turns_per_move = 5
 	see_in_dark = 6
-	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat = 4)
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/bird = 4)
 	response_help  = "pets the"
 	response_disarm = "gently pushes aside the"
 	response_harm   = "kicks the"
@@ -433,7 +435,7 @@ GLOBAL_VAR_INIT(chicken_count, 0)
 	speak_chance = 1
 	turns_per_move = 5
 	see_in_dark = 6
-	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat = 6)
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/bird = 6)
 	response_help  = "pets the"
 	response_disarm = "gently pushes aside the"
 	response_harm   = "kicks the"
@@ -457,7 +459,7 @@ GLOBAL_VAR_INIT(chicken_count, 0)
 	icon_living = "gosling"
 	icon_dead = "gosling_dead"
 	icon_resting = "gosling_rest"
-	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat = 3)
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/bird = 3)
 	melee_damage_lower = 0
 	melee_damage_upper = 0
 	health = 20

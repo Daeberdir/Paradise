@@ -36,6 +36,7 @@
 	var/allow_species_pick = FALSE
 	var/allow_gender_pick = FALSE
 	var/allow_name_pick = FALSE
+	var/allow_tts_pick = TRUE // defaulted to TRUE because some "simple mob" mob_spawns may require custom voice
 	var/mob_species = null
 
 	var/assignedrole
@@ -76,7 +77,7 @@
 		to_chat(usr, "You have been dead for[pluralcheck] [deathtimeseconds] seconds.")
 		to_chat(usr, "<span class='warning'>You must wait [respawn_cooldown / 600] minutes to respawn as [mob_name]!</span>")
 		return
-	if(config.use_exp_restrictions && min_hours)
+	if(CONFIG_GET(flag/use_exp_restrictions) && min_hours)
 		if(user.client.get_exp_type_num(exp_type) < min_hours * 60 && !check_rights(R_ADMIN|R_MOD, 0, usr))
 			to_chat(user, "<span class='warning'>У вас недостаточно часов для игры на этой роли. Требуется набрать [min_hours] часов типа [exp_type] для доступа к ней.</span>")
 			return
@@ -130,6 +131,9 @@
 		GLOB.mob_spawners -= name
 	return ..()
 
+/obj/effect/mob_spawn/is_mob_spawnable()
+	return TRUE
+
 /obj/effect/mob_spawn/proc/use_prefs_prompt(mob/user)
 	return
 
@@ -152,8 +156,10 @@
 	var/mob/living/M = new mob_type(get_turf(src)) //living mobs only
 	if(!random)
 		M.real_name = mob_name ? mob_name : M.name
+		M.tts_seed = SStts.get_random_seed(M)
 		if(M.dna)
 			M.dna.real_name = mob_name
+			M.dna.tts_seed_dna = M.tts_seed
 		if(M.mind)
 			M.mind.name = mob_name
 		if(!mob_gender)
@@ -162,7 +168,8 @@
 	if(faction)
 		M.faction = list(faction)
 	if(disease)
-		M.ForceContractDisease(new disease)
+		var/datum/disease/D = new disease
+		D.Contract(M)
 	M.adjustOxyLoss(oxy_damage)
 	M.adjustBruteLoss(brute_damage)
 	M.adjustFireLoss(burn_damage)
@@ -187,13 +194,14 @@
 		M.mind.offstation_role = offstation_role
 		special(M, name)
 		MM.name = M.real_name
-		M.change_voice()
+		if(allow_tts_pick)
+			M.change_voice()
 	if(uses > 0)
 		uses--
 	if(!permanent && !uses)
 		qdel(src)
-	else
-		M.tts_seed = SStts.get_random_seed(M)
+
+	return M
 
 // Base version - place these on maps/templates.
 /obj/effect/mob_spawn/human
@@ -204,6 +212,7 @@
 	allow_prefs_prompt = FALSE
 	allow_gender_pick = FALSE
 	allow_name_pick = FALSE
+	allow_tts_pick = TRUE
 	var/list/pickable_species = list("Human", "Vulpkanin", "Tajaran", "Unathi", "Skrell", "Diona")
 	var/datum/outfit/outfit = /datum/outfit	//If this is a path, it will be instanced in Initialize()
 	var/disable_pda = TRUE
@@ -403,7 +412,7 @@
 
 
 /obj/effect/mob_spawn/human/alive
-	icon = 'icons/obj/cryogenic2.dmi'
+	icon = 'icons/obj/machines/cryogenic2.dmi'
 	icon_state = "sleeper"
 	death = FALSE
 	roundstart = FALSE //you could use these for alive fake humans on roundstart but this is more common scenario
@@ -417,7 +426,7 @@
 	mob_type = 	/mob/living/simple_animal/mouse
 	death = FALSE
 	roundstart = FALSE
-	icon = 'icons/obj/cryogenic2.dmi'
+	icon = 'icons/obj/machines/cryogenic2.dmi'
 	icon_state = "sleeper"
 	flavour_text = "Squeak!"
 
@@ -428,7 +437,7 @@
 	death = FALSE
 	roundstart = FALSE
 	mob_gender = FEMALE
-	icon = 'icons/obj/cryogenic2.dmi'
+	icon = 'icons/obj/machines/cryogenic2.dmi'
 	icon_state = "sleeper"
 	flavour_text = "Moo!"
 
@@ -442,13 +451,13 @@
 	outfit = /datum/outfit/job/assistant
 
 /obj/effect/mob_spawn/human/corpse/assistant/beesease_infection
-	disease = /datum/disease/beesease
+	disease = /datum/disease/virus/beesease
 
 /obj/effect/mob_spawn/human/corpse/assistant/brainrot_infection
-	disease = /datum/disease/brainrot
+	disease = /datum/disease/virus/brainrot
 
 /obj/effect/mob_spawn/human/corpse/assistant/spanishflu_infection
-	disease = /datum/disease/fluspanish
+	disease = /datum/disease/virus/fluspanish
 
 /obj/effect/mob_spawn/human/cook
 	name = "Cook"
@@ -473,7 +482,7 @@
 	roundstart = FALSE
 	random = TRUE
 	name = "sleeper"
-	icon = 'icons/obj/cryogenic2.dmi'
+	icon = 'icons/obj/machines/cryogenic2.dmi'
 	icon_state = "sleeper"
 	flavour_text = "You are a space doctor!"
 	assignedrole = "Space Doctor"
@@ -633,7 +642,7 @@
 	allow_gender_pick = TRUE
 	allow_name_pick = TRUE
 	name = "bartender sleeper"
-	icon = 'icons/obj/cryogenic2.dmi'
+	icon = 'icons/obj/machines/cryogenic2.dmi'
 	icon_state = "sleeper"
 	description = "Stuck on Lavaland, you could try getting back to civilisation...or serve drinks to those that wander by."
 	flavour_text = "You are a space bartender! Time to mix drinks and change lives. Wait, where did your bar just get transported to?"
@@ -675,7 +684,7 @@
 	allow_name_pick = TRUE
 	mob_name = "Beach Bum"
 	name = "beach bum sleeper"
-	icon = 'icons/obj/cryogenic2.dmi'
+	icon = 'icons/obj/machines/cryogenic2.dmi'
 	icon_state = "sleeper"
 	flavour_text = "You are a beach bum! You think something just happened to the beach but you don't really pay too much attention."
 	description = "Try to survive on lavaland or just enjoy the beach, waiting for visitors."
@@ -795,12 +804,26 @@
 	icon = 'icons/mob/carp.dmi'
 	icon_state = "base_dead"
 
+/obj/effect/mob_spawn/mousedead
+	mob_type = /mob/living/simple_animal/mouse
+	death = TRUE
+	name = "Dead mouse"
+	icon = 'icons/mob/animal.dmi'
+	icon_state = "mouse_brown_splat"
+
+/obj/effect/mob_spawn/ratdead
+	mob_type = /mob/living/simple_animal/mouse/rat
+	death = TRUE
+	name = "Dead rat"
+	icon = 'icons/mob/animal.dmi'
+	icon_state = "rat_white_splat"
+
 //For black market packers gate
 
 /obj/effect/mob_spawn/human/corpse/tacticool
 	mob_type = /mob/living/carbon/human
 	name = "Tacticool corpse"
-	icon = 'icons/mob/uniform.dmi'
+	icon = 'icons/mob/clothing/uniform.dmi'
 	icon_state = "tactifool_s"
 	mob_name = "Unknown"
 	random = TRUE

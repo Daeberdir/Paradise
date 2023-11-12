@@ -52,7 +52,7 @@ GLOBAL_LIST_EMPTY(GPS_list)
 /obj/item/gps/emp_act(severity)
 	emped = TRUE
 	update_icon()
-	addtimer(CALLBACK(src, .proc/reboot), EMP_DISABLE_TIME)
+	addtimer(CALLBACK(src, PROC_REF(reboot)), EMP_DISABLE_TIME)
 
 /obj/item/gps/AltClick(mob/living/user)
 	if(!Adjacent(user))
@@ -119,6 +119,18 @@ GLOBAL_LIST_EMPTY(GPS_list)
 /obj/item/gps/attack_self(mob/user)
 	ui_interact(user)
 
+
+/obj/item/gps/MouseDrop(atom/over)
+	. = ..()
+
+	var/mob/user = usr
+	if(!ishuman(user) || !Adjacent(user) || user.incapacitated())
+		return FALSE
+
+	attack_self(user)
+	return TRUE
+
+
 /obj/item/gps/ui_interact(mob/user, ui_key = "main", datum/tgui/ui = null, force_open = FALSE, datum/tgui/master_ui = null, datum/ui_state/state = GLOB.inventory_state)
 	ui = SStgui.try_update_ui(user, src, ui_key, ui, force_open)
 	if(!ui)
@@ -165,12 +177,16 @@ GLOBAL_LIST_EMPTY(GPS_list)
 	icon_state = "gps-m"
 	gpstag = "MINE0"
 	desc = "A positioning system helpful for rescuing trapped or injured miners, keeping one on you at all times while mining might just save your life."
+	tracking = FALSE
 
 /obj/item/gps/cyborg
 	icon_state = "gps-b"
 	gpstag = "BORG0"
 	desc = "A mining cyborg internal positioning system. Used as a recovery beacon for damaged cyborg assets, or a collaboration tool for mining teams."
 	flags = NODROP
+
+/obj/item/gps/cyborg/upgraded
+	upgraded = 1
 
 /obj/item/gps/syndiecyborg
 	icon_state = "gps-b"

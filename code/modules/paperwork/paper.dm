@@ -20,6 +20,7 @@
 	resistance_flags = FLAMMABLE
 	max_integrity = 50
 	attack_verb = list("bapped")
+	permeability_coefficient = 0.01
 	dog_fashion = /datum/dog_fashion/head
 	var/header //Above the main body, displayed at the top
 	var/info		//What's actually written on the paper.
@@ -27,6 +28,7 @@
 	var/info_links	//A different version of the paper which includes html links at fields and EOF
 	var/stamps		//The (text for the) stamps on the paper.
 	var/fields		//Amount of user created fields
+	var/language = "Galactic Common" //The language of paper. For now using only in case of Thetta
 	var/list/stamped
 	var/ico[0]      //Icons and
 	var/offset_x[0] //offsets stored for later
@@ -79,14 +81,14 @@
 	assets.send(user)
 
 	var/data
-	var/stars = (!user.say_understands(null, GLOB.all_languages["Galactic Common"]) && !forceshow) || forcestars
+	var/stars = (!user?.say_understands(null, GLOB.all_languages[language]) && !forceshow) || forcestars
 	if(stars) //assuming all paper is written in common is better than hardcoded type checks
 		data = "[header][stars(info)][footer][stamps]"
 	else
 		data = "[header]<div id='markdown'>[infolinks ? info_links : info]</div>[footer][stamps]"
-	if(config.twitch_censor)
-		for(var/char in config.twich_censor_list)
-			data = replacetext(data, char, config.twich_censor_list[char])
+	if(CONFIG_GET(flag/twitch_censor))
+		for(var/char in GLOB.twitch_censor_list)
+			data = replacetext(data, char, GLOB.twitch_censor_list[char])
 	if(view)
 		if(!istype(src, /obj/item/paper/form) && length(info) > 1024)
 			paper_width = paper_width_big
@@ -146,9 +148,15 @@
 
 /obj/item/paper/attack(mob/living/carbon/M as mob, mob/living/carbon/user as mob)
 	if(user.zone_selected == "eyes")
-		user.visible_message("<span class='notice'>You show the paper to [M]. </span>", \
-			"<span class='notice'> [user] holds up a paper and shows it to [M]. </span>")
-		M.examinate(src)
+		user.visible_message("<span class='warning'>[user] is trying to show the paper to you. </span>", \
+			"<span class='notice'>You hold up a paper and try to show it to [M]. </span>")
+
+		if(do_mob(user, M, 0.7 SECONDS))
+			user.visible_message("<span class='notice'>[user] shows the paper to you. </span>", \
+				"<span class='notice'>You hold up a paper and show it to [M]. </span>")
+			M.examinate(src)
+		else
+			to_chat(user, span_warning("You fail to show the paper to [M]."))
 
 	else if(user.zone_selected == "mouth")
 		if(!istype(M, /mob))	return
@@ -158,6 +166,7 @@
 			if(H == user)
 				to_chat(user, "<span class='notice'>You wipe off your face with [src].</span>")
 				H.lip_style = null
+				H.lip_color = initial(H.lip_color)
 				H.update_body()
 			else
 				user.visible_message("<span class='warning'>[user] begins to wipe [H]'s face clean with \the [src].</span>", \
@@ -166,6 +175,7 @@
 					user.visible_message("<span class='notice'>[user] wipes [H]'s face clean with \the [src].</span>", \
 										 "<span class='notice'>You wipe off [H]'s face.</span>")
 					H.lip_style = null
+					H.lip_color = initial(H.lip_color)
 					H.update_body()
 	else
 		..()
@@ -379,36 +389,37 @@
 			B.name = name
 		else if(P.name != "paper" && P.name != "photo")
 			B.name = P.name
-		user.unEquip(P)
+		user.drop_item_ground(P)
 		if(istype(user, /mob/living/carbon/human))
 			var/mob/living/carbon/human/h_user = user
 			if(h_user.r_hand == src)
-				h_user.unEquip(src)
-				h_user.put_in_r_hand(B)
+				h_user.drop_item_ground(src)
+				h_user.put_in_r_hand(B, ignore_anim = FALSE)
 			else if(h_user.l_hand == src)
-				h_user.unEquip(src)
-				h_user.put_in_l_hand(B)
+				h_user.drop_item_ground(src)
+				h_user.put_in_l_hand(B, ignore_anim = FALSE)
 			else if(h_user.l_store == src)
-				h_user.unEquip(src)
+				h_user.drop_item_ground(src)
 				B.loc = h_user
 				B.layer = ABOVE_HUD_LAYER
 				B.plane = ABOVE_HUD_PLANE
 				h_user.l_store = B
 				h_user.update_inv_pockets()
 			else if(h_user.r_store == src)
-				h_user.unEquip(src)
+				h_user.drop_item_ground(src)
 				B.loc = h_user
 				B.layer = ABOVE_HUD_LAYER
 				B.plane = ABOVE_HUD_PLANE
 				h_user.r_store = B
 				h_user.update_inv_pockets()
 			else if(h_user.head == src)
-				h_user.unEquip(src)
-				h_user.put_in_hands(B)
+				h_user.drop_item_ground(src)
+				h_user.put_in_hands(B, ignore_anim = FALSE)
 			else if(!istype(src.loc, /turf))
 				src.loc = get_turf(h_user)
-				if(h_user.client)	h_user.client.screen -= src
-				h_user.put_in_hands(B)
+				if(h_user.client)
+					h_user.client.screen -= src
+				h_user.put_in_hands(B, ignore_anim = FALSE)
 		to_chat(user, "<span class='notice'>You clip the [P.name] to [(src.name == "paper") ? "the paper" : src.name].</span>")
 		src.loc = B
 		P.loc = B
@@ -444,7 +455,7 @@
 		if((CLUMSY in user.mutations) && prob(10))
 			user.visible_message("<span class='warning'>[user] accidentally ignites [user.p_them()]self!</span>", \
 								"<span class='userdanger'>You miss the paper and accidentally light yourself on fire!</span>")
-			user.unEquip(P)
+			user.drop_item_ground(P)
 			user.adjust_fire_stacks(1)
 			user.IgniteMob()
 			return
@@ -452,7 +463,7 @@
 		if(!Adjacent(user)) //to prevent issues as a result of telepathically lighting a paper
 			return
 
-		user.unEquip(src)
+		user.drop_item_ground(src)
 		user.visible_message("<span class='danger'>[user] lights [src] ablaze with [P]!</span>", "<span class='danger'>You light [src] on fire!</span>")
 		fire_act()
 
@@ -624,7 +635,7 @@
 
 /obj/item/paper/holodeck
 	name = "paper- 'Holodeck Disclaimer'"
-	info = "Brusies sustained in the holodeck can be healed simply by sleeping."
+	info = "Bruises sustained in the holodeck can be healed simply by sleeping."
 
 /obj/item/paper/syndimemo
 	name = "paper- 'Memo'"
@@ -660,6 +671,12 @@
 	header = "<p><img style='display: block; margin-left: auto; margin-right: auto;' src='ntlogo.png' width='220' height='135' /></p><hr />"
 	info =  ""
 
+/obj/item/paper/ussp
+	name = "paper"
+	header = "<p><img style='display: block; margin-left: auto; margin-right: auto;' src='ussplogo.png' width='220' height='135' /></p><hr />"
+	info =  ""
+	language = "Neo-Russkiya"
+
 /obj/item/paper/central_command
 	name = "Директива Центрального Командования"
 	info = ""
@@ -668,7 +685,7 @@
 	time = "Время: [station_time_timestamp()]"
 	if(!(GLOB.genname))
 		GLOB.genname = "[pick(GLOB.first_names_male)] [pick(GLOB.last_names)]"
-	header ="<font face=\"Verdana\" color=black><table></td><tr><td><img src = ntlogo.png><td><table></td><tr><td><font size = \"1\">Форма NT-CC-DRV</font></td><tr><td><font size=\"1\">NAS Trurl</font></td><tr><td><font size=\"1\">[time]</font></td><tr><td></td><tr><td></td><tr><td><B>Директива Центрального Командования</B></td></tr></table></td></tr></table><BR><HR><BR></font>"
+	header ="<font face=\"Verdana\" color=black><table></td><tr><td><img src = ntlogo.png><td><table></td><tr><td><font size = \"1\">Форма NT-CC-DRV</font></td><tr><td><font size=\"1\">[command_name()]</font></td><tr><td><font size=\"1\">[time]</font></td><tr><td></td><tr><td></td><tr><td><B>Директива Центрального Командования</B></td></tr></table></td></tr></table><BR><HR><BR></font>"
 	footer = "<br /><br /><font face=\"Verdana\" size = \"1\"><i>Подпись&#58;</font> <font face=\"[signfont]\" size = \"1\">[GLOB.genname]</font></i><font face=\"Verdana\" size = \"1\">, в должности <i>Nanotrasen Navy Officer</i></font><hr /><p style='font-family:Verdana;'><font size = \"1\"><em>*Содержимое данного документа следует считать конфиденциальным. Если не указано иное, распространение содержащейся в данном документе информации среди третьих лиц и сторонних организаций строго запрещено. </em> <br /> <em>*Невыполнение директив, содержащихся в данном документе, считается нарушением политики корпорации и может привести к наложению различных дисциплинарных взысканий. </em> <br /> <em> *Данный документ считается действительным только при наличии подписи и печати офицера Центрального Командования.</em></font></p>"
 	populatefields()
 	return ..()
@@ -766,7 +783,8 @@
 	STOP_PROCESSING(SSobj, src)
 	if(mytarget && !used)
 		var/mob/living/carbon/target = mytarget
-		target.ForceContractDisease(new /datum/disease/transformation/corgi(0))
+		var/datum/disease/virus/transformation/corgi/D = new
+		D.Contract(target)
 	return ..()
 
 
@@ -790,10 +808,12 @@
 			var/obj/machinery/photocopier/faxmachine/fax = locateUID(faxmachineid)
 			if(myeffect == "Borgification")
 				to_chat(target,"<span class='userdanger'>You seem to comprehend the AI a little better. Why are your muscles so stiff?</span>")
-				target.ForceContractDisease(new /datum/disease/transformation/robot(0))
+				var/datum/disease/virus/transformation/robot/D = new
+				D.Contract(target)
 			else if(myeffect == "Corgification")
 				to_chat(target,"<span class='userdanger'>You hear distant howling as the world seems to grow bigger around you. Boy, that itch sure is getting worse!</span>")
-				target.ForceContractDisease(new /datum/disease/transformation/corgi(0))
+				var/datum/disease/virus/transformation/corgi/D = new
+				D.Contract(target)
 			else if(myeffect == "Death By Fire")
 				to_chat(target,"<span class='userdanger'>You feel hotter than usual. Maybe you should lowe-wait, is that your hand melting?</span>")
 				var/turf/simulated/T = get_turf(target)
@@ -887,7 +907,7 @@
 	footer = footer_signstampfax
 
 /obj/item/paper/form/New()
-	from = "Научная станция Nanotrasen &#34;[MAP_NAME]&#34;"
+	from = "Научная станция Nanotrasen &#34;[SSmapping.map_datum.station_name]&#34;"
 	if(is_header_needed)
 		header = "<font face=\"Verdana\" color=black><table></td><tr><td><img src = ntlogo.png><td><table></td><tr><td><font size = \"1\">[name][confidential ? " \[КОНФИДЕНЦИАЛЬНО\]" : ""]</font></td><tr><td></td><tr><td><B><font size=\"4\">[altername]</font></B></td><tr><td><table></td><tr><td>[from]<td>[category]</td></tr></table></td></tr></table></td></tr></table><center><font size = \"1\">[notice]</font></center><BR><HR><BR></font>"
 	populatefields()
@@ -1250,7 +1270,7 @@
 	altername = "Смертный приговор"
 	category = "Юридический отдел"
 	notice = "Любой смертный приговор, выданный человеком, званием младше, чем капитан, является не действительным, и все казни, действующие от этого приговора являются незаконными. Любой, кто незаконно привел в исполнение смертный приговор действую согласно ложному ордену виновен в убийстве первой степени, и должен быть приговорен минимум к пожизненному заключению и максимум к кибернизации. Этот документ или его факс-копия являются Приговором, который может оспорить только Магистрат или Дивизией защиты активов Nanotrasen (далее именуемой «Компанией»)"
-	info = "<font face=\"Verdana\" color=black><center><font size=\"4\"><B>Дело <span class=\"paper_field\"></span></B></font></center><BR>Принимая во внимание, что <span class=\"paper_field\"></span> <font size = \"1\">(далее именуемый \"подсудимый\")</font>, <BR>сознательно совершил преступления X-5 статей Космического закона <font size = \"1\">(далее указаны как \"преступления\")</font>, <BR>а именно: <span class=\"paper_field\"></span>, <BR>суд приговаривает подсудимого к смертной казни через <span class=\"paper_field\"></span>.<BR><BR>Приговор должен быть приведен в исполнение в течение 15 минут после получения данного приказа. Вещи подсудимого, включая ID-карту, ПДА, униформу и рюкзак, должны быть сохранены и переданы соответствующем органам (ID-карту передать главе персонала или капитану для уничтожения), возвращены в соответсвующий отдел или сложены в хранилище улик. Любая контрабанда должна немедленно помещена в хранилище улик. Любую контрабанду запрещено использовать защитой активов или другими персонами, представляющих компанию или её активы и цели, кроме сотрудников отдела исследований и развития.<BR><BR>Тело подсудимого должно быть помещено в морг и забальзамировано, только если данное действие не будет нести опасность станции, активам компании или её имуществу. Останки подсудимого должны быть собраны и подготовлены к доставке к близлежащему административному центру компании, всё имущество и активы должны быть переданы семье подсудимого после окончания смены.<BR><BR>Слава Nanotrasen!<BR><BR><HR><BR><center><font size=\"4\"><B>Подписи и штампы</B></font></center><BR><table></td><tr><td>Время:<td><span class=\"paper_field\"></span><BR></td><tr><td>Подпись уполномоченного лица:<td><span class=\"paper_field\"></span><BR></td><tr><td>Должность уполномоченного лица:<td><span class=\"paper_field\"></span><BR></td></tr></table></font>"
+	info = "<font face=\"Verdana\" color=black><center><font size=\"4\"><B>Дело <span class=\"paper_field\"></span></B></font></center><BR>Принимая во внимание, что <span class=\"paper_field\"></span> <font size = \"1\">(далее именуемый \"подсудимый\")</font>, <BR>сознательно совершил преступления статей Космического закона <font size = \"1\">(далее указаны как \"преступления\")</font>, <BR>а именно: <span class=\"paper_field\"></span>, <BR>суд приговаривает подсудимого к смертной казни через <span class=\"paper_field\"></span>.<BR><BR>Приговор должен быть приведен в исполнение в течение 15 минут после получения данного приказа. Вещи подсудимого, включая ID-карту, ПДА, униформу и рюкзак, должны быть сохранены и переданы соответствующем органам (ID-карту передать главе персонала или капитану для уничтожения), возвращены в соответсвующий отдел или сложены в хранилище улик. Любая контрабанда должна немедленно помещена в хранилище улик. Любую контрабанду запрещено использовать защитой активов или другими персонами, представляющих компанию или её активы и цели, кроме сотрудников отдела исследований и развития.<BR><BR>Тело подсудимого должно быть помещено в морг и забальзамировано, только если данное действие не будет нести опасность станции, активам компании или её имуществу. Останки подсудимого должны быть собраны и подготовлены к доставке к близлежащему административному центру компании, всё имущество и активы должны быть переданы семье подсудимого после окончания смены.<BR><BR>Слава Nanotrasen!<BR><BR><HR><BR><center><font size=\"4\"><B>Подписи и штампы</B></font></center><BR><table></td><tr><td>Время:<td><span class=\"paper_field\"></span><BR></td><tr><td>Подпись уполномоченного лица:<td><span class=\"paper_field\"></span><BR></td><tr><td>Должность уполномоченного лица:<td><span class=\"paper_field\"></span><BR></td></tr></table></font>"
 	footer = footer_confidential
 
 /obj/item/paper/form/NT_LD_03
@@ -1291,7 +1311,7 @@
 	id = "NT-COM-01"
 	altername = "Запрос отчёта общего состояния станции"
 	category = "Центральное командование"
-	from = "Административная станция Nanotrasen &#34;Trurl&#34;"
+	from = "Административный корабль Nanotrasen &#34;Trurl&#34;"
 	notice = "Перед заполнением прочтите от начала до конца | Высокий приоритет"
 	confidential = TRUE
 	access = ACCESS_CENT_GENERAL
@@ -1303,7 +1323,7 @@
 	id = "NT-COM-02"
 	altername = "Запрос отчёта состояния трудовых активов станции"
 	category = "Центральное командование"
-	from = "Административная станция Nanotrasen &#34;Trurl&#34;"
+	from = "Административный корабль Nanotrasen &#34;Trurl&#34;"
 	notice = "Перед заполнением прочтите от начала до конца | Высокий приоритет"
 	confidential = TRUE
 	access = ACCESS_CENT_GENERAL
@@ -1315,7 +1335,7 @@
 	id = "NT-COM-03"
 	altername = "Запрос отчёта криминального статуса станции"
 	category = "Центральное командование"
-	from = "Административная станция Nanotrasen &#34;Trurl&#34;"
+	from = "Административный корабль Nanotrasen &#34;Trurl&#34;"
 	notice = "Перед заполнением прочтите от начала до конца | Высокий приоритет"
 	confidential = TRUE
 	access = ACCESS_CENT_GENERAL
@@ -1330,7 +1350,7 @@
 	id = "NT-COM-04"
 	altername = "Запрос отчёта здравоохранения станции"
 	category = "Центральное командование"
-	from = "Административная станция Nanotrasen &#34;Trurl&#34;"
+	from = "Административный корабль Nanotrasen &#34;Trurl&#34;"
 	notice = "Перед заполнением прочтите от начала до конца | Высокий приоритет"
 	confidential = TRUE
 	access = ACCESS_CENT_GENERAL
@@ -1342,7 +1362,7 @@
 	id = "NT-COM-05"
 	altername = "Запрос отчёта научно-технического прогресса станции"
 	category = "Центральное командование"
-	from = "Административная станция Nanotrasen &#34;Trurl&#34;"
+	from = "Административный корабль Nanotrasen &#34;Trurl&#34;"
 	notice = "Перед заполнением прочтите от начала до конца | Высокий приоритет"
 	confidential = TRUE
 	access = ACCESS_CENT_GENERAL
@@ -1354,7 +1374,7 @@
 	id = "NT-COM-06"
 	altername = "Запрос отчёта инженерного обеспечения станции"
 	category = "Центральное командование"
-	from = "Административная станция Nanotrasen &#34;Trurl&#34;"
+	from = "Административный корабль Nanotrasen &#34;Trurl&#34;"
 	notice = "Перед заполнением прочтите от начала до конца | Высокий приоритет"
 	confidential = TRUE
 	access = ACCESS_CENT_GENERAL
@@ -1366,7 +1386,7 @@
 	id = "NT-COM-07"
 	altername = "Запрос отчёта статуса снабжения станции "
 	category = "Центральное командование"
-	from = "Административная станция Nanotrasen &#34;Trurl&#34;"
+	from = "Административный корабль Nanotrasen &#34;Trurl&#34;"
 	notice = "Перед заполнением прочтите от начала до конца | Высокий приоритет"
 	confidential = TRUE
 	access = ACCESS_CENT_GENERAL

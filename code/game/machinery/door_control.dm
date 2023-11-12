@@ -3,12 +3,11 @@
 	desc = "A remote control-switch for a door."
 	icon = 'icons/obj/stationobjs.dmi'
 	icon_state = "doorctrl"
-	var/icon_button = "doorctrl" //Для хранения начального icon_state и перезаписи при разных взаимодействиях на нужный
 	power_channel = ENVIRON
 	var/id = null
-	var/safety_z_check = 1
-	var/normaldoorcontrol = 0
-	var/desiredstate = 0 // Zero is closed, 1 is open.
+	var/safety_z_check = TRUE
+	var/normaldoorcontrol = FALSE
+	var/desiredstate = FALSE // FALSE is closed, TRUE is open.
 	var/specialfunctions = 1
 	/*
 	Bitflag, 	1= open
@@ -19,110 +18,115 @@
 
 	*/
 
-	var/exposedwires = 0
-	var/wires = 3
-	/*
-	Bitflag,	1=checkID
-				2=Network Access
-	*/
-
+	var/exposedwires = FALSE
+	var/wireless = FALSE
 	anchored = 1.0
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 2
 	active_power_usage = 4
 
-/obj/machinery/door_control/attack_ai(mob/user as mob)
-	if(wires & 2)
+/obj/machinery/door_control/attack_ai(mob/user)
+	if(!wireless)
 		return attack_hand(user)
 	else
 		to_chat(user, "Error, no route to host.")
 
-/obj/machinery/door_control/attackby(obj/item/W, mob/user as mob, params)
+/obj/machinery/door_control/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/detective_scanner))
 		return
 	return ..()
 
 /obj/machinery/door_control/emag_act(user as mob)
 	if(!emagged)
-		emagged = 1
+		emagged = TRUE
 		req_access = list()
-		req_one_access = list()
 		playsound(src, "sparks", 100, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 
 /obj/machinery/door_control/attack_ghost(mob/user)
 	if(user.can_advanced_admin_interact())
 		return attack_hand(user)
 
-/obj/machinery/door_control/attack_hand(mob/user as mob)
-	add_fingerprint(usr)
+/obj/machinery/door_control/Initialize(mapload)
+    . = ..()
+    if(!istype(id, /list))
+        id = list(id)
+
+/obj/machinery/door_control/proc/do_main_action(mob/user)
+	if(normaldoorcontrol)
+		for(var/obj/machinery/door/airlock/D in GLOB.airlocks)
+			if(safety_z_check && D.z != z || !(D.id_tag in id))
+				continue
+			if(specialfunctions & OPEN)
+				if(D.density)
+					spawn(0)
+						D.open()
+				else
+					spawn(0)
+						D.close()
+			if(desiredstate)
+				if(specialfunctions & IDSCAN)
+					D.aiDisabledIdScanner = TRUE
+				if(specialfunctions & BOLTS)
+					D.lock()
+				if(specialfunctions & SHOCK)
+					D.electrify(-1)
+				if(specialfunctions & SAFE)
+					D.safe = FALSE
+			else
+				if(specialfunctions & IDSCAN)
+					D.aiDisabledIdScanner = FALSE
+				if(specialfunctions & BOLTS)
+					D.unlock()
+				if(specialfunctions & SHOCK)
+					D.electrify(0)
+				if(specialfunctions & SAFE)
+					D.safe = TRUE
+
+	else
+		for(var/obj/machinery/door/poddoor/M in GLOB.airlocks)
+			if(safety_z_check && M.z != z || !(M.id_tag in id))
+				continue
+			if(M.density)
+				spawn(0)
+					M.open()
+			else
+				spawn(0)
+					M.close()
+
+	desiredstate = !desiredstate
+
+/obj/machinery/door_control/attack_hand(mob/user)
+	add_fingerprint(user)
 	if(stat & (NOPOWER|BROKEN))
 		return
 
-	if(!allowed(user) && (wires & 1) && !user.can_advanced_admin_interact())
-		to_chat(user, "<span class='warning'>Access Denied.</span>")
-		flick("[icon_button]-denied",src)
+	if(!allowed(user) && !user.can_advanced_admin_interact())
+		to_chat(user, span_warning("Access Denied."))
+		flick("[initial(icon_state)]-denied",src)
 		playsound(src, pick('sound/machines/button.ogg', 'sound/machines/button_alternate.ogg', 'sound/machines/button_meloboom.ogg'), 20)
 		return
 
 	use_power(5)
-	icon_state = "[icon_button]-inuse"
-	add_fingerprint(user)
+	icon_state = "[initial(icon_state)]-inuse"
 
-	if(normaldoorcontrol)
-		for(var/obj/machinery/door/airlock/D in GLOB.airlocks)
-			if(safety_z_check && D.z != z)
-				continue
-			if(D.id_tag == id)
-				if(specialfunctions & OPEN)
-					if(D.density)
-						spawn(0)
-							D.open()
-							return
-					else
-						spawn(0)
-							D.close()
-							return
-				if(desiredstate == 1)
-					if(specialfunctions & IDSCAN)
-						D.aiDisabledIdScanner = 1
-					if(specialfunctions & BOLTS)
-						D.lock()
-					if(specialfunctions & SHOCK)
-						D.electrify(-1)
-					if(specialfunctions & SAFE)
-						D.safe = 0
-				else
-					if(specialfunctions & IDSCAN)
-						D.aiDisabledIdScanner = 0
-					if(specialfunctions & BOLTS)
-						D.unlock()
-					if(specialfunctions & SHOCK)
-						D.electrify(0)
-					if(specialfunctions & SAFE)
-						D.safe = 1
+	do_main_action(user)
 
-	else
-		for(var/obj/machinery/door/poddoor/M in GLOB.airlocks)
-			if(safety_z_check && M.z != z)
-				continue
-			if(M.id_tag == id)
-				if(M.density)
-					spawn( 0 )
-						M.open()
-						return
-				else
-					spawn( 0 )
-						M.close()
-						return
-
-	desiredstate = !desiredstate
-	spawn(15)
-		if(!(stat & NOPOWER))
-			icon_state = "[icon_button]"
+	addtimer(CALLBACK(src, PROC_REF(update_icon)), 15)
 
 /obj/machinery/door_control/power_change()
 	..()
+	update_icon()
+
+/obj/machinery/door_control/update_icon()
 	if(stat & NOPOWER)
-		icon_state = "[icon_button]-p"
+		icon_state = "[initial(icon_state)]-p"
 	else
-		icon_state = "[icon_button]"
+		icon_state = initial(icon_state)
+
+/obj/machinery/door_control/secure //Use icon_state = "altdoorctrl" if you just want cool icon for your button on map. This button is created for Admin-zones.
+	icon_state = "altdoorctrl"
+	wireless = TRUE
+
+/obj/machinery/door_control/secure/emag_act(user)
+	to_chat(user, span_notice("The electronic systems in this device are far too advanced for your primitive hacking peripherals."))
+	return

@@ -41,8 +41,8 @@
 					to_chat(target, "<span class='warning'> Your hands are full.</span>")
 					to_chat(usr, "<span class='warning'> Their hands are full.</span>")
 					return
-				usr.unEquip(I)
-				target.put_in_hands(I)
+				usr.drop_item_ground(I)
+				target.put_in_hands(I, ignore_anim = FALSE)
 				I.add_fingerprint(target)
 				target.visible_message("<span class='notice'> [usr.name] handed [I] to [target.name].</span>")
 				I.on_give(usr, target)
@@ -123,15 +123,15 @@
 
 /datum/click_intercept/give/New(client/C)
 	..()
-	holder.mouse_pointer_icon = 'icons/mouse_icons/give_item.dmi'
-	to_chat(holder, "<span class='info'>You can now left click on someone to give them your held item.</span>")
+	holder.mouse_pointer_icon = 'icons/misc/mouse_icons/give_item.dmi'
+	to_chat(holder, span_info("You can now left click on someone to give them your held item."))
 	RegisterSignal(holder.mob.get_active_hand(), list(COMSIG_PARENT_QDELETING, COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_DROPPED), /datum/proc/signal_qdel)
 
 
 /datum/click_intercept/give/Destroy(force = FALSE, ...)
 	holder.mouse_pointer_icon = initial(holder.mouse_pointer_icon)
 	if(!item_offered)
-		to_chat(holder.mob, "<span class='info'>You're no longer trying to give someone your held item.</span>")
+		to_chat(holder.mob, span_info("You're no longer trying to give someone your held item."))
 	return ..()
 
 
@@ -140,20 +140,23 @@
 		return
 	var/mob/living/carbon/receiver = object
 	if(receiver.stat != CONSCIOUS)
-		to_chat(user, "<span class='warning'>[receiver] can't accept any items because they're not conscious!</span>")
+		to_chat(user, span_warning("[receiver] can't accept any items because they're not conscious!"))
+		return
+	if(!receiver.IsAdvancedToolUser())
+		to_chat(user, span_warning("[receiver] can't accept any items because they don't have the dexterity to do this!"))
 		return
 	var/obj/item/I = user.get_active_hand()
 	if(!user.Adjacent(receiver))
-		to_chat(user, "<span class='warning'>You need to be closer to [receiver] to offer them [I].</span>")
+		to_chat(user, span_warning("You need to be closer to [receiver] to offer them [I]."))
 		return
 	if(!receiver.client)
-		to_chat(user, "<span class='warning'>You offer [I] to [receiver], but they don't seem to respond...</span>")
+		to_chat(user, span_warning("You offer [I] to [receiver], but they don't seem to respond..."))
 		return
 	// We use UID() here so that the receiver can have more then one give request at one time.
 	// Otherwise, throwing a new "take item" alert would override any current one also named "take item".
 	receiver.throw_alert("take item [I.UID()]", /obj/screen/alert/take_item, alert_args = list(user, receiver, I))
 	item_offered = TRUE // TRUE so we don't give them the default chat message in Destroy.
-	to_chat(user, "<span class='info'>You offer [I] to [receiver].</span>")
+	to_chat(user, span_info("You offer [I] to [receiver]."))
 	qdel(src)
 
 
@@ -185,7 +188,7 @@
 	giver.apply_status_effect(STATUS_EFFECT_OFFERING_ITEM, receiver_UID, item_UID)
 	add_overlay(icon(I.icon, I.icon_state, SOUTH))
 	add_overlay("alert_flash")
-	RegisterSignal(I, list(COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_DROPPED), .proc/cancel_give)
+	RegisterSignal(I, list(COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_DROPPED), PROC_REF(cancel_give))
 	// If either of these atoms are deleted, we need to cancel everything. Also saves having to do null checks before interacting with these atoms.
 	RegisterSignal(I, COMSIG_PARENT_QDELETING, /datum/proc/signal_qdel)
 	RegisterSignal(giver, COMSIG_PARENT_QDELETING, /datum/proc/signal_qdel)
@@ -223,8 +226,8 @@
 		to_chat(receiver, "<span class='warning'>[I] stays stuck to [giver]'s hand when you try to take it!</span>")
 		return
 	UnregisterSignal(I, list(COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_DROPPED)) // We don't want these triggering `cancel_give` at this point, since the give is successful.
-	giver.unEquip(I)
-	receiver.put_in_hands(I)
+	giver.drop_item_ground(I)
+	receiver.put_in_hands(I, ignore_anim = FALSE)
 	I.add_fingerprint(receiver)
 	I.on_give(giver, receiver)
 	receiver.visible_message("<span class='notice'>[giver] handed [I] to [receiver].</span>")

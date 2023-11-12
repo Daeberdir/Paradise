@@ -1,7 +1,7 @@
 /obj/machinery/atmospherics/binary/passive_gate
 	//Tries to achieve target pressure at output (like a normal pump) except
 	//	Uses no power but can not transfer gases from a low pressure area to a high pressure area
-	icon = 'icons/atmos/passive_gate.dmi'
+	icon = 'icons/obj/pipes_and_stuff/atmospherics/atmos/passive_gate.dmi'
 	icon_state = "map"
 
 	name = "passive gate"
@@ -124,7 +124,7 @@
 		return
 
 	if(!allowed(user))
-		to_chat(user, "<span class='alert'>Access denied.</span>")
+		to_chat(user, span_alert("Access denied."))
 		return
 
 	add_fingerprint(user)
@@ -182,6 +182,6 @@
 	if(!istype(W, /obj/item/wrench))
 		return ..()
 	if(on)
-		to_chat(user, "<span class='alert'>You cannot unwrench this [src], turn it off first.</span>")
+		to_chat(user, span_alert("You cannot unwrench this [src], turn it off first."))
 		return 1
 	return ..()

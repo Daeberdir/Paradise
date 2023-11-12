@@ -1,5 +1,5 @@
 /obj/machinery/atmospherics/pipe/manifold4w
-	icon = 'icons/atmos/manifold.dmi'
+	icon = 'icons/obj/pipes_and_stuff/atmospherics/atmos/manifold.dmi'
 	icon_state = ""
 	name = "4-way pipe manifold"
 	desc = "A manifold composed of regular pipes"
@@ -133,7 +133,7 @@
 
 /obj/machinery/atmospherics/pipe/manifold4w/hide(var/i)
 	if(level == 1 && istype(loc, /turf/simulated))
-		invisibility = i ? 101 : 0
+		invisibility = i ? INVISIBILITY_ABSTRACT : 0
 
 /obj/machinery/atmospherics/pipe/manifold4w/atmos_init()
 	..()

@@ -8,21 +8,22 @@
 	icon = 'icons/goonstation/objects/syringe.dmi'
 	item_state = "syringe_0"
 	icon_state = "0"
+	belt_icon = "syringe"
 	amount_per_transfer_from_this = 5
-	possible_transfer_amounts = list()
+	possible_transfer_amounts = null
 	volume = 15
 	sharp = TRUE
+	pass_open_check = TRUE
 	var/busy = FALSE
 	var/mode = SYRINGE_DRAW
 	var/projectile_type = /obj/item/projectile/bullet/dart/syringe
 	materials = list(MAT_METAL=10, MAT_GLASS=20)
 	container_type = TRANSPARENT
 
-/obj/item/reagent_containers/syringe/New()
-	..()
+/obj/item/reagent_containers/syringe/Initialize(mapload)
 	if(list_reagents) //syringe starts in inject mode if its already got something inside
 		mode = SYRINGE_INJECT
-		update_icon()
+	. = ..()
 
 /obj/item/reagent_containers/syringe/set_APTFT()
 	set hidden = TRUE
@@ -34,7 +35,7 @@
 	. = ..()
 	update_icon()
 
-/obj/item/reagent_containers/syringe/dropped(mob/user)
+/obj/item/reagent_containers/syringe/dropped(mob/user, silent = FALSE)
 	..()
 	update_icon()
 

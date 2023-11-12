@@ -652,6 +652,7 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 		to_chat(R, "<span class='danger'>ERROR: Master AI has be&# &#@)!-")
 		to_chat(R, "<span class='clocklarge'>\"Your master is under my control, so do you\"")
 		R.ratvar_act(TRUE)
+		SSticker?.score?.save_silicon_laws(R, additional_info = "Ratvar act via master AI conversion", log_all_laws = TRUE)
 
 /mob/living/silicon/ai/Topic(href, href_list)
 	if(usr != src)
@@ -1081,7 +1082,10 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 			"floating face",
 			"xeno queen",
 			"eldritch",
-			"ancient machine"
+			"ancient machine",
+			"AUTO",
+			"beach ball",
+			"pair of bees"
 			)
 			if(custom_hologram) //insert custom hologram
 				icon_list.Add("custom")
@@ -1098,6 +1102,12 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 						holo_icon = getHologramIcon(icon('icons/mob/ai.dmi',"holo3"))
 					if("eldritch")
 						holo_icon = getHologramIcon(icon('icons/mob/ai.dmi',"holo4"))
+					if("AUTO")
+						holo_icon = getHologramIcon(icon('icons/mob/ai.dmi',"holo5"))
+					if("beach ball")
+						holo_icon = getHologramIcon(icon('icons/mob/ai.dmi',"holo6"))
+					if("pair of bees")
+						holo_icon = getHologramIcon(icon('icons/mob/ai.dmi',"holo7"))
 					if("ancient machine")
 						holo_icon = getHologramIcon(icon('icons/mob/ancient_machine.dmi', "ancient_machine"))
 					if("custom")
@@ -1291,13 +1301,16 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 	return get_dist(src, A) <= max(viewscale[1]*0.5,viewscale[2]*0.5)
 
 /mob/living/silicon/ai/proc/relay_speech(mob/living/M, list/message_pieces, verb)
-	var/message = combine_message(message_pieces, verb, M)
+	var/message_clean = combine_message(message_pieces, M)
+	message_clean = replace_characters(message_clean, list("+"))
+
+	var/message = verb_message(message_pieces, message_clean, verb)
+
 	var/name_used = M.GetVoice()
 	//This communication is imperfect because the holopad "filters" voices and is only designed to connect to the master only.
 	var/rendered = "<i><span class='game say'>Relayed Speech: <span class='name'>[name_used]</span> [message]</span></i>"
 	if(client?.prefs.toggles2 & PREFTOGGLE_2_RUNECHAT)
-		var/message_clean = combine_message(message_pieces, null, M)
-		create_chat_message(M.runechat_msg_location, message_clean,TRUE, FALSE)
+		create_chat_message(M, message_clean, TRUE, FALSE)
 	show_message(rendered, 2)
 
 /mob/living/silicon/ai/proc/malfhacked(obj/machinery/power/apc/apc)
@@ -1447,10 +1460,3 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 
 	SEND_SIGNAL(src, COMSIG_MOB_UPDATE_SIGHT)
 	sync_lighting_plane_alpha()
-
-
-/mob/living/silicon/ai/update_runechat_msg_location()
-	if(istype(loc, /obj/item/aicard) || ismecha(loc))
-		runechat_msg_location = loc
-	else
-		runechat_msg_location = src

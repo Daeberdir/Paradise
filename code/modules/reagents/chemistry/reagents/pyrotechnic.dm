@@ -168,7 +168,7 @@
 		holder.remove_reagent("epinephrine", 2)
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
-		C.adjustPlasma(10)
+		C.adjust_alien_plasma(10)
 	return ..() | update_flags
 
 /datum/reagent/plasma/reaction_mob(mob/living/M, method = REAGENT_TOUCH, volume)//Splashing people with plasma is stronger than fuel!
@@ -211,7 +211,7 @@
 		S.reagents.add_reagent("thermite", volume)
 		S.thermite = TRUE
 		S.overlays.Cut()
-		S.overlays = image('icons/effects/effects.dmi', icon_state = "thermite")
+		S.overlays += image('icons/effects/effects.dmi', icon_state = "thermite")
 		if(S.active_hotspot)
 			S.reagents.temperature_reagents(S.active_hotspot.temperature, 10, 300)
 
@@ -459,7 +459,7 @@
 	update_flags |= M.adjustToxLoss(3, FALSE)
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
-		C.adjustPlasma(20)
+		C.adjust_alien_plasma(20)
 	return ..() | update_flags
 
 /datum/reagent/plasma_dust/reaction_mob(mob/living/M, method=REAGENT_TOUCH, volume)//Splashing people with plasma dust is stronger than fuel!

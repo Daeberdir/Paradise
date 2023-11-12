@@ -13,7 +13,7 @@
 	var/list/announce_beacons = list()
 
 /obj/structure/closet/crate/update_icon()
-	..()
+	//..() is not needed here because of different overlay handling logic for crates
 	overlays.Cut()
 	if(manifest)
 		overlays += "manifest"
@@ -104,11 +104,10 @@
 		return TRUE
 	if(istype(W, /obj/item/radio/electropack))
 		if(rigged)
-			if(!user.drop_item())
+			if(!user.drop_transfer_item_to_loc(W, src))
 				to_chat(user, "<span class='warning'>[W] seems to be stuck to your hand!</span>")
 				return TRUE
 			to_chat(user, "<span class='notice'>You attach [W] to [src].</span>")
-			W.forceMove(src)
 		return TRUE
 
 /obj/structure/closet/crate/wirecutter_act(mob/living/user, obj/item/I)
@@ -128,11 +127,12 @@
 
 /obj/structure/closet/crate/attack_hand(mob/user)
 	if(manifest)
+		add_fingerprint(user)
 		to_chat(user, "<span class='notice'>You tear the manifest off of the crate.</span>")
 		playsound(src.loc, 'sound/items/poster_ripped.ogg', 75, 1)
-		manifest.forceMove(loc)
+		manifest.forceMove_turf()
 		if(ishuman(user))
-			user.put_in_hands(manifest)
+			user.put_in_hands(manifest, ignore_anim = FALSE)
 		manifest = null
 		update_icon()
 		return
@@ -143,8 +143,8 @@
 				if(L.electrocute_act(17, src))
 					do_sparks(5, 1, src)
 					return
-		src.add_fingerprint(user)
-		src.toggle(user, by_hand = TRUE)
+		add_fingerprint(user)
+		toggle(user, by_hand = TRUE)
 
 // Called when a crate is delivered by MULE at a location, for notifying purposes
 /obj/structure/closet/crate/proc/notifyRecipient(var/destination)
@@ -233,18 +233,20 @@
 
 /obj/structure/closet/crate/secure/attack_hand(mob/user)
 	if(manifest)
+		add_fingerprint(user)
 		to_chat(user, "<span class='notice'>You tear the manifest off of the crate.</span>")
 		playsound(src.loc, 'sound/items/poster_ripped.ogg', 75, 1)
-		manifest.forceMove(loc)
+		manifest.forceMove_turf()
 		if(ishuman(user))
-			user.put_in_hands(manifest)
+			user.put_in_hands(manifest, ignore_anim = FALSE)
 		manifest = null
 		update_icon()
 		return
+	add_fingerprint(user)
 	if(locked)
-		src.togglelock(user)
+		togglelock(user)
 	else
-		src.toggle(user, by_hand = TRUE)
+		toggle(user, by_hand = TRUE)
 
 /obj/structure/closet/crate/secure/closed_item_click(mob/user)
 	togglelock(user)
@@ -301,6 +303,13 @@
 	icon_opened = "trashcartopen"
 	icon_closed = "trashcart"
 	pull_push_speed_modifier = 1
+
+/obj/structure/closet/crate/trashcart/gibs
+	desc = "A heavy, metal trashcart with wheels. You better don't ask."
+	name = "trash cart with gibs"
+	icon_state = "trashcartgib"
+	icon_opened = "trashcartgibopen"
+	icon_closed = "trashcartgib"
 
 /*these aren't needed anymore
 /obj/structure/closet/crate/hat
@@ -559,6 +568,13 @@
 	if(prob(10))
 		new /obj/item/bikehorn/rubberducky(src)
 
+/obj/structure/closet/crate/secure/biohazard
+	name = "secure biohazard crate"
+	desc = "An protected biohazard crate."
+	icon_state = "biohazard"
+	icon_opened = "biohazardopen"
+	icon_closed = "biohazard"
+
 //crates of gear in the free golem ship
 /obj/structure/closet/crate/golemgear/populate_contents()
 	new /obj/item/storage/backpack/industrial(src)
@@ -590,38 +606,40 @@
 
 /obj/structure/closet/crate/secure/syndicate/emag_act(mob/user)
 	if(locked && !broken)
-		to_chat(user, "<span class='notice'>Отличная попытка, но нет!</span>")
+		to_chat(user, span_notice("Отличная попытка, но нет!"))
 		playsound(src.loc, "sound/misc/sadtrombone.ogg", 60, 1)
 
 /obj/structure/closet/crate/secure/screwdriver_act(mob/living/user, obj/item/I)
 	. = ..()
 	if(locked && broken == 0 && user.a_intent != INTENT_HARM) // Stage one
-		to_chat(user, "<span class='notice'>Вы начинаете откручивать панель замка [src]...</span>")
+		to_chat(user, span_notice("Вы начинаете откручивать панель замка [src]..."))
 		if(I.use_tool(src, user, 160, volume = I.tool_volume))
 			if(prob(95)) // EZ
-				to_chat(user, "<span class='notice'>Вы успешно открутили и сняли панель с замка [src]!</span>")
-				desc += " Панель управления снята."
-				broken = 3
+				if(broken != 3)
+					to_chat(user, span_notice("Вы успешно открутили и сняли панель с замка [src]!"))
+					desc += " Панель управления снята."
+					broken = 3
 				//icon_state = icon_off // Crates has no icon_off :(
 			else // Bad day)
 				var/mob/living/carbon/human/H = user
 				var/obj/item/organ/external/affecting = H.get_organ(user.r_hand == I ? "l_hand" : "r_hand")
 				user.apply_damage(5, BRUTE , affecting)
 				user.emote("scream")
-				to_chat(user, "<span class='warning'>Проклятье! [I] сорвалась и повредила [affecting.name]!</span>")
+				to_chat(user, span_warning("Проклятье! [I] сорвалась и повредила [affecting.name]!"))
 		return TRUE
 
 /obj/structure/closet/crate/secure/wirecutter_act(mob/living/user, obj/item/I)
 	. = ..()
 	if(locked && broken == 3 && user.a_intent != INTENT_HARM) // Stage two
-		to_chat(user, "<span class='notice'>Вы начинаете подготавливать провода панели [src]...</span>")
+		to_chat(user, span_notice("Вы начинаете подготавливать провода панели [src]..."))
 		if(I.use_tool(src, user, 160, volume = I.tool_volume))
 			if(prob(80)) // Good hacker!
-				to_chat(user, "<span class='notice'>Вы успешно подготовили провода панели замка [src]!</span>")
-				desc += " Провода отключены и торчат наружу."
-				broken = 2
+				if(broken != 2)
+					to_chat(user, span_notice("Вы успешно подготовили провода панели замка [src]!"))
+					desc += " Провода отключены и торчат наружу."
+					broken = 2
 			else // woopsy
-				to_chat(user, "<span class='warning'>Черт! Не тот провод!</span>")
+				to_chat(user, span_warning("Черт! Не тот провод!"))
 				do_sparks(5, 1, src)
 				electrocute_mob(user, get_area(src), src, 0.5, TRUE)
 		return TRUE
@@ -629,14 +647,15 @@
 /obj/structure/closet/crate/secure/multitool_act(mob/living/user, obj/item/I)
 	. = ..()
 	if(locked && broken == 2 && user.a_intent != INTENT_HARM) // Stage three
-		to_chat(user, "<span class='notice'>Вы начинаете подключать провода панели замка [src] к [I]...</span>")
+		to_chat(user, span_notice("Вы начинаете подключать провода панели замка [src] к [I]..."))
 		if(I.use_tool(src, user, 160, volume = I.tool_volume))
 			if(prob(80)) // Good hacker!
-				desc += " Замок отключен."
-				broken = 0 // Can be emagged
-				emag_act(user)
+				if(broken != 0 && broken != 1)
+					desc += " Замок отключен."
+					broken = 0 // Can be emagged
+					emag_act(user)
 			else // woopsy
-				to_chat(user, "<span class='warning'>Черт! Не тот провод!</span>")
+				to_chat(user, span_warning("Черт! Не тот провод!"))
 				do_sparks(5, 1, src)
 				electrocute_mob(user, get_area(src), src, 0.5, TRUE)
 		return TRUE

@@ -331,7 +331,8 @@
 /datum/species/golem/plasteel
 	name = "Пласталиевый Голем"
 	golem_colour = rgb(187, 187, 187)
-	stun_mod = 0.4
+	stun_mod = 0.5
+	stamina_mod = 0.5
 	punchdamagelow = 12
 	punchdamagehigh = 21
 	punchstunthreshold = 18 //still 40% stun chance
@@ -431,6 +432,7 @@
 	..()
 	H.languages.Cut()
 	H.add_language("Golem Mindlink")
+	H.add_language("Psionic Communication") // still grey enouhg to speak in psi link
 
 //Regenerates like dionas, less resistant
 /datum/species/golem/wood
@@ -558,7 +560,7 @@
 /datum/species/golem/sand/handle_death(gibbed, mob/living/carbon/human/H)
 	H.visible_message("<span class='danger'>[H] рассыпал[genderize_ru(H.gender,"ся","ась","ось","ись")] в кучу песка!</span>")
 	for(var/obj/item/W in H)
-		H.unEquip(W)
+		H.drop_item_ground(W)
 	for(var/i=1, i <= rand(3, 5), i++)
 		new /obj/item/stack/ore/glass(get_turf(H))
 	qdel(H)
@@ -603,14 +605,14 @@
 	playsound(H, "shatter", 70, 1)
 	H.visible_message("<span class='danger'>[H] разбил[genderize_ru(H.gender,"ся","ась","ось","ись")] в дребезги!</span>")
 	for(var/obj/item/W in H)
-		H.unEquip(W)
+		H.drop_item_ground(W)
 	for(var/i=1, i <= rand(3, 5), i++)
 		new /obj/item/shard(get_turf(H))
 	qdel(H)
 
 /datum/species/golem/glass/bullet_act(obj/item/projectile/P, mob/living/carbon/human/H)
 	if(!(P.original == H && P.firer == H)) //self-shots don't reflect
-		if(P.is_reflectable)
+		if(P.is_reflectable(REFLECTABILITY_ENERGY))
 			H.visible_message("<span class='danger'>[P.name] отражается от стеклянной кожи [H]!</span>", \
 			"<span class='userdanger'>[P.name] отражается от стеклянной кожи [H]!</span>")
 
@@ -671,8 +673,8 @@
 	var/obj/item/I
 	if(istype(AM, /obj/item))
 		I = AM
-		if(I.thrownby == H) //No throwing stuff at yourself to trigger the teleport
-			return 0
+		if(locateUID(I.thrownby) == H) //No throwing stuff at yourself to trigger the teleport
+			return FALSE
 		else
 			reactive_teleport(H)
 
@@ -724,7 +726,7 @@
 	var/mob/living/carbon/human/H = owner
 	H.visible_message("<span class='warning'>[H] начинает вибрировать!</span>", "<span class='danger'>Вы начали заряжать своё блюспейс-ядро…</span>")
 	playsound(get_turf(H), 'sound/weapons/flash.ogg', 25, 1)
-	addtimer(CALLBACK(src, .proc/teleport, H), 15)
+	addtimer(CALLBACK(src, PROC_REF(teleport), H), 15)
 
 /datum/action/innate/unstable_teleport/proc/teleport(mob/living/carbon/human/H)
 	activated = FALSE
@@ -821,8 +823,8 @@
 	var/obj/item/I
 	if(istype(AM, /obj/item))
 		I = AM
-		if(I.thrownby == H) //No throwing stuff at yourself to make bananas
-			return 0
+		if(locateUID(I.thrownby) == H) //No throwing stuff at yourself to make bananas
+			return FALSE
 		else
 			new/obj/item/grown/bananapeel/specialpeel(get_turf(H))
 			last_banana = world.time
@@ -871,8 +873,8 @@
 	H.equip_to_slot_or_del(new 	/obj/item/reagent_containers/food/drinks/bottle/bottleofnothing(H), slot_r_store)
 	H.equip_to_slot_or_del(new 	/obj/item/cane(H), slot_l_hand)
 	if(H.mind)
-		H.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/conjure/mime_wall(null))
-		H.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/mime/speak(null))
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe/conjure/build/mime_wall(null))
+		H.mind.AddSpell(new /obj/effect/proc_holder/spell/mime/speak(null))
 		H.mind.miming = TRUE
 
 /datum/unarmed_attack/golem/tranquillite
@@ -905,6 +907,6 @@
 /datum/species/golem/clockwork/handle_death(gibbed, mob/living/carbon/human/H)
 	H.visible_message("<span class='danger'>[H] crumbles into cogs and gears! Then leftovers suddenly dusts!</span>")
 	for(var/obj/item/W in H)
-		H.unEquip(W)
+		H.drop_item_ground(W)
 	new /obj/item/clockwork/clockgolem_remains(get_turf(H))
 	H.dust() // One-try only

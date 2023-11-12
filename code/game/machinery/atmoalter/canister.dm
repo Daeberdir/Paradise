@@ -41,7 +41,7 @@ GLOBAL_DATUM_INIT(canister_icon_container, /datum/canister_icons, new())
 
 /obj/machinery/portable_atmospherics/canister
 	name = "canister"
-	icon = 'icons/obj/atmos.dmi'
+	icon = 'icons/obj/pipes_and_stuff/atmospherics/atmos.dmi'
 	icon_state = "yellow"
 	density = 1
 	flags = CONDUCT
@@ -275,13 +275,16 @@ update_flag
 			investigate_log("[key_name_log(user)] started a transfer into [holding].", INVESTIGATE_ATMOS)
 
 /obj/machinery/portable_atmospherics/canister/attack_ai(var/mob/user)
-	add_hiddenprint(user)
 	return attack_hand(user)
 
 /obj/machinery/portable_atmospherics/canister/attack_ghost(var/mob/user)
 	return ui_interact(user)
 
 /obj/machinery/portable_atmospherics/canister/attack_hand(var/mob/user)
+	if(..())
+		return TRUE
+
+	add_fingerprint(user)
 	return ui_interact(user)
 
 /obj/machinery/portable_atmospherics/canister/ui_interact(mob/user, ui_key = "main", datum/tgui/ui = null, force_open = TRUE, datum/tgui/master_ui = null, datum/ui_state/state = GLOB.physical_state)
@@ -324,7 +327,7 @@ update_flag
 					else
 						name = "canister"
 				else
-					to_chat(usr, "<span class='warning'>As you attempted to rename it the pressure rose!</span>")
+					to_chat(usr, span_warning("As you attempted to rename it the pressure rose!"))
 					. = FALSE
 		if("pressure")
 			var/pressure = params["pressure"]
@@ -481,6 +484,6 @@ update_flag
 		return
 	WELDER_ATTEMPT_SLICING_MESSAGE
 	if(I.use_tool(src, user, 50, volume = I.tool_volume))
-		to_chat(user, "<span class='notice'>You salvage whats left of [src]!</span>")
+		to_chat(user, span_notice("You salvage whats left of [src]!"))
 		new /obj/item/stack/sheet/metal(drop_location(), 3)
 		qdel(src)

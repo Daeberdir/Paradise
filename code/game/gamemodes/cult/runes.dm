@@ -93,7 +93,7 @@ To draw a rune, use a ritual dagger.
 		return
 	if(istype(I, /obj/item/nullrod))
 		if(iscultist(user))//cultist..what are doing..cultist..staph...
-			user.drop_item()
+			user.drop_from_active_hand()
 			user.visible_message("<span class='warning'>[I] suddenly glows with a white light, forcing [user] to drop it in pain!</span>", \
 			"<span class='danger'>[I] suddenly glows with a white light that sears your hand, forcing you to drop it!</span>") // TODO: Make this actually burn your hand
 			return
@@ -290,7 +290,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 
 	rune_in_use = TRUE
 	var/mob/living/L = pick(offer_targets)
-	if(!config.can_cult_convert && !is_sacrifice_target(L.mind))
+	if(!CONFIG_GET(number/can_cult_convert) && !is_sacrifice_target(L.mind))
 		fail_invoke()
 		for(var/I in invokers)
 			to_chat(I, "<span class='warning'>You can not convert new cultists!</span>")
@@ -346,14 +346,14 @@ structure_check() searches for nearby cultist structures required for the invoca
 					for(var/obj/item/organ/external/E in H.bodyparts)
 						E.mend_fracture()
 						E.internal_bleeding = FALSE
-					for(var/datum/disease/critical/crit in H.viruses) // cure all crit conditions
+					for(var/datum/disease/critical/crit in H.diseases) // cure all crit conditions
 						crit.cure()
 
 			H.uncuff()
-			H.Silence(3) //Prevent "HALP MAINT CULT" before you realise you're converted
+			H.Silence(6 SECONDS) //Prevent "HALP MAINT CULT" before you realise you're converted
 
 			var/obj/item/melee/cultblade/dagger/D = new(get_turf(src))
-			if(H.equip_to_slot_if_possible(D, slot_in_backpack, FALSE, TRUE))
+			if(H.equip_to_slot_if_possible(D, slot_in_backpack, disable_warning = TRUE))
 				to_chat(H, "<span class='cultlarge'>You have a dagger in your backpack. Use it to do [SSticker.cultdat.entity_title1]'s bidding. </span>")
 			else
 				to_chat(H, "<span class='cultlarge'>There is a dagger on the floor. Use it to do [SSticker.cultdat.entity_title1]'s bidding.</span>")
@@ -466,9 +466,9 @@ structure_check() searches for nearby cultist structures required for the invoca
 	for(var/atom/movable/A in T)
 		if(ishuman(A))
 			if(A != user) // Teleporting someone else
-				INVOKE_ASYNC(src, .proc/teleport_effect, A, T, target)
+				INVOKE_ASYNC(src, PROC_REF(teleport_effect), A, T, target)
 			else // Teleporting yourself
-				INVOKE_ASYNC(src, .proc/teleport_effect, user, T, target)
+				INVOKE_ASYNC(src, PROC_REF(teleport_effect), user, T, target)
 		if(A.move_resist == INFINITY)
 			continue  //object cant move, shouldnt teleport
 		if(A == user)
@@ -518,7 +518,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 	outer_portal = new(T, 60 SECONDS, color)
 	light_range = 4
 	update_light()
-	addtimer(CALLBACK(src, .proc/close_portal), 60 SECONDS, TIMER_UNIQUE)
+	addtimer(CALLBACK(src, PROC_REF(close_portal)), 60 SECONDS, TIMER_UNIQUE)
 
 /obj/effect/rune/teleport/proc/close_portal()
 	qdel(inner_portal)
@@ -711,7 +711,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 	cultist_to_summon.visible_message("<span class='warning'>[cultist_to_summon] suddenly disappears in a flash of red light!</span>", \
 									  "<span class='cultitalic'><b>Overwhelming vertigo consumes you as you are hurled through the air!</b></span>")
 	..()
-	INVOKE_ASYNC(src, .proc/teleport_effect, cultist_to_summon, get_turf(cultist_to_summon), src)
+	INVOKE_ASYNC(src, PROC_REF(teleport_effect), cultist_to_summon, get_turf(cultist_to_summon), src)
 	visible_message("<span class='warning'>[src] begins to bubble and rises into the form of [cultist_to_summon]!</span>")
 	cultist_to_summon.forceMove(get_turf(src))
 	qdel(src)
@@ -905,7 +905,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 		new_human.visible_message("<span class='warning'>[new_human] suddenly dissolves into bones and ashes.</span>",
 								  "<span class='cultlarge'>Your link to the world fades. Your form breaks apart.</span>")
 		for(var/obj/item/I in new_human.get_all_slots())
-			new_human.unEquip(I)
+			new_human.drop_item_ground(I)
 		SSticker.mode.remove_cultist(new_human.mind, FALSE)
 		new_human.dust()
 
@@ -930,7 +930,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 		if(user.key)
 			user.visible_message("<span class='warning'>[user] slowly relaxes, the glow around [user.p_them()] dimming.</span>",
 								"<span class='danger'>You are re-united with your physical form. [src] releases its hold over you.</span>")
-			user.Weaken(3)
+			user.Weaken(6 SECONDS)
 			break
 		if(user.health <= 10)
 			to_chat(ghost, "<span class='cultitalic'>Your body can no longer sustain the connection!</span>")

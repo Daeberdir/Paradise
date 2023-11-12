@@ -1,5 +1,5 @@
 /obj/machinery/atmospherics/pipe/manifold
-	icon = 'icons/atmos/manifold.dmi'
+	icon = 'icons/obj/pipes_and_stuff/atmospherics/atmos/manifold.dmi'
 	icon_state = ""
 	name = "pipe manifold"
 	desc = "A manifold composed of regular pipes"
@@ -62,7 +62,7 @@
 
 /obj/machinery/atmospherics/pipe/manifold/hide(var/i)
 	if(level == 1 && istype(loc, /turf/simulated))
-		invisibility = i ? 101 : 0
+		invisibility = i ? INVISIBILITY_ABSTRACT : 0
 
 /obj/machinery/atmospherics/pipe/manifold/pipeline_expansion()
 	return list(node1, node2, node3)

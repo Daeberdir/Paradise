@@ -31,7 +31,7 @@
 		to_chat(user, "<span class='warning'>You can't speak!</span>")
 		return
 
-	if((MUTE in user.mutations) || user.mind.miming) //Under vow of silence/mute?
+	if(HAS_TRAIT(user, TRAIT_MUTE) || user.mind.miming) //Under vow of silence/mute?
 		user.visible_message("<span class='notice'>[user] appears to whisper to themselves.</span>",
 		"<span class='notice'>You begin to whisper to yourself.</span>") //Make them do *something* abnormal.
 		sleep(10)
@@ -41,7 +41,7 @@
 		user.whisper(message) // And whisper the actual message
 
 	var/my_message
-	if(istype(user, /mob/living/simple_animal/slaughter/cult)) //Harbringers of the Slaughter
+	if(istype(user, /mob/living/simple_animal/demon/slaughter/cult)) //Harbringers of the Slaughter
 		my_message = "<span class='cultlarge'><b>Harbringer of the Slaughter:</b> [message]</span>"
 	else
 		my_message = "<span class='cultspeech'><b>[(isconstruct(user) ? "Construct" : isshade(user) ? "" : "Acolyte")] [user.real_name]:</b> [message]</span>"
@@ -115,10 +115,21 @@
 	button.moved = "6:157,4:-2"
 
 /datum/action/innate/cult/use_dagger/Activate()
-	var/obj/item/melee/cultblade/dagger/D = owner.find_item(/obj/item/melee/cultblade/dagger)
-	if(D)
-		owner.remove_from_mob(D)
-		owner.put_in_hands(D)
-		D.attack_self(owner)
+	var/obj/item/melee/cultblade/dagger/dagger
+	for(var/obj/item/I in owner.contents)
+		if(istype(I, /obj/item/storage))
+			for(var/obj/item/SI in I.contents)
+				if(istype(SI, /obj/item/melee/cultblade/dagger))
+					dagger = SI
+					break
+		else if(istype(I, /obj/item/melee/cultblade/dagger))
+			dagger = I
+			break
+
+	if(dagger)
+		if(!dagger.remove_item_from_storage(owner))
+			owner.drop_item_ground(dagger)
+		owner.put_in_hands(dagger)
+		dagger.attack_self(owner)
 	else
 		to_chat(usr, "<span class='cultitalic'>You do not seem to carry a ritual dagger to draw a rune with. If you need a new one, prepare and use the Summon Dagger spell.</span>")

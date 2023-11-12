@@ -49,7 +49,7 @@
 /obj/item/areaeditor/permit
 	name = "construction permit"
 	icon_state = "permit"
-	desc = "This is a one-use permit that allows the user to officially declare a built room as new addition to the station."
+	desc = "This is a one-use permit that allows the user to officially declare a built room as an addition to the station."
 	fluffnotice = "Nanotrasen Engineering requires all on-station construction projects to be approved by a head of staff, as detailed in Nanotrasen Company Regulation 512-C (Mid-Shift Modifications to Company Property). \
 						By submitting this form, you accept any fines, fees, or personal injury/death that may occur during construction."
 	w_class = WEIGHT_CLASS_TINY
@@ -162,19 +162,24 @@
 		set_viewer(usr)
 
 	attack_self(usr)
-/obj/item/areaeditor/blueprints/proc/get_images(turf/T, viewsize)
+
+
+/obj/item/areaeditor/blueprints/proc/get_images(turf/central_turf, viewsize)
 	. = list()
-	for(var/tt in RANGE_TURFS(viewsize, T))
-		var/turf/TT = tt
-		if(TT.blueprint_data)
-			. += TT.blueprint_data
+	var/list/dimensions = getviewsize(viewsize)
+	var/horizontal_radius = dimensions[1] / 2
+	var/vertical_radius = dimensions[2] / 2
+	for(var/turf/nearby_turf as anything in RECT_TURFS(horizontal_radius, vertical_radius, central_turf))
+		if(nearby_turf.blueprint_data)
+			. += nearby_turf.blueprint_data
+
 
 /obj/item/areaeditor/blueprints/proc/set_viewer(mob/user, message = "")
 	if(user && user.client)
 		if(viewing)
 			clear_viewer()
 		viewing = user.client
-		showing = get_images(get_turf(user), viewing.view)
+		showing = get_images(get_turf(viewing.eye || user), viewing.view)
 		viewing.images |= showing
 		if(message)
 			to_chat(user, message)
@@ -187,7 +192,7 @@
 	if(message)
 		to_chat(user, message)
 
-/obj/item/areaeditor/blueprints/dropped(mob/user)
+/obj/item/areaeditor/blueprints/dropped(mob/user, silent = FALSE)
 	..()
 	clear_viewer()
 
@@ -229,7 +234,7 @@
 	if(!str || !length(str)) //cancel
 		return area_created
 	if(length(str) > 50)
-		to_chat(usr, "<span class='warning'>The given name is too long.  The area remains undefined.</span>")
+		to_chat(usr, "<span class='warning'>The given name is too long. The area remains undefined.</span>")
 		return area_created
 	if(syndicate)
 		var/area/syndicate/unpowered/syndicate_space_base/A = new
@@ -238,6 +243,7 @@
 		A.power_light = FALSE
 		A.power_environ = FALSE
 		A.always_unpowered = FALSE
+		A.valid_territory = FALSE
 		A.set_dynamic_lighting()
 
 		for(var/i in 1 to turfs.len)
@@ -252,6 +258,7 @@
 		A.power_light = FALSE
 		A.power_environ = FALSE
 		A.always_unpowered = FALSE
+		A.valid_territory = FALSE
 		A.set_dynamic_lighting()
 
 		for(var/i in 1 to turfs.len)
@@ -277,7 +284,7 @@
 	if(!str || !length(str) || str==prevname) //cancel
 		return
 	if(length(str) > 50)
-		to_chat(usr, "<span class='warning'>The given name is too long.  The area's name is unchanged.</span>")
+		to_chat(usr, "<span class='warning'>The given name is too long. The area's name is unchanged.</span>")
 		return
 	set_area_machinery_title(A,str,prevname)
 	A.name = str
@@ -386,6 +393,40 @@
 	fluffnotice = "Метеорито-стойкая станция, даем гарантию на 200 лет!"
 
 /obj/item/areaeditor/theta/attack_self(mob/user)
+	. = ..()
+	var/area/A = get_area(user)
+	if(get_area_type() == AREA_STATION)
+		. += "<p>According to the [src], you are now in <b>\"[sanitize(A.name)]\"</b>.</p>"
+	var/datum/browser/popup = new(user, "blueprints", "[src]", 700, 500)
+	popup.set_content(.)
+	popup.open()
+	onclose(usr, "blueprints")
+
+//Blueprint for Gorky17 station
+
+/obj/item/areaeditor/gorky17
+	name = "Gorky17 Station blueprints"
+	desc = "Used to define new areas in space."
+	fluffnotice = "Секретные чертежи передого фронтира Горький17"
+
+/obj/item/areaeditor/gorky17/attack_self(mob/user)
+	. = ..()
+	var/area/A = get_area(user)
+	if(get_area_type() == AREA_STATION)
+		. += "<p>According to the [src], you are now in <b>\"[sanitize(A.name)]\"</b>.</p>"
+	var/datum/browser/popup = new(user, "blueprints", "[src]", 700, 500)
+	popup.set_content(.)
+	popup.open()
+	onclose(usr, "blueprints")
+
+//Blueprint for USSP station
+
+/obj/item/areaeditor/ussp
+	name = "USSP Station blueprints"
+	desc = "Used to define new areas in space."
+	fluffnotice = "В случае поломки - смотри сюда"
+
+/obj/item/areaeditor/ussp/attack_self(mob/user)
 	. = ..()
 	var/area/A = get_area(user)
 	if(get_area_type() == AREA_STATION)

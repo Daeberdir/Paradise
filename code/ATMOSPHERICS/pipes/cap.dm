@@ -1,7 +1,7 @@
 /obj/machinery/atmospherics/pipe/cap
 	name = "pipe endcap"
 	desc = "An endcap for pipes"
-	icon = 'icons/atmos/pipes.dmi'
+	icon = 'icons/obj/pipes_and_stuff/atmospherics/atmos/pipes.dmi'
 	icon_state = "cap"
 	level = 2
 
@@ -18,7 +18,7 @@
 
 /obj/machinery/atmospherics/pipe/cap/hide(var/i)
 	if(level == 1 && istype(loc, /turf/simulated))
-		invisibility = i ? 101 : 0
+		invisibility = i ? INVISIBILITY_ABSTRACT : 0
 	update_icon()
 
 /obj/machinery/atmospherics/pipe/cap/pipeline_expansion()

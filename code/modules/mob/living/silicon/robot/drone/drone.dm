@@ -2,6 +2,7 @@
 /mob/living/silicon/robot/drone
 	name = "drone"
 	real_name = "drone"
+	desc = "It's a tiny little repair drone. The casing is stamped with an NT logo and the subscript: 'Nanotrasen Recursive Repair Systems: Fixing Tomorrow's Problem, Today!'"
 	icon = 'icons/mob/robots.dmi'
 	icon_state = "repairbot"
 	maxHealth = 35
@@ -15,7 +16,7 @@
 	lawupdate = 0
 	density = 0
 	has_camera = FALSE
-	req_one_access = list(ACCESS_ENGINE, ACCESS_ROBOTICS)
+	req_access = list(ACCESS_ENGINE, ACCESS_ROBOTICS)
 	ventcrawler = VENTCRAWLER_ALWAYS
 	magpulse = 1
 	mob_size = MOB_SIZE_SMALL
@@ -74,6 +75,10 @@
 	// NO BRAIN.
 	mmi = null
 
+	// Give us our action button
+	var/datum/action/innate/hide/drone/hide = new()
+	hide.Grant(src)
+
 	//We need to screw with their HP a bit. They have around one fifth as much HP as a full borg.
 	for(var/V in components) if(V != "power cell")
 		var/datum/robot_component/C = components[V]
@@ -96,9 +101,16 @@
 	decompiler = locate(/obj/item/matter_decompiler) in src.module
 
 	//Some tidying-up.
-	flavor_text = "It's a tiny little repair drone. The casing is stamped with an NT logo and the subscript: 'Nanotrasen Recursive Repair Systems: Fixing Tomorrow's Problem, Today!'"
 	scanner.Grant(src)
 	update_icons()
+
+
+/mob/living/silicon/robot/drone/Destroy()
+	for(var/datum/action/innate/hide/drone/hide in actions)
+		hide.Remove(src)
+
+	. = ..()
+
 
 /mob/living/silicon/robot/drone/init(alien = FALSE, mob/living/silicon/ai/ai_to_sync_to = null)
 	laws = new /datum/ai_laws/drone()
@@ -150,7 +162,7 @@
 
 	else if(W.GetID())
 		if(stat == DEAD)
-			if(!config.allow_drone_spawn || emagged || health < -35) //It's dead, Dave.
+			if(!CONFIG_GET(flag/allow_drone_spawn) || emagged || health < -35) //It's dead, Dave.
 				to_chat(user, "<span class='warning'>The interface is fried, and a distressing burned smell wafts from the robot's interior. You're not rebooting this one.</span>")
 				return
 
@@ -170,7 +182,7 @@
 			for(var/mob/living/silicon/robot/drone/D in GLOB.silicon_mob_list)
 				if(D.key && D.client)
 					drones++
-			if(drones < config.max_maint_drones)
+			if(drones < CONFIG_GET(number/max_maint_drones))
 				request_player()
 			return
 
@@ -217,7 +229,7 @@
 	add_conversion_logs(src, "Converted as a slave to [key_name_log(H)]")
 	var/time = time2text(world.realtime,"hh:mm:ss")
 	GLOB.lawchanges.Add("[time] <B>:</B> [H.name]([H.key]) emagged [name]([key])")
-	addtimer(CALLBACK(src, .proc/shut_down, TRUE), EMAG_TIMER)
+	addtimer(CALLBACK(src, PROC_REF(shut_down), TRUE), EMAG_TIMER)
 
 	emagged = 1
 	density = 1
@@ -231,6 +243,7 @@
 	clear_inherent_laws()
 	laws = new /datum/ai_laws/syndicate_override
 	set_zeroth_law("Only [H.real_name] and people [H.real_name] designates as being such are Syndicate Agents.")
+	SSticker?.score?.save_silicon_laws(src, user, "EMAG act", log_all_laws = TRUE)
 
 	to_chat(src, "<b>Obey these laws:</b>")
 	laws.show_laws(src)
@@ -316,7 +329,7 @@
 
 	mind = new
 	mind.current = src
-	mind.original = src
+	mind.set_original_mob(src)
 	mind.assigned_role = "Drone"
 	SSticker.minds += mind
 	mind.key = player.key
@@ -349,8 +362,8 @@
 	if(is_type_in_list(AM, allowed_bumpable_objects))
 		return ..()
 
-/mob/living/silicon/robot/drone/Bumped(atom/movable/AM)
-	return
+/mob/living/silicon/robot/drone/Bumped(atom/movable/moving_atom)
+	return ..()
 
 /mob/living/silicon/robot/drone/start_pulling(atom/movable/AM, state, force = pull_force, show_message = FALSE)
 

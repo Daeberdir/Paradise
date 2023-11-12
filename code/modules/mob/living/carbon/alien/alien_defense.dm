@@ -1,5 +1,10 @@
 /mob/living/carbon/alien/hitby(atom/movable/AM, skipcatch, hitpush, blocked, datum/thrownthing/throwingdatum)
-	..(AM, hitpush = FALSE)
+	var/skip_catch = FALSE
+	if(isitem(AM))
+		var/obj/item/throw_item = AM
+		skip_catch = !throw_item.allowed_for_alien()
+	..(AM, skip_catch, FALSE, blocked, throwingdatum)
+
 
 /*Code for aliens attacking aliens. Because aliens act on a hivemind, I don't see them as very aggressive with each other.
 As such, they can either help or harm other aliens. Help works like the human help command while harm is a simple nibble.
@@ -12,11 +17,11 @@ In all, this is a lot like the monkey code. /N
 
 	switch(M.a_intent)
 		if(INTENT_HELP)
-			AdjustSleeping(-5)
+			AdjustSleeping(-10 SECONDS)
 			StopResting()
-			AdjustParalysis(-3)
-			AdjustStunned(-3)
-			AdjustWeakened(-3)
+			AdjustParalysis(-6 SECONDS)
+			AdjustStunned(-6 SECONDS)
+			AdjustWeakened(-6 SECONDS)
 			visible_message("<span class='notice'>[M.name] nuzzles [src] trying to wake it up!</span>")
 
 		if(INTENT_GRAB)

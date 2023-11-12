@@ -20,8 +20,9 @@
 	see_in_dark = 6
 	maxHealth = 5
 	health = 5
+	blood_nutrients = 20
 	blood_volume = BLOOD_VOLUME_SURVIVE
-	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat = 1)
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/mouse = 1)
 	response_help  = "pets"
 	response_disarm = "gently pushes aside"
 	response_harm   = "stamps on"
@@ -36,7 +37,8 @@
 	minbodytemp = 223		//Below -50 Degrees Celcius
 	maxbodytemp = 323	//Above 50 Degrees Celcius
 	universal_speak = 0
-	can_hide = 1
+	can_hide = TRUE
+	pass_door_while_hidden = TRUE
 	holder_type = /obj/item/holder/mouse
 	can_collar = 1
 	gold_core_spawnable = FRIENDLY_SPAWN
@@ -49,7 +51,7 @@
 /mob/living/simple_animal/mouse/handle_automated_action()
 	if(prob(chew_probability) && isturf(loc))
 		var/turf/simulated/floor/F = get_turf(src)
-		if(istype(F) && !F.intact)
+		if(istype(F) && !F.intact && !F.transparent_floor)
 			var/obj/structure/cable/C = locate() in F
 			if(C && prob(15))
 				if(C.avail())
@@ -223,6 +225,7 @@
 /mob/living/simple_animal/mouse/blobinfected
 	maxHealth = 100
 	health = 100
+	blood_nutrients = 500
 	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
 	minbodytemp = 0
 	gold_core_spawnable = NO_SPAWN
@@ -309,6 +312,10 @@
 	mouse_color = null
 	maxHealth = 15
 	health = 15
+	blood_nutrients = 30
+	mob_size = MOB_SIZE_SMALL
+	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/mouse = 2)
+
 
 /mob/living/simple_animal/mouse/rat/color_pick()
 	if(!mouse_color)
@@ -317,9 +324,6 @@
 		icon_living 	= "rat_[mouse_color]"
 		icon_dead 		= "rat_[mouse_color]_dead"
 		icon_resting 	= "rat_[mouse_color]_sleep"
-
-/mob/living/simple_animal/mouse/rat/pull_constraint(atom/movable/AM, show_message = FALSE)
-	return TRUE
 
 /mob/living/simple_animal/mouse/rat/gray
 	name = "gray rat"
@@ -401,7 +405,6 @@ GLOBAL_VAR_INIT(hamster_count, 0)
 	desc = "Очень миленький! Какие у него пушистые щечки!"
 	tts_seed = "Meepo"
 	turns_per_move = 2
-	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat = 1)
 	response_help  = "полапал"
 	response_disarm = "аккуратно отодвинул"
 	response_harm   = "наступил на"

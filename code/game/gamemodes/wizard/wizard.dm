@@ -31,7 +31,7 @@
 	modePlayer += wizard
 	wizard.assigned_role = SPECIAL_ROLE_WIZARD //So they aren't chosen for other jobs.
 	wizard.special_role = SPECIAL_ROLE_WIZARD
-	wizard.original = wizard.current
+	wizard.set_original_mob(wizard.current)
 	if(GLOB.wizardstart.len == 0)
 		to_chat(wizard.current, "<span class='danger'>A starting location for you could not be found, please report this bug!</span>")
 		return 0
@@ -51,7 +51,7 @@
 			apprentice.assigned_role = SPECIAL_ROLE_WIZARD_APPRENTICE //So they aren't chosen for other jobs.
 			apprentice.special_role = SPECIAL_ROLE_WIZARD_APPRENTICE
 			possible_wizards.Remove(apprentice)
-			apprentice.original = apprentice.current
+			apprentice.set_original_mob(apprentice.current)
 
 	return 1
 
@@ -69,7 +69,7 @@
 		add_game_logs("has been selected as a Wizard", wizard.current)
 		forge_wizard_objectives(wizard)
 		equip_wizard(wizard.current)
-		INVOKE_ASYNC(src, .proc/name_wizard, wizard.current)
+		INVOKE_ASYNC(src, PROC_REF(name_wizard), wizard.current)
 		greet_wizard(wizard)
 		if(use_huds)
 			update_wiz_icons_added(wizard)
@@ -80,7 +80,7 @@
 		log_game("[key_name(apprentice)] has been selected as a Wizard-Apprentice")
 		forge_wizard_apprentice_objectives(wizard_teacher, apprentice)
 		equip_wizard_apprentice(apprentice.current)
-		INVOKE_ASYNC(src, .proc/name_wizard, apprentice.current)
+		INVOKE_ASYNC(src, PROC_REF(name_wizard), apprentice.current)
 		greet_wizard(apprentice)
 		if(use_huds)
 			update_wiz_icons_added(apprentice)
@@ -159,7 +159,7 @@
 
 
 /datum/game_mode/proc/greet_wizard(var/datum/mind/wizard, var/you_are=1)
-	addtimer(CALLBACK(wizard.current, /mob/.proc/playsound_local, null, 'sound/ambience/antag/ragesmages.ogg', 100, 0), 30)
+	addtimer(CALLBACK(wizard.current, TYPE_PROC_REF(/mob, playsound_local), null, 'sound/ambience/antag/ragesmages.ogg', 100, 0), 30)
 	if(you_are)
 		to_chat(wizard.current, "<span class='danger'>You are the Space Wizard!</span>")
 	to_chat(wizard.current, "<B>The Space Wizards Federation has given you the following tasks:</B>")
@@ -315,7 +315,7 @@
 
 		for(var/datum/mind/wizard in wizards)
 
-			text += "<br><b>[wizard.key]</b> was <b>[wizard.name]</b> ("
+			text += "<br><b>[wizard.get_display_key()]</b> was <b>[wizard.name]</b> ("
 			if(wizard.current)
 				if(wizard.current.stat == DEAD)
 					text += "died"
@@ -358,7 +358,7 @@
 		if(apprentices.len)
 			text += "<br><font size=3><b>the wizards/witches apprentices were:</b></font>"
 			for(var/datum/mind/apprentice in apprentices)
-				text += "<br><b>[apprentice.key]</b> was <b>[apprentice.name]</b> ("
+				text += "<br><b>[apprentice.get_display_key()]</b> was <b>[apprentice.name]</b> ("
 				if(apprentice.current)
 					if(apprentice.current.stat == DEAD)
 						text += "died"

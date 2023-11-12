@@ -3,7 +3,6 @@ CONTAINS:
 T-RAY
 DETECTIVE SCANNER
 HEALTH ANALYZER
-GAS ANALYZER
 PLANT ANALYZER
 REAGENT SCANNER
 */
@@ -22,15 +21,55 @@ REAGENT SCANNER
 	var/scan_range = 1
 	var/pulse_duration = 10
 
-/obj/item/t_scanner/longer_pulse
-	pulse_duration = 50
-
 /obj/item/t_scanner/extended_range
+	name = "T-ray сканер расширенной дальности"
+	desc = "Излучатель и сканер терагерцевого излучения, используемый для обнаружения скрытых объектов и объектов под полом, таких как кабели и трубы. \
+	\nДанная модель обладает расширенным радиусом действия."
+	icon_state = "t-ray-range0"
 	scan_range = 3
+	origin_tech = "magnets=3;engineering=3"
+	materials = list(MAT_METAL=300)
 
-/obj/item/t_scanner/extended_range/longer_pulse
+/obj/item/t_scanner/longer_pulse
+	name = "T-ray сканер с продолжительным импульсом"
+	desc = "Излучатель и сканер терагерцевого излучения, используемый для обнаружения скрытых объектов и объектов под полом, таких как кабели и трубы. \
+	\nДанная модель способна генерировать более продолжительные импульсы."
+	icon_state = "t-ray-pulse0"
+	pulse_duration = 50
+	origin_tech = "magnets=5;engineering=3"
+	materials = list(MAT_METAL=300)
+
+/obj/item/t_scanner/advanced
+	name = "Продвинутый T-ray сканер"
+	desc = "Излучатель и сканер терагерцевого излучения, используемый для обнаружения скрытых объектов и объектов под полом, таких как кабели и трубы. \
+	\nДанная модель способна генерировать более продолжительные импульсы и обладает расширенным радиусом действия."
+	icon_state = "t-ray-advanced0"
 	scan_range = 3
 	pulse_duration = 50
+	origin_tech = "magnets=7;engineering=3"
+	materials = list(MAT_METAL=300)
+
+/obj/item/t_scanner/science
+	name = "Научный T-ray сканер"
+	desc = "Излучатель и сканер терагерцевого излучения, используемый для обнаружения скрытых объектов и объектов под полом, таких как кабели и трубы. \
+	\nВысокотехнологичная модель, способная генерировать очень продолжительные импульсы в пределах большого радиуса."
+	icon_state = "t-ray-science0"
+	scan_range = 5
+	pulse_duration = 100
+	origin_tech = "magnets=8;engineering=5"
+	materials = list(MAT_METAL=500)
+
+/obj/item/t_scanner/experimental	//a high-risk that cannot be disassembled, since this garbage was invented by, well, you know who.
+	name = "Экспериментальный T-ray сканер"
+	desc = "Излучатель и сканер терагерцевого излучения, используемый для обнаружения скрытых объектов и объектов под полом, таких как кабели и трубы. \
+	\nЭкспериментальный образец, обладающий расширенным радиусом действия и более продолжительным импульсом. \
+	\nСудя по его виду, эта вещь была собрана безумными учеными в ходе спонтанных экспериментов."
+	icon_state = "t-ray-experimental0"
+	scan_range = 3
+	pulse_duration = 80
+	origin_tech = null
+	materials = list()
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 
 /obj/item/t_scanner/Destroy()
 	if(on)
@@ -64,7 +103,9 @@ REAGENT SCANNER
 			if(in_turf_object.level != 1)
 				continue
 
-			if(in_turf_object.invisibility == 101)
+			var/temp_invisibility = in_turf_object.invisibility
+			var/temp_alpha = in_turf_object.alpha
+			if(temp_invisibility == INVISIBILITY_ABSTRACT || temp_invisibility == INVISIBILITY_ANOMALY)
 				in_turf_object.invisibility = 0
 				in_turf_object.alpha = 128
 				in_turf_object.drain_act_protected = TRUE
@@ -72,8 +113,8 @@ REAGENT SCANNER
 					if(in_turf_object)
 						var/turf/objects_turf = in_turf_object.loc
 						if(objects_turf && objects_turf.intact)
-							in_turf_object.invisibility = 101
-						in_turf_object.alpha = 255
+							in_turf_object.invisibility = temp_invisibility
+						in_turf_object.alpha = temp_alpha
 						in_turf_object.drain_act_protected = FALSE
 		for(var/mob/living/in_turf_mob in scan_turf.contents)
 			var/oldalpha = in_turf_mob.alpha
@@ -101,8 +142,8 @@ REAGENT SCANNER
 	icon_state = "sb_t-ray0"
 	scan_range = 2
 	pulse_duration = 30
-	var/was_alerted = FALSE // Защита от спама алёртов от этого сканера
-	var/burnt = FALSE // Сломало ли нас емп?
+	var/was_alerted = FALSE // Protection against spam alerts from this scanner
+	var/burnt = FALSE // Did emp break us?
 	var/datum/effect_system/spark_spread/spark_system	//The spark system, used for generating... sparks?
 	origin_tech = "combat=3;magnets=5;biotech=5"
 
@@ -159,7 +200,7 @@ REAGENT SCANNER
 				alerted_mob.do_alert_animation(alerted_mob)
 				alerted_mob.playsound_local(alerted, 'sound/machines/chime.ogg', 15, 0)
 		was_alerted = TRUE
-		addtimer(CALLBACK(src, .proc/end_alert_cd), 1 MINUTES)
+		addtimer(CALLBACK(src, PROC_REF(end_alert_cd)), 1 MINUTES)
 
 /obj/item/t_scanner/security/proc/end_alert_cd()
 	was_alerted = FALSE
@@ -186,6 +227,7 @@ REAGENT SCANNER
 	icon = 'icons/obj/device.dmi'
 	icon_state = "health"
 	item_state = "healthanalyzer"
+	belt_icon = "health_analyzer"
 	desc = "Ручной сканер тела, способный определить жизненные показатели субъекта."
 	flags = CONDUCT | NOBLUDGEON
 	slot_flags = SLOT_BELT
@@ -275,15 +317,16 @@ REAGENT SCANNER
 		return
 
 	playsound(loc, 'sound/goonstation/machines/printer_dotmatrix.ogg', 50, TRUE)
+	flick("health_anim", src)
 	sleep(3 SECONDS)
-	var/obj/item/paper/P = new(get_turf(src))
+	var/obj/item/paper/P = new(drop_location())
 	P.name = scan_title
 	P.header += "<center><b>[scan_title]</b></center><br>"
 	P.header += "<b>Время сканирования:</b> [station_time_timestamp()]<br><br>"
 	P.header += "[scan_data]"
 	P.info += "<br><br><b>Заметки:</b><br>"
 	if(in_range(user, src))
-		user.put_in_hands(P)
+		user.put_in_hands(P, ignore_anim = FALSE)
 		user.visible_message("<span class='notice'>[src.declent_ru(NOMINATIVE)] [pluralize_ru(src.gender,"выдаёт","выдают")] лист с отчётом.</span>")
 	GLOB.copier_items_printed++
 	reports_printed++
@@ -388,7 +431,7 @@ REAGENT SCANNER
 		else
 			. += "Общий статус: <span class='danger'>МЕРТВ</span>"
 	else //Если живой или отключка
-		if(H.status_flags & FAKEDEATH)
+		if(HAS_TRAIT(H, TRAIT_FAKEDEATH))
 			OX = fake_oxy > 50 			? 	"<b>[fake_oxy]</b>" 			: fake_oxy
 			. += "Общий статус: <span class='danger'>МЕРТВ</span>"
 		else
@@ -396,7 +439,7 @@ REAGENT SCANNER
 	. += "Тип повреждений: <font color='#0080ff'>Удушение</font>/<font color='green'>Токсины</font>/<font color='#FF8000'>Ожоги</font>/<font color='red'>Физ.</font>"
 	. += "Уровень повреждений: <font color='#0080ff'>[OX]</font> - <font color='green'>[TX]</font> - <font color='#FF8000'>[BU]</font> - <font color='red'>[BR]</font>"
 	. += "Температура тела: [H.bodytemperature-T0C]&deg;C ([H.bodytemperature*1.8-459.67]&deg;F)"
-	if(H.timeofdeath && (H.stat == DEAD || (H.status_flags & FAKEDEATH)))
+	if(H.timeofdeath && (H.stat == DEAD || HAS_TRAIT(H, TRAIT_FAKEDEATH)))
 		. += "Время смерти: [station_time_timestamp("hh:mm:ss", H.timeofdeath)]"
 		var/tdelta = round(world.time - H.timeofdeath)
 		if(tdelta < DEFIB_TIME_LIMIT && !DNR)
@@ -434,12 +477,12 @@ REAGENT SCANNER
 					. += "<span class='danger'>&emsp;[R.name] Стадия: [R.addiction_stage]/5</span>"
 			else
 				. += "Зависимости от реагентов не обнаружены."
-	for(var/thing in H.viruses)
+	for(var/thing in H.diseases)
 		var/datum/disease/D = thing
 		if(!(D.visibility_flags & HIDDEN_SCANNER))
 			. += "<span class='warning'><b>Внимание: обнаружен [D.form]</b>"
 			. += "&emsp;Название: [D.name]"
-			. += "&emsp;Тип: [D.spread_text]"
+			. += "&emsp;Тип: [D.additional_info]"
 			. += "&emsp;Стадия: [D.stage]/[D.max_stages]"
 			. += "&emsp;Лечение: [D.cure_text]</span>"
 	if(H.undergoing_cardiac_arrest())
@@ -559,7 +602,7 @@ REAGENT SCANNER
 		if(advanced)
 			to_chat(user, "<span class='notice'>Модуль обновления уже установлен на [src].</span>")
 		else
-			if(user.unEquip(I))
+			if(user.drop_transfer_item_to_loc(I, src))
 				to_chat(user, "<span class='notice'>Вы установили модуль обновления на [src].</span>")
 				add_overlay("advanced")
 				playsound(loc, I.usesound, 50, 1)
@@ -584,137 +627,6 @@ REAGENT SCANNER
 	w_class = WEIGHT_CLASS_TINY
 	origin_tech = "magnets=2;biotech=2"
 	usesound = 'sound/items/deconstruct.ogg'
-
-/obj/item/analyzer
-	desc = "A hand-held environmental scanner which reports current gas levels."
-	name = "analyzer"
-	icon = 'icons/obj/device.dmi'
-	icon_state = "atmos"
-	item_state = "analyzer"
-	w_class = WEIGHT_CLASS_SMALL
-	flags = CONDUCT
-	slot_flags = SLOT_BELT
-	throwforce = 0
-	throw_speed = 3
-	throw_range = 7
-	materials = list(MAT_METAL=30, MAT_GLASS=20)
-	origin_tech = "magnets=1;engineering=1"
-	var/cooldown = FALSE
-	var/cooldown_time = 250
-	var/accuracy // 0 is the best accuracy.
-
-/obj/item/analyzer/examine(mob/user)
-	. = ..()
-	. += "<span class='info'>Alt-click [src] to activate the barometer function.</span>"
-
-/obj/item/analyzer/attack_self(mob/user as mob)
-
-	if(user.stat)
-		return
-
-	var/turf/location = user.loc
-	if(!( istype(location, /turf) ))
-		return
-
-	var/datum/gas_mixture/environment = location.return_air()
-
-	var/pressure = environment.return_pressure()
-	var/total_moles = environment.total_moles()
-
-	to_chat(user, "<span class='info'><B>Results:</B></span>")
-	if(abs(pressure - ONE_ATMOSPHERE) < 10)
-		to_chat(user, "<span class='info'>Pressure: [round(pressure,0.1)] kPa</span>")
-	else
-		to_chat(user, "<span class='alert'>Pressure: [round(pressure,0.1)] kPa</span>")
-	if(total_moles)
-		var/o2_concentration = environment.oxygen/total_moles
-		var/n2_concentration = environment.nitrogen/total_moles
-		var/co2_concentration = environment.carbon_dioxide/total_moles
-		var/plasma_concentration = environment.toxins/total_moles
-
-		var/unknown_concentration =  1-(o2_concentration+n2_concentration+co2_concentration+plasma_concentration)
-		if(abs(n2_concentration - N2STANDARD) < 20)
-			to_chat(user, "<span class='info'>Nitrogen: [round(n2_concentration*100)] %</span>")
-		else
-			to_chat(user, "<span class='alert'>Nitrogen: [round(n2_concentration*100)] %</span>")
-
-		if(abs(o2_concentration - O2STANDARD) < 2)
-			to_chat(user, "<span class='info'>Oxygen: [round(o2_concentration*100)] %</span>")
-		else
-			to_chat(user, "<span class='alert'>Oxygen: [round(o2_concentration*100)] %</span>")
-
-		if(co2_concentration > 0.01)
-			to_chat(user, "<span class='alert'>CO2: [round(co2_concentration*100)] %</span>")
-		else
-			to_chat(user, "<span class='info'>CO2: [round(co2_concentration*100)] %</span>")
-
-		if(plasma_concentration > 0.01)
-			to_chat(user, "<span class='info'>Plasma: [round(plasma_concentration*100)] %</span>")
-
-		if(unknown_concentration > 0.01)
-			to_chat(user, "<span class='alert'>Unknown: [round(unknown_concentration*100)] %</span>")
-
-		to_chat(user, "<span class='info'>Temperature: [round(environment.temperature-T0C)] &deg;C</span>")
-
-	add_fingerprint(user)
-
-/obj/item/analyzer/AltClick(mob/living/user) //Barometer output for measuring when the next storm happens
-	if(!istype(user) || user.incapacitated())
-		to_chat(user, "<span class='warning'>You can't do that right now!</span>")
-		return
-	if(!Adjacent(user))
-		return
-	if(cooldown)
-		to_chat(user, "<span class='warning'>[src]'s barometer function is prepraring itself.</span>")
-		return
-	var/turf/T = get_turf(user)
-	if(!T)
-		return
-	playsound(src, 'sound/effects/pop.ogg', 100)
-	var/area/user_area = T.loc
-	var/datum/weather/ongoing_weather = null
-	if(!user_area.outdoors)
-		to_chat(user, "<span class='warning'>[src]'s barometer function won't work indoors!</span>")
-		return
-	for(var/V in SSweather.processing)
-		var/datum/weather/W = V
-		if(W.barometer_predictable && (T.z in W.impacted_z_levels) && W.area_type == user_area.type && !(W.stage == END_STAGE))
-			ongoing_weather = W
-			break
-	if(ongoing_weather)
-		if((ongoing_weather.stage == MAIN_STAGE) || (ongoing_weather.stage == WIND_DOWN_STAGE))
-			to_chat(user, "<span class='warning'>[src]'s barometer function can't trace anything while the storm is [ongoing_weather.stage == MAIN_STAGE ? "already here!" : "winding down."]</span>")
-			return
-		to_chat(user, "<span class='notice'>The next [ongoing_weather] will hit in [butchertime(ongoing_weather.next_hit_time - world.time)].</span>")
-		if(ongoing_weather.aesthetic)
-			to_chat(user, "<span class='warning'>[src]'s barometer function says that the next storm will breeze on by.</span>")
-	else
-		var/next_hit = SSweather.next_hit_by_zlevel["[T.z]"]
-		var/fixed = next_hit ? next_hit - world.time : -1
-		if(fixed < 0)
-			to_chat(user, "<span class='warning'>[src]'s barometer function was unable to trace any weather patterns.</span>")
-		else
-			to_chat(user, "<span class='warning'>[src]'s barometer function says a storm will land in approximately [butchertime(fixed)].</span>")
-	cooldown = TRUE
-	addtimer(CALLBACK(src,/obj/item/analyzer/proc/ping), cooldown_time)
-
-/obj/item/analyzer/proc/ping()
-	if(isliving(loc))
-		var/mob/living/L = loc
-		to_chat(L, "<span class='notice'>[src]'s barometer function is ready!</span>")
-	playsound(src, 'sound/machines/click.ogg', 100)
-	cooldown = FALSE
-
-/obj/item/analyzer/proc/butchertime(amount)
-	if(!amount)
-		return
-	if(accuracy)
-		var/inaccurate = round(accuracy * (1 / 3))
-		if(prob(50))
-			amount -= inaccurate
-		if(prob(50))
-			amount += inaccurate
-	return DisplayTimeText(max(1, amount))
 
 /obj/item/reagent_scanner
 	name = "reagent scanner"
@@ -778,15 +690,19 @@ REAGENT SCANNER
 	if(!scanning)
 		usr.visible_message("<span class='warning'>[src] rattles and prints out a sheet of paper.</span>")
 		playsound(loc, 'sound/goonstation/machines/printer_thermal.ogg', 50, 1)
+		if(!details)
+			flick("spectrometer_anim", src)
+		else
+			flick("adv_spectrometer_anim", src)
 		sleep(50)
 
-		var/obj/item/paper/P = new(get_turf(src))
+		var/obj/item/paper/P = new(drop_location())
 		P.name = "Reagent Scanner Report: [station_time_timestamp()]"
 		P.info = "<center><b>Reagent Scanner</b></center><br><center>Data Analysis:</center><br><hr><br><b>Chemical agents detected:</b><br> [datatoprint]<br><hr>"
 
 		if(ismob(loc))
 			var/mob/M = loc
-			M.put_in_hands(P)
+			M.put_in_hands(P, ignore_anim = FALSE)
 			to_chat(M, "<span class='notice'>Report printed. Log cleared.</span>")
 			datatoprint = ""
 			scanning = TRUE
@@ -810,7 +726,7 @@ REAGENT SCANNER
 	materials = list(MAT_METAL=30, MAT_GLASS=20)
 
 /obj/item/slime_scanner/attack(mob/living/M, mob/living/user)
-	if(user.incapacitated() || user.eye_blind)
+	if(user.incapacitated() || user.AmountBlinded())
 		return
 	if(!isslime(M))
 		to_chat(user, "<span class='warning'>This device can only scan slimes!</span>")
@@ -909,8 +825,6 @@ REAGENT SCANNER
 	overlayid = "bodyanalyzer_charge[overlayid]"
 	overlays += icon(icon, overlayid)
 
-	if(printing)
-		overlays += icon(icon, "bodyanalyzer_printing")
 
 /obj/item/bodyanalyzer/attack(mob/living/M, mob/living/carbon/human/user)
 	if(user.incapacitated() || !user.Adjacent(M))
@@ -945,11 +859,13 @@ REAGENT SCANNER
 		var/report = generate_printing_text(M, user)
 		user.visible_message("[user] begins scanning [M] with [src].", "You begin scanning [M].")
 		if(do_after(user, scan_time, target = M))
-			var/obj/item/paper/printout = new
+			var/obj/item/paper/printout = new(drop_location())
 			printout.info = report
 			printout.name = "Scan report - [M.name]"
 			playsound(user.loc, 'sound/goonstation/machines/printer_dotmatrix.ogg', 50, 1)
-			user.put_in_hands(printout)
+			flick("bodyanalyzer_anim", src)
+			sleep(3 SECONDS)
+			user.put_in_hands(printout, ignore_anim = FALSE)
 			time_to_use = world.time + scan_cd
 			if(isrobot(user))
 				var/mob/living/silicon/robot/R = user
@@ -958,14 +874,14 @@ REAGENT SCANNER
 				cell.use(usecharge)
 			ready = FALSE
 			update_icon(TRUE)
-			addtimer(CALLBACK(src, /obj/item/bodyanalyzer/.proc/setReady), scan_cd)
-			addtimer(CALLBACK(src, /obj/item/bodyanalyzer/.proc/update_icon), 20)
+			addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/item/bodyanalyzer, setReady)), scan_cd)
+			addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/item/bodyanalyzer, update_icon)), 20)
 
 	else if(iscorgi(M) && M.stat == DEAD)
 		to_chat(user, "<span class='notice'>You wonder if [M.p_they()] was a good dog. <b>[src] tells you they were the best...</b></span>") // :'(
 		playsound(loc, 'sound/machines/ping.ogg', 50, 0)
 		ready = FALSE
-		addtimer(CALLBACK(src, /obj/item/bodyanalyzer/.proc/setReady), scan_cd)
+		addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/item/bodyanalyzer, setReady)), scan_cd)
 		time_to_use = world.time + scan_cd
 	else
 		to_chat(user, "<span class='notice'>Scanning error detected. Invalid specimen.</span>")
@@ -987,9 +903,9 @@ REAGENT SCANNER
 	dat += "[target.health > 50 ? "<font color='blue'>" : "<font color='red'>"]\tHealth %: [target.health], ([t1])</font><br>"
 
 	var/found_disease = FALSE
-	for(var/thing in target.viruses)
+	for(var/thing in target.diseases)
 		var/datum/disease/D = thing
-		if(D.visibility_flags) //If any visibility flags are on.
+		if(D.visibility_flags & HIDDEN_SCANNER)
 			continue
 		found_disease = TRUE
 		break
@@ -1018,7 +934,7 @@ REAGENT SCANNER
 	extra_font = (target.getBrainLoss() < 1 ?"<font color='blue'>" : "<font color='red'>")
 	dat += "[extra_font]\tApprox. Brain Damage %: [target.getBrainLoss()]<br>"
 
-	dat += "Paralysis Summary %: [target.paralysis] ([round(target.paralysis / 4)] seconds left!)<br>"
+	dat += "Paralysis Summary %: [target.AmountParalyzed()] ([round(target.AmountParalyzed() / 10)] seconds left!)<br>"
 	dat += "Body Temperature: [target.bodytemperature-T0C]&deg;C ([target.bodytemperature*1.8-459.67]&deg;F)<br>"
 
 	dat += "<hr>"

@@ -10,9 +10,9 @@
 	var/material_drop_type = /obj/item/stack/sheet/metal
 
 /obj/structure/statue/attackby(obj/item/W, mob/living/user, params)
-	add_fingerprint(user)
 	if(!(flags & NODECONSTRUCT))
 		if(default_unfasten_wrench(user, W))
+			add_fingerprint(user)
 			return
 		if(istype(W, /obj/item/gun/energy/plasmacutter))
 			playsound(src, W.usesound, 100, 1)
@@ -41,8 +41,8 @@
 
 
 /obj/structure/statue/attack_hand(mob/living/user)
+	. = ..()
 	user.changeNext_move(CLICK_CD_MELEE)
-	add_fingerprint(user)
 	user.visible_message("[user] rubs some dust off from the [name]'s surface.", \
 						 "<span class='notice'>You rub some dust off from the [name]'s surface.</span>")
 
@@ -76,26 +76,14 @@
 	desc = "This statue has a sickening green colour."
 	icon_state = "eng"
 
-/obj/structure/statue/uranium/attackby(obj/item/W, mob/user, params)
-	radiate()
-	return ..()
+/obj/structure/statue/uranium/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/radioactivity, \
+				rad_per_interaction = 12, \
+				rad_interaction_radius = 3, \
+				rad_interaction_cooldown = 1.5 SECONDS \
+	)
 
-/obj/structure/statue/uranium/Bumped(atom/user)
-	radiate()
-	..()
-
-/obj/structure/statue/uranium/attack_hand(mob/user)
-	radiate()
-	..()
-
-/obj/structure/statue/uranium/proc/radiate()
-	if(!active)
-		if(world.time > last_event+15)
-			active = 1
-			for(var/mob/living/L in range(3,src))
-				L.apply_effect(12,IRRADIATE,0)
-			last_event = world.time
-			active = null
 
 /obj/structure/statue/plasma
 	max_integrity = 200
@@ -129,6 +117,7 @@
 
 /obj/structure/statue/plasma/attackby(obj/item/W, mob/user, params)
 	if(is_hot(W) > 300)//If the temperature of the object is over 300, then ignite
+		add_fingerprint(user)
 		add_attack_logs(user, src, "Ignited using [W]", ATKLOG_FEW)
 		investigate_log("was <span class='warning'>ignited</span> by [key_name_log(user)]",INVESTIGATE_ATMOS)
 		ignite(is_hot(W))
@@ -231,7 +220,7 @@
 	name = "statue of a clown"
 	icon_state = "clown"
 
-/obj/structure/statue/bananium/Bumped(atom/user)
+/obj/structure/statue/bananium/Bumped(atom/movable/moving_atom)
 	honk()
 	..()
 
@@ -254,7 +243,6 @@
 	name = "статуя великого Хонкера"
 	desc = "Искусно слепленная статуя из бананиума, бананового сока и непонятного белого материала. Судя по его выдающейся улыбки, двум золотым гудкам в руках и наряду, он был лучшим стендапером и шутником на станции. Полное имя, к сожалению плохо читаемо и затерто, похоже кто-то явно завидовал его таланту."
 	icon_state = "clown_unique"
-	oreAmount = 20
 
 /obj/structure/statue/sandstone
 	max_integrity = 50
@@ -295,7 +283,6 @@
 	name = "статуя гордости пантомимы"
 	desc = "Искусно слепленная статуя из транквилиума, если приглядеться, то на статую надета старая униформа мима, перекрашенная под текстуру транквилиума, а рот статуи заклеен скотчем. Похоже кто-то полностью отдавал себя искусству пантомимы. На груди виднеется медаль с еле различимой закрашенной надписью \"За Отвагу\", поверх которой написано \"За Военные Преступления\"."
 	icon_state = "mime_unique"
-	oreAmount = 20
 
 /obj/structure/statue/kidanstatue
 	name = "Obsidian Kidan warrior statue"
@@ -398,6 +385,9 @@
 	new /obj/item/grown/log(drop_location())
 	return ..()
 
+/obj/structure/snowman/built/has_prints()
+	return FALSE
+
 /obj/structure/snowman/built/attackby(obj/item/I, mob/user)
 	if(istype(I, /obj/item/snowball) && obj_integrity < max_integrity)
 		to_chat(user, "<span class='notice'>You patch some of the damage on [src] with [I].</span>")
@@ -410,3 +400,58 @@
 	..()
 	qdel(src)
 
+///////// Cheese
+/obj/structure/statue/cheese
+	max_integrity = 100
+	material_drop_type = /obj/item/stack/sheet/cheese
+
+/obj/structure/statue/cheese/cheesus
+	name = "statue of cheesus"
+	desc = "Cheese expertly crafted into a representation of our mighty lord and saviour."
+	icon_state = "cheesus1"
+
+/obj/structure/statue/cheese/cheesus/attackby(obj/item/W, mob/user, params)
+	if(obj_integrity <= 20)
+		icon_state = "cheesus4"
+		return ..()
+	if(obj_integrity <= 40)
+		icon_state = "cheesus3"
+		return ..()
+	if(obj_integrity <= 60)
+		icon_state = "cheesus2"
+		return ..()
+	return ..()
+
+//////BONES
+/obj/structure/bones
+	name = "large bone"
+	desc = "a large bone that belong to the unknown creature"
+	icon = 'icons/obj/bones_64x64.dmi'
+	icon_state = "l_bone"
+	anchored = TRUE
+	density = TRUE
+	max_integrity = 1000
+
+/obj/structure/bones/right
+	icon_state = "r_bone"
+
+/obj/structure/bones/skull
+	name = "large skull"
+	desc = "a large skull that belong to the unknown creature"
+	icon_state = "skull"
+
+/obj/structure/bones/ribs_left
+	name = "large ribs"
+	desc = "a large ribs that belong to the unknown creature"
+	icon_state = "l_ribs"
+
+/obj/structure/bones/ribs_right
+	name = "large ribs"
+	desc = "a large ribs that belong to the unknown creature"
+	icon_state = "r_ribs"
+
+/obj/structure/statue/bone/rib
+	name = "colossal rib"
+	desc = "It's staggering to think that something this big could have lived, let alone died."
+	icon = 'icons/obj/statuelarge.dmi'
+	icon_state = "rib"

@@ -20,7 +20,7 @@
 	if(ranged)
 		B.loc = new_location
 	else
-		user.drop_item()
+		user.drop_from_active_hand()
 		user.put_in_active_hand(B)
 	B.icon_state = icon_state
 
@@ -50,7 +50,7 @@
 	if(user.a_intent != INTENT_HARM || !isGlass)
 		return ..()
 
-	if(HAS_TRAIT(user, TRAIT_PACIFISM))
+	if(HAS_TRAIT(user, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
 		to_chat(user, "<span class='warning'>You don't want to harm [target]!</span>")
 		return
 
@@ -99,7 +99,8 @@
 		head_attack_message = " on the head"
 		//Weaken the target for the duration that we calculated and divide it by 5.
 		if(armor_duration)
-			target.apply_effect(min(armor_duration, 10) , WEAKEN) // Never weaken more than a flash!
+			var/stun_time = (min(armor_duration, 10)) STATUS_EFFECT_CONSTANT
+			target.Weaken(stun_time)
 
 	//Display an attack message.
 	if(target != user)
@@ -388,7 +389,7 @@
 			desc += " You're not sure if making this out of a carton was the brightest idea."
 			isGlass = 0
 
-/obj/item/reagent_containers/food/drinks/bottle/molotov/throw_impact(atom/target,mob/thrower)
+/obj/item/reagent_containers/food/drinks/bottle/molotov/throw_impact(atom/target, datum/thrownthing/throwingdatum)
 	var/firestarter = 0
 	for(var/datum/reagent/R in reagents.reagent_list)
 		for(var/A in accelerants)

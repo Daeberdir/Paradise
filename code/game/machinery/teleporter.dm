@@ -51,19 +51,19 @@
 	if(istype(I, /obj/item/gps))
 		var/obj/item/gps/L = I
 		if(L.locked_location && !(stat & (NOPOWER|BROKEN)))
-			if(!user.unEquip(L))
-				to_chat(user, "<span class='warning'>[I] is stuck to your hand, you cannot put it in [src]</span>")
+			if(!user.drop_transfer_item_to_loc(L, src))
+				to_chat(user, span_warning("[I] is stuck to your hand, you cannot put it in [src]"))
 				return
-			L.forceMove(src)
+			add_fingerprint(user)
 			locked = L
-			to_chat(user, "<span class='caution'>You insert the GPS device into the [src]'s slot.</span>")
+			to_chat(user, span_caution("You insert the GPS device into the [src]'s slot."))
 	else
 		return ..()
 
 /obj/machinery/computer/teleporter/emag_act(mob/user)
 	if(!emagged)
 		emagged = TRUE
-		to_chat(user, "<span class='notice'>The teleporter can now lock on to Syndicate beacons!</span>")
+		to_chat(user, span_notice("The teleporter can now lock on to Syndicate beacons!"))
 	else
 		ui_interact(user)
 
@@ -71,6 +71,9 @@
 	attack_hand(user)
 
 /obj/machinery/computer/teleporter/attack_hand(mob/user)
+	if(..())
+		return TRUE
+	add_fingerprint(user)
 	ui_interact(user)
 
 
@@ -97,6 +100,7 @@
 	data["calibrating"] = calibrating
 	data["locked"] = locked ? TRUE : FALSE
 	data["targetsTeleport"] = null
+	data["accuracy"] = power_station.teleporter_hub.accurate
 	switch(regime)
 		if(REGIME_TELEPORT)
 			data["targetsTeleport"] = targets_teleport()
@@ -149,7 +153,7 @@
 
 			atom_say("Калибровка хаба до указанной цели в процессе...")
 			calibrating = TRUE
-			addtimer(CALLBACK(src, .proc/calibrateCallback), 50 * (3 - power_station.teleporter_hub.accurate)) //Better parts mean faster calibration
+			addtimer(CALLBACK(src, PROC_REF(calibrateCallback)), 50 * (3 - power_station.teleporter_hub.accurate)) //Better parts mean faster calibration
 
 /**
 *	Resets the connected powerstation to initial values. Helper function of ui_act
@@ -364,14 +368,16 @@
 			break
 	return power_station
 
-/obj/machinery/teleport/hub/Bumped(M as mob|obj)
+/obj/machinery/teleport/hub/Bumped(atom/movable/moving_atom)
+	..()
+
 	if(!is_teleport_allowed(z) && !admin_usage)
-		if(ismob(M))
-			to_chat(M, "You can't use this here.")
+		if(ismob(moving_atom))
+			to_chat(moving_atom, "You can't use this here.")
 		return
-	if(power_station && power_station.engaged && !panel_open && !blockAI(M) && !istype(M, /obj/spacepod))
-		if(!teleport(M) && isliving(M)) // the isliving(M) is needed to avoid triggering errors if a spark bumps the telehub
-			visible_message("<span class='warning'>[src] emits a loud buzz, as its teleport portal flickers and fails!</span>")
+	if(power_station && power_station.engaged && !panel_open && !blockAI(moving_atom) && !istype(moving_atom, /obj/spacepod))
+		if(!teleport(moving_atom) && isliving(moving_atom)) // the isliving(M) is needed to avoid triggering errors if a spark bumps the telehub
+			visible_message(span_warning("[src] emits a loud buzz, as its teleport portal flickers and fails!"))
 			playsound(loc, 'sound/machines/buzz-sigh.ogg', 50, FALSE)
 			power_station.toggle() // turn off the portal.
 		use_power(5000)
@@ -396,11 +402,11 @@
 	if(!com)
 		return
 	if(!com.target)
-		visible_message("<span class='alert'>Cannot authenticate locked on coordinates. Please reinstate coordinate matrix.</span>")
+		visible_message(span_alert("Cannot authenticate locked on coordinates. Please reinstate coordinate matrix."))
 		return
 	if(istype(M, /atom/movable))
 		if(!calibrated && com.cc_beacon)
-			visible_message("<span class='alert'>Cannot lock on target. Please calibrate the teleporter before attempting long range teleportation.</span>")
+			visible_message(span_alert("Cannot lock on target. Please calibrate the teleporter before attempting long range teleportation."))
 		else if(!calibrated && prob(25 - ((accurate) * 10)) && !com.cc_beacon) //oh dear a problem
 			. = do_teleport(M, locate(rand((2*TRANSITIONEDGE), world.maxx - (2*TRANSITIONEDGE)), rand((2*TRANSITIONEDGE), world.maxy - (2*TRANSITIONEDGE)), 3), 2, bypass_area_flag = com.area_bypass)
 		else
@@ -443,31 +449,33 @@
 */
 /obj/machinery/teleport/proc/blockAI(atom/A)
 	if(istype(A, /mob/living/silicon/ai) || istype(A, /obj/structure/AIcore))
-		visible_message("<span class='warning'>The teleporter rejects the AI unit.</span>")
+		visible_message(span_warning("The teleporter rejects the AI unit."))
 		if(istype(A, /mob/living/silicon/ai))
 			var/mob/living/silicon/ai/T = A
-			var/list/TPError = list("<span class='warning'>Firmware instructions dictate you must remain on your assigned station!</span>",
-			"<span class='warning'>You cannot interface with this technology and get rejected!</span>",
-			"<span class='warning'>External firewalls prevent you from utilizing this machine!</span>",
-			"<span class='warning'>Your AI core's anti-bluespace failsafes trigger and prevent teleportation!</span>")
+			var/list/TPError = list(span_warning("Firmware instructions dictate you must remain on your assigned station!"),
+			span_warning("You cannot interface with this technology and get rejected!"),
+			span_warning("External firewalls prevent you from utilizing this machine!"),
+			span_warning("Your AI core's anti-bluespace failsafes trigger and prevent teleportation!"))
 			to_chat(T, "[pick(TPError)]")
 		return TRUE
 	return FALSE
 
-/obj/machinery/teleport/perma/Bumped(atom/A)
+/obj/machinery/teleport/perma/Bumped(atom/movable/moving_atom)
+	..()
+
 	if(stat & (BROKEN|NOPOWER))
 		return
 	if(!is_teleport_allowed(z))
-		to_chat(A, "You can't use this here.")
+		to_chat(moving_atom, "You can't use this here.")
 		return
 
-	if(target && !recalibrating && !panel_open && !blockAI(A))
-		do_teleport(A, target)
+	if(target && !recalibrating && !panel_open && !blockAI(moving_atom))
+		do_teleport(moving_atom, target)
 		use_power(5000)
 		if(tele_delay)
 			recalibrating = TRUE
 			update_icon()
-			addtimer(CALLBACK(src, .proc/BumpedCallback), tele_delay)
+			addtimer(CALLBACK(src, PROC_REF(BumpedCallback)), tele_delay)
 
 /obj/machinery/teleport/perma/proc/BumpedCallback()
 	recalibrating = FALSE
@@ -560,9 +568,10 @@
 	if(exchange_parts(user, I))
 		return
 	if(panel_open && istype(I, /obj/item/circuitboard/teleporter_perma))
+		add_fingerprint(user)
 		var/obj/item/circuitboard/teleporter_perma/C = I
 		C.target = teleporter_console.target
-		to_chat(user, "<span class='caution'>You copy the targeting information from [src] to [C]</span>")
+		to_chat(user, span_caution("You copy the targeting information from [src] to [C]"))
 		return
 	return ..()
 
@@ -582,9 +591,9 @@
 			if(linked_stations.len < efficiency)
 				linked_stations.Add(M.buffer)
 				M.buffer = null
-				to_chat(user, "<span class='caution'>You upload the data from [M]'s buffer.</span>")
+				to_chat(user, span_caution("You upload the data from [M]'s buffer."))
 			else
-				to_chat(user, "<span class='alert'>This station can't hold more information, try to use better parts.</span>")
+				to_chat(user, span_alert("This station can't hold more information, try to use better parts."))
 		return
 	M.set_multitool_buffer(user, src)
 
@@ -599,30 +608,31 @@
 		return
 	if(panel_open)
 		link_console_and_hub()
-		to_chat(user, "<span class='caution'>You reconnect the station to nearby machinery.</span>")
+		to_chat(user, span_caution("You reconnect the station to nearby machinery."))
 
 
 /obj/machinery/teleport/station/attack_ai()
 	attack_hand()
 
 /obj/machinery/teleport/station/attack_hand(mob/user)
+	add_fingerprint(user)
 	if(!panel_open)
 		toggle(user)
 	else
-		to_chat(user, "<span class='notice'>Close the maintenance panel first.</span>")
+		to_chat(user, span_notice("Close the maintenance panel first."))
 
 /obj/machinery/teleport/station/proc/toggle(mob/user)
 	if(stat & (BROKEN|NOPOWER) || !teleporter_hub || !teleporter_console)
 		return
 	if(teleporter_hub.panel_open)
-		to_chat(user, "<span class='notice'>Close the hub's maintenance panel first.</span>")
+		to_chat(user, span_notice("Close the hub's maintenance panel first."))
 		return
 	if(teleporter_console.target)
 		engaged = !engaged
 		use_power(5000)
-		visible_message("<span class='notice'>Teleporter [engaged ? "" : "dis"]engaged!</span>")
+		visible_message(span_notice("Teleporter [engaged ? "" : "dis"]engaged!"))
 	else
-		visible_message("<span class='alert'>No target detected.</span>")
+		visible_message(span_alert("No target detected."))
 		engaged = FALSE
 	teleporter_hub.update_icon()
 	if(istype(user))

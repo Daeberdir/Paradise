@@ -58,7 +58,7 @@
 	add_say_logs(user, "to [owner]: [command]", "Abductor Mind Control")
 	update_gland_hud()
 
-	addtimer(CALLBACK(src, .proc/clear_mind_control), mind_control_duration)
+	addtimer(CALLBACK(src, PROC_REF(clear_mind_control)), mind_control_duration)
 
 /obj/item/organ/internal/heart/gland/proc/clear_mind_control()
 	if(!ownerCheck() || !active_mind_control)
@@ -155,16 +155,16 @@
 	for(var/mob/living/carbon/H in orange(4,T))
 		if(H == owner)
 			continue
-		switch(pick(1,3))
+		switch(rand(1, 3))
 			if(1)
 				to_chat(H, "<span class='userdanger'>You hear a loud buzz in your head, silencing your thoughts!</span>")
-				H.Stun(3)
+				H.Stun(6 SECONDS)
 			if(2)
 				to_chat(H, "<span class='warning'>You hear an annoying buzz in your head.</span>")
-				H.AdjustConfused(15)
-				H.adjustBrainLoss(5, 15)
+				H.AdjustConfused(30 SECONDS)
+				H.adjustBrainLoss(rand(5, 15))
 			if(3)
-				H.hallucination += 60
+				H.AdjustHallucinate(60 SECONDS)
 
 /obj/item/organ/internal/heart/gland/pop
 	cooldown_low = 900
@@ -176,9 +176,24 @@
 	mind_control_duration = 3000
 
 /obj/item/organ/internal/heart/gland/pop/activate()
-	to_chat(owner, "<span class='notice'>You feel unlike yourself.</span>")
-	var/species = pick(/datum/species/unathi, /datum/species/skrell, /datum/species/diona, /datum/species/tajaran, /datum/species/vulpkanin, /datum/species/kidan, /datum/species/grey)
-	owner.set_species(species)
+	var/mob/living/carbon/human/h_owner = owner
+	to_chat(h_owner, "<span class='notice'>You feel unlike yourself.</span>")
+	var/obj/item/organ/internal/heart/gland/pop/gland = locate() in h_owner.internal_organs
+	var/old_control_uses = initial(mind_control_uses)
+	if(gland)
+		old_control_uses = gland.mind_control_uses
+	var/list/random_species = list(/datum/species/human, /datum/species/unathi, /datum/species/skrell, /datum/species/diona, /datum/species/tajaran, /datum/species/vulpkanin, /datum/species/kidan, /datum/species/grey)
+	random_species -= h_owner.dna.species.type
+	h_owner.set_species(pick(random_species))
+	addtimer(CALLBACK(h_owner, TYPE_PROC_REF(/mob/living/carbon/human, insert_new_gland), old_control_uses), 0)
+
+
+/mob/living/carbon/human/proc/insert_new_gland(mind_controls)
+	if(QDELETED(src))
+		return
+	var/obj/item/organ/internal/heart/gland/pop/replace_gland = new(src)
+	replace_gland.mind_control_uses = mind_controls
+
 
 /obj/item/organ/internal/heart/gland/ventcrawling
 	origin_tech = "materials=4;biotech=5;bluespace=4;abductor=3"
@@ -204,30 +219,13 @@
 
 /obj/item/organ/internal/heart/gland/viral/activate()
 	to_chat(owner, "<span class='warning'>You feel sick.</span>")
-	var/datum/disease/advance/A = random_virus(pick(2, 6), 6)
-	A.carrier = TRUE
-	owner.ForceContractDisease(A)
-
-/obj/item/organ/internal/heart/gland/viral/proc/random_virus(max_symptoms, max_level)
-	if(max_symptoms > VIRUS_SYMPTOM_LIMIT)
-		max_symptoms = VIRUS_SYMPTOM_LIMIT
-	var/datum/disease/advance/A = new /datum/disease/advance()
-	var/list/datum/symptom/possible_symptoms = list()
-	for(var/symptom in subtypesof(/datum/symptom))
-		var/datum/symptom/S = symptom
-		if(initial(S.level) > max_level)
-			continue
-		if(initial(S.level) <= 0) //unobtainable symptoms
-			continue
-		possible_symptoms += S
-	for(var/i in 1 to max_symptoms)
-		var/datum/symptom/chosen_symptom = pick_n_take(possible_symptoms)
-		if(chosen_symptom)
-			var/datum/symptom/S = new chosen_symptom
-			A.symptoms += S
-	A.Refresh() //just in case someone already made and named the same disease
-	return A
-
+	var/datum/disease/virus/advance/new_virus
+	new_virus = CreateRandomVirus(count_of_symptoms = rand(4, 6), resistance = rand(0,11), stealth = pick(0,0,1,1,2),
+								stage_rate = rand(-11,5), transmittable = rand(2,9), severity = rand(0,5))
+	var/datum/disease/virus/advance/old_virus = locate() in owner.diseases
+	if(old_virus)
+		old_virus.cure(need_immunity = FALSE)
+	new_virus.Contract(owner, is_carrier = TRUE)
 
 /obj/item/organ/internal/heart/gland/emp //TODO : Replace with something more interesting
 	origin_tech = "materials=4;biotech=4;magnets=6;abductor=3"
@@ -237,6 +235,7 @@
 	icon_state = "emp"
 	mind_control_uses = 3
 	mind_control_duration = 1800
+	emp_proof = TRUE	// EMP should not stop our own heart instantly
 
 /obj/item/organ/internal/heart/gland/emp/activate()
 	to_chat(owner, "<span class='warning'>You feel a spike of pain in your head.</span>")
@@ -293,7 +292,7 @@
 	owner.visible_message("<span class='danger'>[owner]'s skin starts emitting electric arcs!</span>",\
 	"<span class='warning'>You feel electric energy building up inside you!</span>")
 	playsound(get_turf(owner), "sparks", 100, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
-	addtimer(CALLBACK(src, .proc/zap), rand(30, 100))
+	addtimer(CALLBACK(src, PROC_REF(zap)), rand(30, 100))
 
 /obj/item/organ/internal/heart/gland/electric/proc/zap()
 	tesla_zap(owner, 4, 8000)

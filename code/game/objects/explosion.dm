@@ -126,7 +126,7 @@
 						M.playsound_local(epicenter, null, echo_volume, 1, frequency, S = explosion_echo_sound, distance_multiplier = 0)
 
 					if(creaking_explosion) // 5 seconds after the bang, the station begins to creak
-						addtimer(CALLBACK(M, /mob/proc/playsound_local, epicenter, null, rand(FREQ_LOWER, FREQ_UPPER), 1, frequency, null, null, FALSE, hull_creaking_sound, 0), CREAK_DELAY)
+						addtimer(CALLBACK(M, TYPE_PROC_REF(/mob, playsound_local), epicenter, null, rand(FREQ_LOWER, FREQ_UPPER), 1, frequency, null, null, FALSE, hull_creaking_sound, 0), CREAK_DELAY)
 
 		if(heavy_impact_range > 1)
 			var/datum/effect_system/explosion/E
@@ -139,7 +139,7 @@
 
 		var/list/affected_turfs = spiral_range_turfs(max_range, epicenter)
 
-		if(config.reactionary_explosions)
+		if(CONFIG_GET(flag/reactionary_explosions))
 			for(var/A in affected_turfs) // we cache the explosion block rating of every turf in the explosion area
 				var/turf/T = A
 				cached_exp_block[T] = 0
@@ -157,7 +157,7 @@
 				continue
 			var/dist = HYPOTENUSE(T.x, T.y, x0, y0)
 
-			if(config.reactionary_explosions)
+			if(CONFIG_GET(flag/reactionary_explosions))
 				var/turf/Trajectory = T
 				while(Trajectory != epicenter)
 					Trajectory = get_step_towards(Trajectory, epicenter)

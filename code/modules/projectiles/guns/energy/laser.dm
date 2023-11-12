@@ -34,6 +34,21 @@
 	ammo_x_offset = 3
 	selfcharge = 1
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
+	unique_reskin = TRUE
+
+/obj/item/gun/energy/laser/captain/New()
+	..()
+	options["The Original"] = "caplaser"
+	options["Restored"] = "caplaser_new"
+	options["Alternative"] = "caplaser_newer"
+	options["Cancel"] = null
+
+/obj/item/gun/energy/laser/captain/update_icon()
+	..()
+	if(current_skin)
+		icon_state = "[current_skin]"
+	else
+		icon_state = "[initial(icon_state)]"
 
 /obj/item/gun/energy/laser/captain/scattershot
 	name = "scatter shot laser rifle"
@@ -43,6 +58,7 @@
 	origin_tech = "combat=5;materials=4;powerstorage=4"
 	ammo_type = list(/obj/item/ammo_casing/energy/laser/scatter, /obj/item/ammo_casing/energy/laser)
 	shaded_charge = 0
+	unique_reskin = FALSE
 
 /obj/item/gun/energy/laser/cyborg
 	can_charge = 0
@@ -103,7 +119,7 @@
 	return
 
 /obj/item/gun/energy/xray
-	name = "xray laser gun"
+	name = "x-ray laser gun"
 	desc = "A high-power laser gun capable of expelling concentrated xray blasts. These blasts will penetrate solid objects, but will decrease in power the longer they have to travel."
 	icon_state = "xray"
 	origin_tech = "combat=6;materials=4;magnets=4"

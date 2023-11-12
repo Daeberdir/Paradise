@@ -20,7 +20,7 @@
 	roundstart = FALSE
 	death = FALSE
 	id_job = "Syndicate Scientist"
-	icon = 'icons/obj/cryogenic2.dmi'
+	icon = 'icons/obj/machines/cryogenic2.dmi'
 	icon_state = "cryo_s"
 	important_info = "Не мешайте другим оперативникам синдиката (Таким как предатели или ядерные оперативники). Вы можете работать вместе или против не связанных с синдикатом антагонистов в индивидуальном порядке. Не покидайте свою базу без разрешения администрации! Ваша база, её секретность и её сохранность является для вас высшим приоритетом!"
 	description = "Эксперементируйте со смертельными химикатами, растениями, генами и вирусами. Наслаждайтесь спокойной жизнью зная, что ваша работа так или иначе насолит НТ в будущем!"
@@ -33,7 +33,7 @@
 	allow_species_pick = TRUE
 	allow_gender_pick = TRUE
 	allow_name_pick = TRUE
-	pickable_species = list("Human", "Vulpkanin", "Tajaran", "Unathi", "Skrell", "Diona", "Drask", "Vox", "Plasmaman", "Machine", "Kidan", "Grey", "Nucleation", "Slime People", "Wryn")
+	pickable_species = list("Human", "Vulpkanin", "Tajaran", "Unathi", "Skrell", "Diona", "Drask", "Vox", "Plasmaman", "Machine", "Kidan", "Grey", "Nucleation", "Slime People", "Wryn", "Nian")
 	faction = list("syndicate")
 	min_hours = 10
 	exp_type = EXP_TYPE_LIVING
@@ -100,6 +100,7 @@
 /obj/effect/mob_spawn/human/space_base_syndicate/special(mob/living/carbon/human/H)
 	GLOB.human_names_list += H.real_name
 	SEND_SOUND(H, 'sound/effects/taipan_start.ogg')
+	GLOB.taipan_players_active += H.mind
 	H.give_taipan_hud()
 	return ..()
 

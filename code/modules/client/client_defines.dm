@@ -31,8 +31,7 @@
 		///////////////
 		//SOUND STUFF//
 		///////////////
-	var/ambience_playing = 0
-	var/played			= 0
+	var/ambience_playing = FALSE
 
 		////////////
 		//SECURITY//
@@ -55,7 +54,7 @@
 
 	preload_rsc = 0 // This is 0 so we can set it to an URL once the player logs in and have them download the resources from a different server.
 
-	var/global/obj/screen/click_catcher/void
+	var/obj/screen/click_catcher/void
 
 	var/karma = 0
 	var/karma_spent = 0
@@ -65,6 +64,9 @@
 	var/ip_intel = "Disabled"
 
 	var/datum/click_intercept/click_intercept = null
+
+	/// Overlay for showing debug info
+	var/obj/screen/debugtextholder/debug_text_overlay
 
 	var/datum/geoip_data/geoip = null
 
@@ -102,7 +104,16 @@
 	/// Days since the client's BYOND account was created
 	var/byondacc_age = 0
 
-	var/last_ping_duration = 0
+	///Last ping of the client
+	var/lastping = 0
+	///Average ping of the client
+	var/avgping = 0
+	///world.time they connected
+	var/connection_time
+	///world.realtime they connected
+	var/connection_realtime
+	///world.timeofday they connected
+	var/connection_timeofday
 
 	// Do not attempt to merge these vars together. They are for different things
 	/// Last world.time that a PM was send to discord by a player

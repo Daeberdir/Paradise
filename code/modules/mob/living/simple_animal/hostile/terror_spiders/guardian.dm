@@ -18,7 +18,7 @@
 	gender = MALE
 	maxHealth = 250
 	health = 250
-	regeneration = 3
+	damage_coeff = list(BRUTE = 0.6, BURN = 1.1, TOX = 1, CLONE = 0, STAMINA = 0, OXY = 0.2)
 	melee_damage_lower = 20
 	melee_damage_upper = 25
 	obj_damage = 70
@@ -33,29 +33,29 @@
 	ai_ventcrawls = FALSE
 	environment_smash = 2
 	idle_ventcrawl_chance = 0 // stick to the queen!
-	sight = SEE_MOBS
 	web_type = /obj/structure/spider/terrorweb/purple
 	can_wrap = FALSE
 	delay_web = 20
-	special_abillity = list(/obj/effect/proc_holder/spell/aoe_turf/conjure/terror/shield)
+	special_abillity = list(/obj/effect/proc_holder/spell/aoe/conjure/build/terror_shield)
 	can_wrap = FALSE
 	spider_intro_text = "Будучи Защитником Ужаса, ваша задача - охрана гнезда, яиц, принцесс и королевы. Вы очень сильны и живучи, используйте это, чтобы защитить выводок. Ваша активная способность создает временный неразрушимый барьер, через который могут пройти только пауки. Если встанет выбор, спасти принцессу, или королеву, при этои обрекая себя на смерть - делайте это без раздумий!."
 	ai_spins_webs = FALSE
+	tts_seed = "Avozu"
 	var/queen_visible = TRUE
 	var/cycles_noqueen = 0
-	var/max_queen_range = 20
+	var/max_queen_range = 15
 
 /mob/living/simple_animal/hostile/poison/terror_spider/guardian/spider_specialattack(mob/living/carbon/human/L)
+	. = ..()
+
+	if(!.)
+		return FALSE
+
 	L.adjustStaminaLoss(15)
-	if(prob(15))
-		playsound(src, 'sound/creatures/terrorspiders/bite2.ogg', 120, 1)
-		do_attack_animation(L)
+	if(prob(20))
 		visible_message("<span class='danger'>[src] rams into [L], knocking [L.p_them()] to the floor!</span>")
 		L.adjustBruteLoss(20)
-		L.Weaken(1)
-		L.Stun(1)
-	else
-		..()
+		L.Weaken(4 SECONDS)
 
 /mob/living/simple_animal/hostile/poison/terror_spider/guardian/death(gibbed)
 	if(can_die() && spider_myqueen)

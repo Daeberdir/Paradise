@@ -67,6 +67,11 @@
 	origin_tech = "engineering=3;bluespace=4"
 	template_id = "shelter_beta"
 
+/obj/item/survivalcapsule/luxuryelite
+	name = "luxury elite bar capsule"
+	desc = "A luxury bar in a capsule. Bartender required and not included."
+	template_id = "shelter_charlie"
+
 //Pod turfs and objects
 
 //Window
@@ -187,7 +192,8 @@
 		user.visible_message("<span class='warning'>[user] disassembles the gps.</span>", \
 						"<span class='notice'>You start to disassemble the gps...</span>", "You hear clanking and banging noises.")
 		if(do_after(user, 20 * W.toolspeed * gettoolspeedmod(user), target = src))
-			new /obj/item/gps(loc)
+			var/obj/item/gps/gps = new(loc)
+			gps.add_fingerprint(user)
 			qdel(src)
 			return ..()
 
@@ -233,7 +239,7 @@
 	return
 
 /obj/machinery/smartfridge/survival_pod/accept_check(obj/item/O)
-	return isitem(O)
+	return isitem(O) && !(O.flags & ABSTRACT)
 
 /obj/machinery/smartfridge/survival_pod/default_unfasten_wrench()
 	return FALSE
@@ -322,7 +328,8 @@
 		user.visible_message("<span class='warning'>[user] disassembles [src].</span>", \
 							 "<span class='notice'>You start to disassemble [src]...</span>", "You hear clanking and banging noises.")
 		if(do_after(user, 20 * W.toolspeed * gettoolspeedmod(user), target = src))
-			new /obj/item/stack/rods(loc)
+			var/obj/item/stack/rods/rods = new(loc)
+			rods.add_fingerprint(user)
 			qdel(src)
 			return ..()
 

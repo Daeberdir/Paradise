@@ -1,5 +1,5 @@
 /obj/machinery/atmospherics/binary/valve
-	icon = 'icons/atmos/valve.dmi'
+	icon = 'icons/obj/pipes_and_stuff/atmospherics/atmos/valve.dmi'
 	icon_state = "map_valve0"
 
 	name = "manual valve"
@@ -8,8 +8,6 @@
 	can_unwrench = 1
 
 	var/open = 0
-
-	req_one_access_txt = "24;10"
 
 /obj/machinery/atmospherics/binary/valve/examine(mob/user)
 	. = ..()
@@ -66,12 +64,14 @@
 		close()
 	else
 		open()
-	to_chat(user, "<span class='notice'>You [open ? "open" : "close"] [src].</span>")
+	to_chat(user, span_notice("You [open ? "open" : "close"] [src]."))
 
 /obj/machinery/atmospherics/binary/valve/digital		// can be controlled by AI
 	name = "digital valve"
 	desc = "A digitally controlled valve."
-	icon = 'icons/atmos/digital_valve.dmi'
+	icon = 'icons/obj/pipes_and_stuff/atmospherics/atmos/digital_valve.dmi'
+
+	req_access = list(ACCESS_ATMOSPHERICS,ACCESS_ENGINE)
 
 	frequency = ATMOS_VENTSCRUB
 	var/id_tag = null
@@ -89,7 +89,7 @@
 	if(!powered())
 		return
 	if(!allowed(user) && !user.can_advanced_admin_interact())
-		to_chat(user, "<span class='alert'>Access denied.</span>")
+		to_chat(user, span_alert("Access denied."))
 		return
 	..()
 

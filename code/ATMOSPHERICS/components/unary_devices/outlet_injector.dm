@@ -1,5 +1,5 @@
 /obj/machinery/atmospherics/unary/outlet_injector
-	icon = 'icons/atmos/injector.dmi'
+	icon = 'icons/obj/pipes_and_stuff/atmospherics/atmos/injector.dmi'
 	icon_state = "map_injector"
 	use_power = IDLE_POWER_USE
 	layer = GAS_SCRUBBER_LAYER
@@ -10,8 +10,6 @@
 
 	name = "air injector"
 	desc = "Has a valve and pump attached to it"
-
-	req_one_access_txt = "24;10"
 
 	frequency = ATMOS_TANKS_FREQ
 
@@ -165,7 +163,7 @@
 /obj/machinery/atmospherics/unary/outlet_injector/attackby(obj/item/W, mob/user)
 	if(istype(W, /obj/item/wrench))
 		if(!(stat & NOPOWER) && on)
-			to_chat(user, "<span class='danger'>You cannot unwrench this [src], turn if off first.</span>")
+			to_chat(user, span_danger("You cannot unwrench this [src], turn if off first."))
 			return 1
 	return ..()
 

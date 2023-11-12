@@ -5,13 +5,13 @@
 	icon_state = "headset"
 	item_state = "headset"
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/ears.dmi',
-		"Vox Armalis" = 'icons/mob/species/armalis/ears.dmi',
-		"Monkey" = 'icons/mob/species/monkey/ears.dmi',
-		"Farwa" = 'icons/mob/species/monkey/ears.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/ears.dmi',
-		"Neara" = 'icons/mob/species/monkey/ears.dmi',
-		"Stok" = 'icons/mob/species/monkey/ears.dmi'
+		"Vox" = 'icons/mob/clothing/species/vox/ears.dmi',
+		"Vox Armalis" = 'icons/mob/clothing/species/armalis/ears.dmi',
+		"Monkey" = 'icons/mob/clothing/species/monkey/ears.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/ears.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/ears.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/ears.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/ears.dmi'
 	) //We read you loud and skree-er.
 	materials = list(MAT_METAL=75)
 	canhear_range = 0 // can't hear headsets from very far away
@@ -74,7 +74,7 @@
 		var/mob/living/carbon/human/H = loc
 		if(H.l_ear == src || H.r_ear == src)
 			return ..()
-	else if(isanimal(loc) || isAI(loc))
+	else if(isanimal(loc) || isAI(loc) || istype(loc, /obj/item/paicard))
 		return ..()
 
 	return FALSE
@@ -122,12 +122,14 @@
 	ks2type = /obj/item/encryptionkey/syndicate/taipan
 	freerange = TRUE
 	freqlock = FALSE
+	flags = EARBANGPROTECT
 
 /obj/item/radio/headset/syndicate/taipan
 	name = "syndicate taipan headset"
 	icon_state = "taipan_headset"
 	item_state = "taipan_headset"
 	ks1type = /obj/item/encryptionkey/syndicate/taipan
+	flags = EARBANGPROTECT
 
 /obj/item/radio/headset/syndicate/taipan/New()
 	. = ..()
@@ -398,12 +400,10 @@
 			return
 
 		if(!keyslot1)
-			user.drop_item()
-			W.loc = src
+			user.drop_transfer_item_to_loc(W, src)
 			keyslot1 = W
 		else
-			user.drop_item()
-			W.loc = src
+			user.drop_transfer_item_to_loc(W, src)
 			keyslot2 = W
 		recalculateChannels()
 	else
@@ -504,3 +504,53 @@
 	keyslot1 = new /obj/item/encryptionkey/syndicate
 	syndiekey = keyslot1
 	recalculateChannels()
+
+/obj/item/bowman_conversion_tool
+	name = "Bowman headset conversion tool"
+	desc = "Easy-to-apply device which enchances headset with loud noise protection."
+	icon = 'icons/obj/radio.dmi'
+	icon_state = "bowman_conversion_tool"
+	var/static/list/valid_headset_types
+	var/static/list/forbidden_headset_types = list(
+		/obj/item/radio/headset/syndicate,
+		/obj/item/radio/headset/ninja,
+		/obj/item/radio/headset/abductor
+	)
+	var/static/list/forbidden_headset_typecache
+
+/obj/item/bowman_conversion_tool/Initialize(mapload)
+	. = ..()
+	if(!forbidden_headset_typecache)
+		forbidden_headset_typecache = list()
+		for(var/path in forbidden_headset_types)
+			forbidden_headset_typecache += typecacheof(path)
+
+	if(!valid_headset_types)
+		valid_headset_types = list()
+		for(var/headset in subtypesof(/obj/item/radio/headset))
+			var/obj/item/radio/headset/temp = headset
+			if(initial(temp.flags) & EARBANGPROTECT)
+				if(headset in forbidden_headset_typecache)
+					continue
+				valid_headset_types[initial(temp.name)] = temp
+
+/obj/item/bowman_conversion_tool/afterattack(atom/target, mob/user, proximity, params)
+	. = ..()
+	if(!istype(target, /obj/item/radio/headset))
+		return
+	if(!proximity)
+		return
+	var/headset_name = input("Please, select a mask!", "Bowman headset", null, null) as null|anything in valid_headset_types
+	if(!headset_name)
+		to_chat(user, span_notice("You decided not to convert your headset yet."))
+		return
+	var/obj/item/radio/headset/headset = target
+	headset.flags |= EARBANGPROTECT
+	to_chat(user, span_notice("You selected [headset_name]. Now it's protected against loud noises."))
+	var/headset_path = valid_headset_types[headset_name]
+	var/obj/item/radio/headset/mask = headset_path
+	headset.name = initial(mask.name)
+	headset.desc = initial(mask.desc)
+	headset.icon = initial(mask.icon)
+	headset.icon_state = initial(mask.icon_state)
+	qdel(src)

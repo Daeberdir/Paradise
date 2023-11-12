@@ -1,5 +1,5 @@
 /obj/machinery/atmospherics/unary/portables_connector
-	icon = 'icons/atmos/connector.dmi'
+	icon = 'icons/obj/pipes_and_stuff/atmospherics/atmos/connector.dmi'
 	icon_state = "map_connector"
 
 	name = "connector port"
@@ -39,7 +39,7 @@
 /obj/machinery/atmospherics/unary/portables_connector/attackby(var/obj/item/W as obj, var/mob/user as mob, params)
 	if(istype(W, /obj/item/wrench))
 		if(connected_device)
-			to_chat(user, "<span class='danger'>You cannot unwrench this [src], detach [connected_device] first.</span>")
+			to_chat(user, span_danger("You cannot unwrench this [src], detach [connected_device] first."))
 			return 1
 	return ..()
 

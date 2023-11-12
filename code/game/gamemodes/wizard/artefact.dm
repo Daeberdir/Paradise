@@ -100,7 +100,7 @@
 /obj/item/scrying
 	name = "scrying orb"
 	desc = "An incandescent orb of otherworldly energy, staring into it gives you vision beyond mortal means."
-	icon = 'icons/obj/projectiles.dmi'
+	icon = 'icons/obj/weapons/projectiles.dmi'
 	icon_state ="bluespace"
 	throw_speed = 7
 	throw_range = 15
@@ -572,7 +572,7 @@ GLOBAL_LIST_EMPTY(multiverse)
 //Voodoo Zombie Pirates added for paradise
 /obj/item/necromantic_stone/proc/equip_skeleton(mob/living/carbon/human/H as mob)
 	for(var/obj/item/I in H)
-		H.unEquip(I)
+		H.drop_item_ground(I)
 	var/randomSpooky = "roman"//defualt
 	randomSpooky = pick("roman","pirate","yand","clown")
 
@@ -679,20 +679,19 @@ GLOBAL_LIST_EMPTY(multiverse)
 			GiveHint(target)
 		else if(is_pointed(I))
 			to_chat(target, "<span class='userdanger'>You feel a stabbing pain in [parse_zone(user.zone_selected)]!</span>")
-			target.Weaken(2)
+			target.Weaken(4 SECONDS)
 			GiveHint(target)
 		else if(istype(I,/obj/item/bikehorn))
 			to_chat(target, "<span class='userdanger'>HONK</span>")
 			target << 'sound/items/airhorn.ogg'
-			target.MinimumDeafTicks(3)
+			target.Deaf(6 SECONDS)
 			GiveHint(target)
 		cooldown = world.time +cooldown_time
 		return
 
 	if(!link)
 		if(I.loc == user && istype(I) && I.w_class <= WEIGHT_CLASS_SMALL)
-			user.drop_item()
-			I.loc = src
+			user.drop_transfer_item_to_loc(I, src)
 			link = I
 			to_chat(user, "You attach [I] to the doll.")
 			update_targets()
@@ -748,7 +747,7 @@ GLOBAL_LIST_EMPTY(multiverse)
 					GiveHint(target)
 			if("head")
 				to_chat(user, "<span class='notice'>You smack the doll's head with your hand.</span>")
-				target.Dizzy(10)
+				target.Dizzy(20 SECONDS)
 				to_chat(target, "<span class='warning'>You suddenly feel as if your head was hit with a hammer!</span>")
 				GiveHint(target,user)
 		cooldown = world.time + cooldown_time

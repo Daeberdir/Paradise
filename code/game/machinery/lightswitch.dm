@@ -4,7 +4,7 @@
 /obj/machinery/light_switch
 	name = "light switch"
 	desc = "It turns lights on and off. What are you, simple?"
-	icon = 'icons/obj/power.dmi'
+	icon = 'icons/obj/engines_and_power/power.dmi'
 	icon_state = "light1"
 	anchored = 1.0
 	var/on = 1
@@ -70,13 +70,14 @@
 
 /obj/machinery/light_switch/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>A light switch. It is [on? "on" : "off"].</span>"
+	. += span_notice("A light switch. It is [on? "on" : "off"].")
 
 /obj/machinery/light_switch/attack_ghost(mob/user)
 	if(user.can_advanced_admin_interact())
 		return attack_hand(user)
 
 /obj/machinery/light_switch/attack_hand(mob/user)
+	add_fingerprint(user)
 	on = !on
 	updateicon()
 
@@ -152,7 +153,7 @@
 	. = TRUE
 	if(!I.tool_use_check(user, 0))
 		return
-	user.visible_message("<span class='notice'>[user] starts unwrenching [src] from the wall...</span>", "<span class='notice'>You are unwrenching [src] from the wall...</span>", "<span class='warning'>You hear ratcheting.</span>")
+	user.visible_message(span_notice("[user] starts unwrenching [src] from the wall..."), span_notice("You are unwrenching [src] from the wall..."), span_warning("You hear ratcheting."))
 	. = TRUE
 	if(!I.use_tool(src, user, 30, volume = I.tool_volume))
 		return

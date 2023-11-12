@@ -33,8 +33,8 @@
 	var/health_regen = 1.5
 
 /mob/living/simple_animal/hulk/human
-	hulk_powers = list(/obj/effect/proc_holder/spell/aoe_turf/hulk/hulk_jump,
-	/obj/effect/proc_holder/spell/aoe_turf/hulk/hulk_dash)
+	hulk_powers = list(/obj/effect/proc_holder/spell/hulk_jump,
+	/obj/effect/proc_holder/spell/hulk_dash)
 	tts_seed = "Grunt"
 
 //Clown Hulk
@@ -58,8 +58,8 @@
 	attack_sound = list('sound/items/bikehorn.ogg')
 	health_regen = 6
 
-	hulk_powers = list(/obj/effect/proc_holder/spell/aoe_turf/hulk/hulk_honk,
-	/obj/effect/proc_holder/spell/aoe_turf/hulk/hulk_joke)
+	hulk_powers = list(/obj/effect/proc_holder/spell/hulk_honk,
+	/obj/effect/proc_holder/spell/hulk_joke)
 
 //Godzilla
 
@@ -82,11 +82,15 @@
 	attack_sound = list('sound/weapons/bite.ogg')
 	health_regen = 1.5
 
-	hulk_powers = list(/obj/effect/proc_holder/spell/aoe_turf/hulk/hulk_mill,
-	/obj/effect/proc_holder/spell/targeted/click/hulk/hulk_spit,
-	/obj/effect/proc_holder/spell/targeted/click/hulk/hulk_lazor)
+	hulk_powers = list(/obj/effect/proc_holder/spell/hulk_mill,
+	/obj/effect/proc_holder/spell/fireball/hulk_spit,
+	/obj/effect/proc_holder/spell/fireball/hulk_spit/hulk_lazor)
 
 /mob/living/simple_animal/hulk/Life()
+	if(HAS_TRAIT(src, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+		to_chat(usr, "<span class='warning'>You don't want to harm other living beings, your angry is loss! You unmutate!</span>")
+		unmutate()
+		return
 	if(health < 1)
 		death()
 		return
@@ -127,7 +131,7 @@
 			if(prob(15))
 				emote("me",1,"gasps!")
 
-	weakened = 0
+	SetWeakened(0)
 	if(health > 0)
 		health = min(health + health_regen, maxHealth)
 		adjustBruteLoss(-health_regen)
@@ -155,7 +159,7 @@
 		M.status_flags &= ~GODMODE
 		if(istype(M, /mob/living))
 			var/mob/living/L = M
-			L.Paralyse(15)
+			L.Paralyse(30 SECONDS)
 			L.update_canmove()
 
 	if(mind && original_body)
@@ -200,7 +204,7 @@
 	if(D.density)
 		to_chat(src, "<span class='userdanger'>You force your fingers between \
 		 the doors and begin to pry them open...</span>")
-		playsound(D, 'sound/machines/airlockforced.ogg', CHANNEL_BUZZ, 30, null, -4)
+		playsound(D, 'sound/machines/airlock_force_open.ogg', CHANNEL_BUZZ, 30, null, -4)
 		D.open(1)
 
 /mob/living/simple_animal/hulk/New()

@@ -6,12 +6,12 @@
 
 /obj/structure/clockwork/beacon
 	name = "herald's beacon"
-	desc = "An imposing spire formed of brass. It somewhat pulsates."
+	desc = "An imposing spire formed of brass. It somewhat pulsates. Cool and pretty!"
 	icon_state = "beacon"
 
 /obj/structure/clockwork/altar
 	name = "credence"
-	desc = "A strange brass platform with spinning cogs inside. It demands somethinge in exchange for goods..."
+	desc = "A strange brass platform with spinning cogs inside. It demands somethinge in exchange for goods... once upon a time. Now it's just a dull piece of brass."
 	icon_state = "altar"
 	density = 0
 
@@ -33,6 +33,16 @@
 		if(hidden)
 			to_chat(user, "<span class='warning'>You have to clear the view of this structure in order to manipulate with it!</span>")
 			return TRUE
+		if(!anchored && !isfloorturf(loc))
+			to_chat(usr, "<span class='warning'>A floor must be present to secure [src]!</span>")
+			return TRUE
+		if(locate(/obj/structure/clockwork) in (loc.contents-src))
+			to_chat(usr, "<span class='warning'>There is a structure here!</span>")
+			return TRUE
+		if(locate(/obj/structure/falsewall) in loc)
+			to_chat(usr, "<span class='warning'>There is a structure here!</span>")
+			return TRUE
+		add_fingerprint(user)
 		anchored = !anchored
 		to_chat(user, "<span class='notice'>You [anchored ? "":"un"]secure [src] [anchored ? "to":"from"] the floor.</span>")
 		if(!anchored)
@@ -97,7 +107,7 @@
 	name = "herald's beacon"
 	desc = "An imposing spire formed of brass. It somewhat pulsates."
 	icon_state = "beacon"
-	max_integrity = 750 // A very important one
+	max_integrity = 250 // A very important one
 	death_message = "<span class='danger'>The beacon crumbles and falls in parts to the ground relaesing it's power!</span>"
 	death_sound = 'sound/effects/creepyshriek.ogg'
 	var/heal_delay = 6 SECONDS
@@ -163,7 +173,7 @@
 
 /obj/structure/clockwork/functional/altar
 	name = "credence"
-	desc = "A strange brass platform with spinning cogs inside. It demands somethinge in exchange for goods..."
+	desc = "A strange brass platform with spinning cogs inside. It demands something in exchange for goods..."
 	icon_state = "altar"
 	density = 0
 	death_message = "<span class='danger'>The alter breaks in pieces as it dusts into nothing!</span>"
@@ -175,8 +185,10 @@
 
 	var/first_stage = FALSE // Did convert started?
 	var/second_stage = FALSE // Did we started to gib someone?
-	var/third_stage = FALSE // Did we already made a cube?
 	var/convert_timer = 0
+
+/obj/structure/clockwork/functional/fake_altar
+	desc = "A strange brass platform with spinning cogs inside. It demands somethinge in exchange for goods... once upon a time. Now it's just a dull piece of brass."
 
 /obj/structure/clockwork/functional/altar/Initialize(mapload)
 	. = ..()
@@ -205,14 +217,29 @@
 			toggle_hide()//cuz we sure its unhidden
 			if(isprocessing)
 				STOP_PROCESSING(SSprocessing, src)
+				if(glow)
+					QDEL_NULL(glow)
+				first_stage = FALSE
+				second_stage = FALSE
+				convert_timer = 0
+				converting = null
 			to_chat(user, "<span class='notice'>You disguise [src].</span>")
 			playsound(user, 'sound/magic/cult_spell.ogg', 25, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 			I.deplete_spell()
 			return TRUE
+		if(!anchored && !isfloorturf(loc))
+			to_chat(usr, "<span class='warning'>A floor must be present to secure [src]!</span>")
+			return TRUE
+		if(!anchored && locate(/obj/structure/clockwork) in (loc.contents-src))
+			to_chat(usr, "<span class='warning'>There is a structure here!</span>")
+			return FALSE
+		if(locate(/obj/structure/falsewall) in loc)
+			to_chat(usr, "<span class='warning'>There is a structure here!</span>")
+			return TRUE
 		anchored = !anchored
 		to_chat(user, "<span class='notice'>You [anchored ? "":"un"]secure [src] [anchored ? "to":"from"] the floor.</span>")
 		if(!anchored)
-			icon_state = "[initial(icon_state)]-off"
+			stop_convert(TRUE)
 			STOP_PROCESSING(SSprocessing, src)
 		else
 			icon_state = "[initial(icon_state)]"
@@ -250,70 +277,42 @@
 			icon_state = "stool"
 	return hidden
 
-/obj/structure/clockwork/functional/altar/Crossed(atom/movable/AM, oldloc)
-	. = ..()
-	if(!has_clocker)
-		for(var/mob/living/M in range(1, src))
-			if(isclocker(M) && M.stat == CONSCIOUS)
-				has_clocker = M
-				break
-	if(!converting && ishuman(AM) && !isclocker(AM) && !hidden && anchored && has_clocker)
-		converting = AM
-		first_stage_check(converting)
-
-
-/obj/structure/clockwork/functional/altar/Uncrossed(atom/movable/AM)
-	. = ..()
-	if(AM == converting)
-		if(first_stage)
-			stop_convert()
-		converting = null
-		convert_timer = 1
-
 /obj/structure/clockwork/functional/altar/process()
-	if(!converting)
-		var/list/mob/living/carbon/human/bodies = list()
+	for(var/mob/living/M in range(1, src))
+		if(isclocker(M) && M.stat == CONSCIOUS)
+			has_clocker = M
+			break
+	if(!converting && has_clocker)
 		for(var/mob/living/carbon/human/H in range(0, src))
 			if(isclocker(H))
 				continue
 			if(!H.mind)
 				continue
-			bodies += H
-		if(bodies.len)
-			converting = pick(bodies)
-		convert_timer = 0
-	else if(!has_clocker)
-		for(var/mob/living/M in range(1, src))
-			if(isclocker(M) && M.stat == CONSCIOUS)
-				has_clocker = M
+			if(H)
+				converting = H
 				break
-	else
-		convert_timer++
-		has_clocker = null
-		for(var/mob/living/M in range(1, src))
-			if(isclocker(M) && M.stat == CONSCIOUS)
-				has_clocker = M
-				break
-		if(!has_clocker)
-			stop_convert()
+	if(converting && (converting in range(0, src)) && (has_clocker || second_stage))
 		if(!anchored || hidden)
 			stop_convert()
-		if(isclocker(converting))
-			stop_convert(TRUE)
+			return
+		convert_timer++
+		has_clocker = null
 		switch(convert_timer)
-			if(-INFINITY to 8)
+			if(0 to 8)
 				if(!first_stage)
 					first_stage_check(converting)
-			if(8 to 16)
+			if(9 to 16)
 				if(!second_stage)
 					second_stage_check(converting)
 				else
 					converting.adjustBruteLoss(5)
 					converting.adjustFireLoss(5)
-			if(16 to INFINITY)
-				if(!third_stage)
-					convert_to_cube(converting)
-				stop_convert() // one time the third stage activates
+			if(17)
+				adjust_clockwork_power(CLOCK_POWER_SACRIFICE)
+				var/obj/item/mmi/robotic_brain/clockwork/cube = new (get_turf(src))
+				cube.try_to_transfer(converting)
+	else if(first_stage)
+		stop_convert()
 
 /obj/structure/clockwork/functional/altar/proc/first_stage_check(var/mob/living/carbon/human/target)
 	first_stage = TRUE
@@ -321,14 +320,13 @@
 	glow = new (get_turf(src))
 	animate(glow, alpha = 255, time = 8 SECONDS)
 	icon_state = "[initial(icon_state)]-fast"
-	convert_timer = 0
 
 /obj/structure/clockwork/functional/altar/proc/second_stage_check(var/mob/living/carbon/human/target)
 	second_stage = TRUE
 	if(!is_convertable_to_clocker(target.mind) || target.stat == DEAD) // mindshield or holy or mindless monkey. or dead guy
 		target.visible_message("<span class='warning'>[src] in glowing manner starts corrupting [target]!</span>", \
 		"<span class='danger'>You feel as your body starts to corrupt by [src] underneath!</span>")
-		target.Weaken(10)
+		target.Weaken(20 SECONDS)
 	else // just a living non-clocker civil
 		to_chat(target, "<span class='clocklarge'><b>\"You belong to me now.\"</b></span>")
 		target.heal_overall_damage(50, 50, TRUE)
@@ -336,21 +334,14 @@
 			target.mind.wipe_memory()
 			target.set_species(/datum/species/golem/clockwork)
 		SSticker.mode.add_clocker(target.mind)
-		target.Weaken(5) //Accept new power... and new information
-		target.EyeBlind(5)
+		target.Weaken(10 SECONDS) //Accept new power... and new information
+		target.EyeBlind(10 SECONDS)
 		stop_convert(TRUE)
-
-/obj/structure/clockwork/functional/altar/proc/convert_to_cube(var/mob/living/carbon/human/target)
-	third_stage = TRUE
-	var/obj/item/mmi/robotic_brain/clockwork/cube = new (get_turf(src))
-	cube.try_to_transfer(target)
-	adjust_clockwork_power(CLOCK_POWER_SACRIFICE)
 
 /obj/structure/clockwork/functional/altar/proc/stop_convert(var/silent = FALSE)
 	QDEL_NULL(glow)
 	first_stage = FALSE
 	second_stage = FALSE
-	third_stage = FALSE
 	convert_timer = 0
 	converting = null
 	if(anchored)
@@ -364,7 +355,7 @@
 	. = ..()
 	if(istype(I, /obj/item/clockwork/shard))
 		if(!ishuman(user))
-			to_chat(user, "span class='warning'>You are too weak to push the shard inside!</span>")
+			to_chat(user, "<span class='warning'>You are too weak to push the shard inside!</span>")
 			return
 		var/area/A = get_area(src)
 		if(!anchored)
@@ -373,7 +364,7 @@
 			return
 		GLOB.command_announcement.Announce("Была обнаружена аномально высокая концентрация энергии в [A.map_name]. Источник энергии указывает на попытку вызвать потустороннего бога по имени Ратвар. Сорвите ритуал любой ценой, пока станция не была уничтожена! Действие космического закона и стандартных рабочих процедур приостановлено. Весь экипаж должен уничтожать культистов на месте.", "Отдел Центрального Командования по делам высших измерений.", 'sound/AI/spanomalies.ogg')
 		visible_message("<span class='biggerdanger'>[user] ominously presses [I] into [src] as the mechanism inside starts to shine!</span>")
-		user.unEquip(I)
+		user.temporarily_remove_item_from_inventory(I)
 		qdel(I)
 		begin_the_ritual()
 

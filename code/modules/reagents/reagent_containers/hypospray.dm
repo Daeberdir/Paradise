@@ -8,6 +8,7 @@
 	icon = 'icons/obj/hypo.dmi'
 	item_state = "hypo"
 	icon_state = "hypo"
+	belt_icon = "hypospray"
 	amount_per_transfer_from_this = 5
 	volume = 30
 	possible_transfer_amounts = list(1,2,3,4,5,10,15,20,25,30)
@@ -64,6 +65,7 @@
 			else
 				visible_message("<span class='warning'>[src] identifies and removes a harmful substance.</span>")
 
+
 /obj/item/reagent_containers/hypospray/emag_act(mob/user)
 	if(safety_hypo && !emagged)
 		add_attack_logs(user, src, "emagged")
@@ -75,7 +77,33 @@
 	name = "medical hypospray"
 	desc = "A general use medical hypospray for quick injection of chemicals. There is a safety button by the trigger."
 	icon_state = "medivend_hypo"
+	belt_icon = "medical_hypospray"
 	safety_hypo = TRUE
+	var/has_paint
+	var/colour
+
+/obj/item/reagent_containers/hypospray/safety/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/toy/crayon/spraycan))
+		var/obj/item/toy/crayon/spraycan/spraycan = I
+		if(spraycan.capped)
+			to_chat(user, "<span class='warning'>Take the cap off first!</span>")
+			return
+		if(spraycan.uses < 2)
+			to_chat(user, "<span class ='warning'>There is not enough paint in the can!")
+			return
+		colour = spraycan.colour
+		has_paint = TRUE
+		icon_state = "whitehypo"
+		src.remove_filter("hypospray_handle")
+		var/icon/hypo_mask = icon('icons/obj/hypo.dmi',"colour_hypo" )
+		src.add_filter("hypospray_handle",1,layering_filter(icon = hypo_mask, color = colour))
+	if(istype(I, /obj/item/soap) && has_paint)
+		to_chat(user, span_notice("You wash off the paint layer from hypospray"))
+		has_paint = FALSE
+		src.remove_filter("hypospray_handle")
+		icon_state = "medivend_hypo"
+	..()
+
 
 /obj/item/reagent_containers/hypospray/safety/ert
 	name = "medical hypospray (Omnizine)"
@@ -89,7 +117,7 @@
 	name = "combat stimulant injector"
 	desc = "A modified air-needle autoinjector, used by support operatives to quickly heal injuries in combat."
 	amount_per_transfer_from_this = 15
-	possible_transfer_amounts = list(15)
+	possible_transfer_amounts = null
 	icon_state = "combat_hypo"
 	volume = 90
 	ignore_flags = 1 // So they can heal their comrades.
@@ -161,27 +189,89 @@
 	desc = "A rapid and safe way to stabilize patients in critical condition for personnel without advanced medical knowledge."
 	icon_state = "autoinjector"
 	item_state = "autoinjector"
+	belt_icon = "autoinjector"
 	amount_per_transfer_from_this = 10
-	possible_transfer_amounts = list(10)
+	possible_transfer_amounts = null
 	volume = 10
+	var/only_self = FALSE //is it usable only on yourself
+	var/spent = FALSE
 	ignore_flags = TRUE //so you can medipen through hardsuits
 	container_type = DRAWABLE
 	flags = null
 	list_reagents = list("epinephrine" = 10)
+	var/reskin_allowed = FALSE
+	//for radial menu
+	var/list/skinslist = list(
+		"Completely Blue" = "ablueinjector",
+		"Blue" = "blueinjector",
+		"Completely Red" = "redinjector",
+		"Red" = "lepopen",
+		"Golden" = "goldinjector",
+		"Completely Green" = "greeninjector",
+		"Green" = "autoinjector",
+		"Gray" = "stimpen",
+	)
+
+/obj/item/reagent_containers/hypospray/autoinjector/attackby(obj/item/W, mob/user)
+	if(reskin_allowed)
+		if(istype(W, /obj/item/pen))
+			var/t = clean_input("Введите желаемое название для инжектора.", "Переименовывание", "")
+			if(!t)
+				return
+			if(length(t) > 15)
+				to_chat(user, "<span class = 'warning'>Название слишком длинное, и не помещается на инжекторе! Нужно другое.</span>")
+			name = t
+		if(istype(W, /obj/item/toy/crayon/spraycan))
+			var/obj/item/toy/crayon/spraycan/C = W
+			if(C.capped)
+				to_chat(user, "<span class = 'warning'>Вам стоит снять крышку, прежде чем пытаться раскрасить [src]!</span>")
+				return
+			var/list/injector_icons = list("Completely Blue" = image(icon = src.icon, icon_state = "ablueinjector"),
+											"Blue" = image(icon = src.icon, icon_state = "blueinjector"),
+											"Completely Red" = image(icon = src.icon, icon_state = "redinjector"),
+											"Red" = image(icon = src.icon, icon_state = "lepopen"),
+											"Golden" = image(icon = src.icon, icon_state = "goldinjector"),
+											"Completely Green" = image(icon = src.icon, icon_state = "greeninjector"),
+											"Green" = image(icon = src.icon, icon_state = "autoinjector"),
+											"Gray" = image(icon = src.icon, icon_state = "stimpen"))
+			var/choice = show_radial_menu(user, src, injector_icons, custom_check = CALLBACK(src, PROC_REF(check_reskin), user))
+			if(!choice || W.loc != user || src.loc != user)
+				return
+			if(C.uses <= 0)
+				to_chat(user, "<span class = 'warning'>Не похоже что бы осталось достаточно краски.</span>")
+				return
+			icon_state = skinslist[choice]
+			C.uses--
+			update_icon()
+	else
+		return ..()
+
+/obj/item/reagent_containers/hypospray/autoinjector/proc/check_reskin(mob/living/user)
+	if(user.incapacitated())
+		return
+	if(loc != user)
+		return
+	return TRUE
+
+/obj/item/reagent_containers/hypospray/autoinjector/empty()
+	set hidden = TRUE
 
 /obj/item/reagent_containers/hypospray/autoinjector/attack(mob/M, mob/user)
-	if(!reagents.total_volume)
+	if(!reagents.total_volume || spent)
 		to_chat(user, "<span class='warning'>[src] is empty!</span>")
 		return
+	if(only_self && (M != user))
+		to_chat(user, "<span class='warning'>Не похоже что вы сможете уколоть [src] кому-либо, кроме себя!</span>")
+		return
 	..()
+	spent = TRUE
 	update_icon()
 	return TRUE
 
 /obj/item/reagent_containers/hypospray/autoinjector/update_icon()
-	if(reagents.total_volume > 0)
-		icon_state = initial(icon_state)
-	else
-		icon_state = "[initial(icon_state)]0"
+	if(spent)
+		if(icon_state != "[icon_state]0")
+			icon_state = "[icon_state]0"
 
 /obj/item/reagent_containers/hypospray/autoinjector/examine()
 	. = ..()
@@ -213,7 +303,6 @@
 	desc = "Rapidly stimulates and regenerates the body's organ system."
 	icon_state = "stimpen"
 	amount_per_transfer_from_this = 50
-	possible_transfer_amounts = list(50)
 	volume = 50
 	list_reagents = list("stimulants" = 50)
 
@@ -221,19 +310,49 @@
 	name = "survival medipen"
 	desc = "A medipen for surviving in the harshest of environments, heals and protects from environmental hazards. <br><span class='boldwarning'>WARNING: Do not inject more than one pen in quick succession.</span>"
 	icon_state = "stimpen"
+	belt_icon = "survival_medipen"
 	volume = 42
 	amount_per_transfer_from_this = 42
 	list_reagents = list("salbutamol" = 10, "teporone" = 15, "epinephrine" = 10, "lavaland_extract" = 2, "weak_omnizine" = 5) //Short burst of healing, followed by minor healing from the saline
 
 /obj/item/reagent_containers/hypospray/autoinjector/nanocalcium
-	name = "nanocalcium autoinjector"
-	desc = "After a short period of time the nanites will slow the body's systems and assist with bone repair. Nanomachines son."
+	name = "protoype nanite autoinjector"
+	desc = "After a short period of time the nanites will slow the body's systems and assist with body repair. Nanomachines son."
 	icon_state = "bonepen"
 	amount_per_transfer_from_this = 30
-	possible_transfer_amounts = list(30)
 	volume = 30
 	list_reagents = list("nanocalcium" = 30)
 
 /obj/item/reagent_containers/hypospray/autoinjector/nanocalcium/attack(mob/living/M, mob/user)
 	if(..())
 		playsound(loc, 'sound/weapons/smg_empty_alarm.ogg', 20, 1)
+
+/obj/item/reagent_containers/hypospray/autoinjector/selfmade
+	name = "autoinjector"
+	desc = "Самодельное подобие инжектора. Не похоже что вы сможете уколоть кого-то ещё кроме себя используя его."
+	volume = 15
+	amount_per_transfer_from_this = 15
+	list_reagents = list()
+	only_self = TRUE
+	reskin_allowed = TRUE
+	container_type = OPENCONTAINER
+
+/obj/item/reagent_containers/hypospray/autoinjector/selfmade/attack(mob/living/M, mob/user)
+	..()
+	container_type = DRAINABLE
+
+/obj/item/reagent_containers/hypospray/autoinjector/salbutamol
+	name = "Salbutamol autoinjector"
+	desc = "A medipen used for basic oxygen damage treatment"
+	icon_state = "ablueinjector"
+	amount_per_transfer_from_this = 20
+	volume = 20
+	list_reagents = list("salbutamol" = 20)
+
+/obj/item/reagent_containers/hypospray/autoinjector/charcoal
+	name = "Charcoal autoinjector"
+	desc = "A medipen used for basic toxix damage treatment"
+	icon_state = "greeninjector"
+	amount_per_transfer_from_this = 20
+	volume = 20
+	list_reagents = list("charcoal" = 20)

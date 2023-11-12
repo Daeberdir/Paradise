@@ -10,8 +10,7 @@
 	speak_emote = list("квак","куак","квуак")
 	emote_hear = list("квак","куак","квуак")
 	emote_see = list("лежит расслабленная", "увлажнена", "издает гортанные звуки", "лупает глазками")
-	var/squeak_sound = 'sound/creatures/frog_scream1.ogg'
-	var/scream_sound = 'sound/creatures/frog_scream2.ogg'
+	var/scream_sound = list ('sound/creatures/frog_scream_1.ogg','sound/creatures/frog_scream_2.ogg','sound/creatures/frog_scream_3.ogg')
 	talk_sound = list('sound/creatures/frog_talk1.ogg', 'sound/creatures/frog_talk2.ogg')
 	damaged_sound = list('sound/creatures/frog_damaged.ogg')
 	death_sound = 'sound/creatures/frog_death.ogg'
@@ -60,26 +59,32 @@
 	icon_living = "rare_frog"
 	icon_dead = "rare_frog_dead"
 	icon_resting = "rare_frog"
-	var/toxin_per_touch = 5
+	var/toxin_per_touch = 2.5
 	var/toxin_type = "toxin"
 	gold_core_spawnable = HOSTILE_SPAWN
 	holder_type = /obj/item/holder/frog/toxic
 
 /mob/living/simple_animal/frog/toxic/attack_hand(mob/living/carbon/human/H as mob)
-	if(!istype(H.gloves, /obj/item/clothing/gloves))
-		to_chat(H, "<span class='warning'>Дотронувшись до [src.name], ваша кожа начинает чесаться!</span>")
-		toxin_affect(H)
-		if(H.a_intent == INTENT_DISARM || H.a_intent == INTENT_HARM)
-			..()
-	else
-		..()
+	if(ishuman(H))
+		if(!istype(H.gloves, /obj/item/clothing/gloves))
+			for(var/obj/item/organ/external/A in H.bodyparts)
+				if(!A.is_robotic())
+					if((A.body_part == HAND_LEFT) || (A.body_part == HAND_RIGHT))
+						to_chat(H, "<span class='warning'>Дотронувшись до [src.name], ваша кожа начинает чесаться!</span>")
+						toxin_affect(H)
+						if(H.a_intent == INTENT_DISARM || H.a_intent == INTENT_HARM)
+							..()
+	..()
 
 /mob/living/simple_animal/frog/toxic/Crossed(AM as mob|obj, oldloc)
 	if(ishuman(AM))
 		var/mob/living/carbon/human/H = AM
 		if(!istype(H.shoes, /obj/item/clothing/shoes))
-			toxin_affect(H)
-			to_chat(H, "<span class='warning'>Ваши ступни начинают чесаться!</span>")
+			for(var/obj/item/organ/external/F in H.bodyparts)
+				if(!F.is_robotic())
+					if((F.body_part == FOOT_LEFT) || (F.body_part == FOOT_RIGHT))
+						toxin_affect(H)
+						to_chat(H, "<span class='warning'>Ваши ступни начинают чесаться!</span>")
 	..()
 
 /mob/living/simple_animal/frog/toxic/proc/toxin_affect(mob/living/carbon/human/M as mob)
@@ -90,15 +95,48 @@
 	name = "орущая лягушка"
 	real_name = "орущая лягушка"
 	desc = "Не любит когда на неё наступают. Используется в качестве наказания за проступки"
+	var/squeak_sound = list ('sound/creatures/frog_scream1.ogg','sound/creatures/frog_scream2.ogg')
 	gold_core_spawnable = NO_SPAWN
 
 /mob/living/simple_animal/frog/scream/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/squeak, list("[squeak_sound]" = 1, "[scream_sound]" = 1), 50, extrarange = SHORT_RANGE_SOUND_EXTRARANGE) //as quiet as a frog or whatever
+	AddComponent(/datum/component/squeak, squeak_sound, 50, extrarange = SHORT_RANGE_SOUND_EXTRARANGE) //as quiet as a frog or whatever
 
 /mob/living/simple_animal/frog/toxic/scream
+	var/squeak_sound = list ('sound/creatures/frog_scream1.ogg','sound/creatures/frog_scream2.ogg')
 	gold_core_spawnable = NO_SPAWN
 
 /mob/living/simple_animal/frog/toxic/scream/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/squeak, list("[squeak_sound]" = 1, "[scream_sound]" = 1), 50, extrarange = SHORT_RANGE_SOUND_EXTRARANGE) //as quiet as a frog or whatever
+	AddComponent(/datum/component/squeak, squeak_sound, 50, extrarange = SHORT_RANGE_SOUND_EXTRARANGE) //as quiet as a frog or whatever
+
+/mob/living/simple_animal/frog/handle_automated_movement()
+	. = ..()
+	if(!resting && !buckled)
+		if(prob(1))
+			custom_emote(1,"издаёт боевой клич!")
+			playsound(src, pick(src.scream_sound), 50, TRUE)
+
+/mob/living/simple_animal/frog/emote(act, m_type = 1, message = null, force)
+	if(incapacitated())
+		return
+
+	var/on_CD = 0
+	act = lowertext(act)
+	switch(act)
+		if("warcry")
+			on_CD = handle_emote_CD()
+		else
+			on_CD = 0
+
+	if(!force && on_CD == 1)
+		return
+
+	switch(act)
+		if("warcry")
+			message = "издаёт боевой клич!"
+			m_type = 2 //audible
+			playsound(src, pick(src.scream_sound), 50, TRUE)
+		if("help")
+			to_chat(src, "warcry")
+	..()

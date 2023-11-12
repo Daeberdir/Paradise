@@ -98,9 +98,11 @@
 	new /obj/effect/decal/cleanable/blood/gibs/clock(get_turf(loc))
 	qdel(src)
 
-/obj/machinery/recharge_station/Bumped(var/mob/AM)
-	if(ismob(AM))
-		move_inside(AM)
+/obj/machinery/recharge_station/Bumped(atom/movable/moving_atom)
+	..()
+
+	if(ismob(moving_atom))
+		move_inside(moving_atom)
 
 /obj/machinery/recharge_station/AllowDrop()
 	return FALSE
@@ -142,7 +144,7 @@
 
 /obj/machinery/recharge_station/screwdriver_act(mob/user, obj/item/I)
 	if(occupant)
-		to_chat(user, "<span class='notice'>The maintenance panel is locked.</span>")
+		to_chat(user, span_notice("The maintenance panel is locked."))
 		return TRUE
 	if(default_deconstruction_screwdriver(user, "borgdecon2", "borgcharger0", I))
 		return TRUE
@@ -258,7 +260,7 @@
 		return
 
 	if(panel_open)
-		to_chat(usr, "<span class='warning'>Close the maintenance panel first.</span>")
+		to_chat(usr, span_warning("Close the maintenance panel first."))
 		return
 
 	var/can_accept_user
@@ -269,10 +271,10 @@
 			//Whoever had it so that a borg with a dead cell can't enter this thing should be shot. --NEO
 			return
 		if(occupant)
-			to_chat(R, "<span class='warning'>The cell is already occupied!</span>")
+			to_chat(R, span_warning("The cell is already occupied!"))
 			return
 		if(!R.cell)
-			to_chat(R, "<span class='warning'>Without a power cell, you can't be recharged.</span>")
+			to_chat(R, span_warning("Without a power cell, you can't be recharged."))
 			//Make sure they actually HAVE a cell, now that they can get in while powerless. --NEO
 			return
 		can_accept_user = 1
@@ -283,14 +285,14 @@
 		if(H.stat == DEAD)
 			return
 		if(occupant)
-			to_chat(H, "<span class='warning'>The cell is already occupied!</span>")
+			to_chat(H, span_warning("The cell is already occupied!"))
 			return
 		if(!H.get_int_organ(/obj/item/organ/internal/cell))
 			return
 		can_accept_user = 1
 
 	if(!can_accept_user)
-		to_chat(user, "<span class='notice'>Only non-organics may enter the recharger!</span>")
+		to_chat(user, span_notice("Only non-organics may enter the recharger!"))
 		return
 
 	user.stop_pulling()

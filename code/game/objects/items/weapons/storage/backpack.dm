@@ -18,9 +18,9 @@
 	resistance_flags = NONE
 	max_integrity = 300
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/back.dmi',
-		"Vox Armalis" = 'icons/mob/species/armalis/back.dmi',
-		"Grey" = 'icons/mob/species/grey/back.dmi'
+		"Vox" = 'icons/mob/clothing/species/vox/back.dmi',
+		"Vox Armalis" = 'icons/mob/clothing/species/armalis/back.dmi',
+		"Grey" = 'icons/mob/clothing/species/grey/back.dmi'
 		) //For Armalis anything but this and the nitrogen tank will use the default backpack icon.
 
 /obj/item/storage/backpack/attackby(obj/item/W as obj, mob/user as mob, params)
@@ -107,6 +107,21 @@
 	max_w_class = WEIGHT_CLASS_NORMAL
 	max_combined_w_class = 400 // can store a ton of shit!
 
+/obj/item/storage/backpack/santabag/update_icon()
+	var/items_count = length(contents)
+	switch(items_count)
+		if(1 to 10)
+			icon_state = "giftbag0"
+		if(11 to 20)
+			icon_state = "giftbag1"
+		if(21 to INFINITY)
+			icon_state = "giftbag2"
+
+	if(ishuman(loc))
+		var/mob/living/carbon/human/H = loc
+		H.update_inv_l_hand()
+		H.update_inv_r_hand()
+
 /obj/item/storage/backpack/cultpack
 	name = "trophy rack"
 	desc = "It's useful for both carrying extra gear and proudly declaring your insanity."
@@ -118,10 +133,7 @@
 	icon_state = "clownpack"
 	item_state = "clownpack"
 
-/obj/item/storage/backpack/clown/syndie
-
-/obj/item/storage/backpack/clown/syndie/New()
-	..()
+/obj/item/storage/backpack/clown/syndie/populate_contents()
 	new /obj/item/clothing/under/rank/clown(src)
 	new /obj/item/clothing/shoes/magboots/clown(src)
 	new /obj/item/clothing/mask/chameleon(src)
@@ -136,7 +148,9 @@
 	new /obj/item/reagent_containers/food/drinks/bottle/bottleofbanana(src)
 	new /obj/item/instrument/bikehorn(src)
 	new /obj/item/bikehorn(src)
+	new /obj/item/clown_recorder(src)
 	new /obj/item/dnainjector/comic(src)
+	new /obj/item/implanter/sad_trombone(src)
 
 /obj/item/storage/backpack/mime
 	name = "Parcel Parceaux"
@@ -335,6 +349,7 @@
 	desc = "A robust satchel for security related needs."
 	icon_state = "satchel-sec"
 
+
 /obj/item/storage/backpack/satchel_detective
 	name = "forensic satchel"
 	desc = "For every man, who at the bottom of his heart believes that he is a born detective."
@@ -383,8 +398,7 @@
 		H.update_inv_back()
 
 
-/obj/item/storage/backpack/satchel/withwallet/New()
-	..()
+/obj/item/storage/backpack/satchel/withwallet/populate_contents()
 	new /obj/item/storage/wallet/random(src)
 
 /obj/item/storage/backpack/satchel_flat
@@ -398,7 +412,7 @@
 
 /obj/item/storage/backpack/satchel_flat/hide(var/intact)
 	if(intact)
-		invisibility = 101
+		invisibility = INVISIBILITY_ABSTRACT
 		anchored = 1 //otherwise you can start pulling, cover it, and drag around an invisible backpack.
 		icon_state = "[initial(icon_state)]2"
 	else
@@ -406,8 +420,7 @@
 		anchored = 0
 		icon_state = initial(icon_state)
 
-/obj/item/storage/backpack/satchel_flat/New()
-	..()
+/obj/item/storage/backpack/satchel_flat/populate_contents()
 	new /obj/item/stack/tile/plasteel(src)
 	new /obj/item/crowbar(src)
 
@@ -453,60 +466,51 @@
 	item_state = "duffel-syndiammo"
 
 /obj/item/storage/backpack/duffel/syndie/ammo/shotgun
-	desc = "A large duffelbag, packed to the brim with Bulldog shotgun ammo."
+	desc = "A large duffelbag, packed to the brim with auto shotguns ammo."
 
-/obj/item/storage/backpack/duffel/syndie/ammo/shotgun/New()
-	..()
-	for(var/i in 1 to 6)
+/obj/item/storage/backpack/duffel/syndie/ammo/shotgun/populate_contents()
+	for(var/i in 1 to 8)
 		new /obj/item/ammo_box/magazine/m12g(src)
-	new /obj/item/ammo_box/magazine/m12g/buckshot(src)
-	new /obj/item/ammo_box/magazine/m12g/buckshot(src)
 	new /obj/item/ammo_box/magazine/m12g/dragon(src)
 
 /obj/item/storage/backpack/duffel/syndie/ammo/shotgunXLmags
 	desc = "A large duffelbag, containing three types of extended drum magazines."
 
-/obj/item/storage/backpack/duffel/syndie/ammo/shotgunXLmags/New()
-	..()
+/obj/item/storage/backpack/duffel/syndie/ammo/shotgunXLmags/populate_contents()
 	new /obj/item/ammo_box/magazine/m12g/XtrLrg(src)
-	new /obj/item/ammo_box/magazine/m12g/XtrLrg/buckshot(src)
+	new /obj/item/ammo_box/magazine/m12g/XtrLrg/flechette(src)
 	new /obj/item/ammo_box/magazine/m12g/XtrLrg/dragon(src)
 
 /obj/item/storage/backpack/duffel/syndie/ammo/lmg
     desc = "A large duffel bag containing 5 LMG box magazines"
 
-/obj/item/storage/backpack/duffel/syndie/ammo/lmg/New()
-	..()
+/obj/item/storage/backpack/duffel/syndie/ammo/lmg/populate_contents()
 	for(var/i in 1 to 5)
 		new /obj/item/ammo_box/magazine/mm556x45(src)
 
 /obj/item/storage/backpack/duffel/syndie/ammo/carbine
     desc = "A large duffel bag containing a lot of 5.56 toploader magazines, and a 40mm Grenade Ammo Box"
 
-/obj/item/storage/backpack/duffel/syndie/ammo/carbine/New()
-	..()
+/obj/item/storage/backpack/duffel/syndie/ammo/carbine/populate_contents()
 	new /obj/item/ammo_box/a40mm(src)
-	..()
 	for(var/i in 1 to 9)
 		new /obj/item/ammo_box/magazine/m556(src)
 
 /obj/item/storage/backpack/duffel/syndie/ammo/uzi
     desc = "A large duffel bag, packed to the brim with Type U3 Uzi magazines"
 
-/obj/item/storage/backpack/duffel/syndie/ammo/uzi/New()
-	..()
+/obj/item/storage/backpack/duffel/syndie/ammo/uzi/populate_contents()
 	for(var/i in 1 to 10)
 		new /obj/item/ammo_box/magazine/uzim9mm(src)
 
-/obj/item/storage/backpack/duffel/mining_conscript/
+/obj/item/storage/backpack/duffel/mining_conscript
 	name = "mining conscription kit"
 	desc = "A kit containing everything a crewmember needs to support a shaft miner in the field."
 
-/obj/item/storage/backpack/duffel/mining_conscript/New()
-	..()
+/obj/item/storage/backpack/duffel/mining_conscript/populate_contents()
 	new /obj/item/pickaxe(src)
 	new /obj/item/clothing/glasses/meson(src)
-	new /obj/item/t_scanner/adv_mining_scanner/lesser(src)
+	new /obj/item/mining_scanner(src)
 	new /obj/item/storage/bag/ore(src)
 	new /obj/item/clothing/under/rank/miner/lavaland(src)
 	new /obj/item/encryptionkey/headset_cargo(src)
@@ -515,21 +519,20 @@
 	new /obj/item/kitchen/knife/combat/survival(src)
 	new /obj/item/flashlight/seclite(src)
 	new /obj/item/clothing/suit/hooded/explorer(src)
+	new /obj/item/storage/bag/gem(src)
 
 
 /obj/item/storage/backpack/duffel/syndie/ammo/smg
 	desc = "A large duffel bag, packed to the brim with C-20r magazines."
 
-/obj/item/storage/backpack/duffel/syndie/ammo/smg/New()
-	..()
+/obj/item/storage/backpack/duffel/syndie/ammo/smg/populate_contents()
 	for(var/i in 1 to 10)
 		new /obj/item/ammo_box/magazine/smgm45(src)
 
 /obj/item/storage/backpack/duffel/syndie/c20rbundle
 	desc = "A large duffel bag containing a C-20r, some magazines, and a cheap looking suppressor."
 
-/obj/item/storage/backpack/duffel/syndie/c20rbundle/New()
-	..()
+/obj/item/storage/backpack/duffel/syndie/c20rbundle/populate_contents()
 	new /obj/item/ammo_box/magazine/smgm45(src)
 	new /obj/item/ammo_box/magazine/smgm45(src)
 	new /obj/item/ammo_box/magazine/smgm45(src)
@@ -539,8 +542,7 @@
 /obj/item/storage/backpack/duffel/syndie/bulldogbundle
 	desc = "A large duffel bag containing a Bulldog, some drums, and a pair of thermal imaging glasses."
 
-/obj/item/storage/backpack/duffel/syndie/bulldogbundle/New()
-	..()
+/obj/item/storage/backpack/duffel/syndie/bulldogbundle/populate_contents()
 	new /obj/item/gun/projectile/automatic/shotgun/bulldog(src)
 	new /obj/item/ammo_box/magazine/m12g(src)
 	new /obj/item/ammo_box/magazine/m12g(src)
@@ -549,8 +551,7 @@
 /obj/item/storage/backpack/duffel/syndie/med/medicalbundle
 	desc = "A large duffel bag containing a tactical medkit, a medical beam,  gun and a pair of syndicate magboots."
 
-/obj/item/storage/backpack/duffel/syndie/med/medicalbundle/New()
-	..()
+/obj/item/storage/backpack/duffel/syndie/med/medicalbundle/populate_contents()
 	new /obj/item/storage/firstaid/syndie(src)
 	new /obj/item/reagent_containers/applicator/dual/syndi(src)
 	new /obj/item/reagent_containers/hypospray/combat(src)
@@ -562,14 +563,14 @@
 	new /obj/item/autoimplanter(src)
 	new /obj/item/clothing/suit/space/hardsuit/syndi/elite/med(src)
 	new /obj/item/bodyanalyzer/advanced(src)
+	new /obj/item/reagent_containers/hypospray/autoinjector/nanocalcium(src)
+	new /obj/item/stack/medical/splint(src)
 
-/obj/item/storage/backpack/duffel/syndie/c4/New()
-	..()
+/obj/item/storage/backpack/duffel/syndie/c4/populate_contents()
 	for(var/i in 1 to 10)
 		new /obj/item/grenade/plastic/c4(src)
 
-/obj/item/storage/backpack/duffel/syndie/x4/New()
-	..()
+/obj/item/storage/backpack/duffel/syndie/x4/populate_contents()
 	for(var/i in 1 to 3)
 		new /obj/item/grenade/plastic/x4(src)
 
@@ -579,19 +580,21 @@
 	icon_state = "duffel-syndimed"
 	item_state = "duffel-syndimed"
 
-/obj/item/storage/backpack/duffel/syndie/surgery/New()
-	..()
-	new /obj/item/scalpel(src)
+/obj/item/storage/backpack/duffel/syndie/surgery/populate_contents()
+	new /obj/item/stack/medical/bruise_pack/advanced(src)
+	new /obj/item/scalpel/laser/laser2(src)
 	new /obj/item/hemostat(src)
 	new /obj/item/retractor(src)
 	new /obj/item/circular_saw(src)
 	new /obj/item/surgicaldrill(src)
-	new /obj/item/cautery(src)
 	new /obj/item/bonegel(src)
 	new /obj/item/bonesetter(src)
 	new /obj/item/FixOVein(src)
+	new /obj/item/reagent_containers/glass/bottle/morphine(src)
+	new /obj/item/reagent_containers/syringe/antiviral(src)
 	new /obj/item/clothing/suit/straight_jacket(src)
 	new /obj/item/clothing/mask/muzzle(src)
+	new /obj/item/stack/sheet/plasteel(src, 5)
 
 /obj/item/storage/backpack/duffel/syndie/surgery_fake //for maint spawns
 	name = "surgery duffelbag"
@@ -599,8 +602,7 @@
 	icon_state = "duffel-syndimed"
 	item_state = "duffel-syndimed"
 
-/obj/item/storage/backpack/duffel/syndie/surgery_fake/New()
-	..()
+/obj/item/storage/backpack/duffel/syndie/surgery_fake/populate_contents()
 	new /obj/item/scalpel(src)
 	new /obj/item/hemostat(src)
 	new /obj/item/retractor(src)
@@ -730,3 +732,52 @@
 	name = "\improper TSF marine backpack"
 	desc = "A spacious backpack with lots of pockets, worn by marines of the Trans-Solar Federation."
 	icon_state = "ert_solgov"
+
+/obj/item/storage/backpack/guitarbag
+	name = "Guitar bag"
+	desc = "Bag for comfortable carrying your favorite guitar."
+	icon_state = "guitarbag"
+	item_state = "guitarbag"
+	resistance_flags = FLAMMABLE
+	w_class = WEIGHT_CLASS_BULKY
+	max_w_class = WEIGHT_CLASS_BULKY
+	min_w_class = WEIGHT_CLASS_NORMAL
+	max_combined_w_class = 4
+	storage_slots = 1
+	sprite_sheets = list(
+		"Vox" = 'icons/mob/clothing/species/vox/back.dmi',
+		"Drask" = 'icons/mob/clothing/species/drask/back.dmi',
+		"Grey" = 'icons/mob/clothing/species/grey/back.dmi',
+		"Monkey" = 'icons/mob/clothing/species/monkey/back.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/back.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/back.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/back.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/back.dmi'
+		)
+	can_hold = list(/obj/item/instrument, /obj/item/gun)
+	cant_hold = list(/obj/item/instrument/accordion, /obj/item/instrument/harmonica)
+
+/obj/item/storage/backpack/guitarbag/handle_item_insertion(obj/item/W, prevent_warning)
+	if(!..())
+		return
+	playsound(src, 'sound/items/zip.ogg', 20)
+
+/obj/item/storage/backpack/guitarbag/remove_from_storage(obj/item/W, atom/new_location)
+	if(!..())
+		return
+	playsound(src, 'sound/items/zip.ogg', 20)
+
+/obj/item/storage/backpack/guitarbag/with_guitar/populate_contents()
+	new /obj/item/instrument/guitar(src)
+
+/obj/item/storage/backpack/detective
+	name = "forensic backpack"
+	desc = "For every man, who at the bottom of his heart believes that he is a born detective."
+	icon_state = "backpack_detective"
+	item_state = "backpack_detective"
+
+/obj/item/storage/backpack/duffel/detective
+	name = "forensic duffelbag"
+	desc = "For every man, who at the bottom of his heart believes that he is a born detective."
+	icon_state = "duffel_detective"
+	item_state = "duffel_detective"

@@ -9,6 +9,7 @@
  * Runed Metal (cult)
  * Brass (clockwork cult)
  * Bamboo
+ * Cheese
  */
 
 /*
@@ -122,6 +123,7 @@ GLOBAL_LIST_INIT(metal_recipes, list(
 /obj/item/stack/sheet/metal/cyborg
 	materials = list()
 	is_cyborg = 1
+	cyborg_construction_stack = /obj/item/stack/sheet/metal
 
 /obj/item/stack/sheet/metal/fifty
 	amount = 50
@@ -134,9 +136,9 @@ GLOBAL_LIST_INIT(metal_recipes, list(
 	new /obj/item/stack/sheet/runed_metal(loc, amount)
 	qdel(src)
 
-/obj/item/stack/sheet/metal/New(loc, amount=null)
+/obj/item/stack/sheet/metal/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.metal_recipes
-	return ..()
 
 /*
  * Plasteel
@@ -174,9 +176,9 @@ GLOBAL_LIST_INIT(plasteel_recipes, list(
 	desc = "This sheet is an alloy of iron and plasma. There are an special barcode 'Low Plasma Level'"
 	materials = list(MAT_METAL=2000, MAT_PLASMA=400)
 
-/obj/item/stack/sheet/plasteel/New(loc, amount=null)
+/obj/item/stack/sheet/plasteel/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.plasteel_recipes
-	return ..()
 
 /*
  * Wood
@@ -239,6 +241,7 @@ GLOBAL_LIST_INIT(wood_recipes, list(
 	singular_name = "wood plank"
 	icon_state = "sheet-wood"
 	item_state = "sheet-wood"
+	sheettype = "wood"
 	origin_tech = "materials=1;biotech=1"
 	resistance_flags = FLAMMABLE
 	armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 50, "acid" = 0)
@@ -246,10 +249,11 @@ GLOBAL_LIST_INIT(wood_recipes, list(
 
 /obj/item/stack/sheet/wood/cyborg
 	is_cyborg = 1
+	cyborg_construction_stack = /obj/item/stack/sheet/wood
 
-/obj/item/stack/sheet/wood/New(loc, amount=null)
+/obj/item/stack/sheet/wood/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.wood_recipes
-	return ..()
 
 /*
  * Cloth
@@ -265,6 +269,7 @@ GLOBAL_LIST_INIT(cloth_recipes, list(
 	null,
 	new /datum/stack_recipe("Backpack", /obj/item/storage/backpack, 4),
 	new /datum/stack_recipe("Dufflebag", /obj/item/storage/backpack/duffel, 6),
+	new /datum/stack_recipe("Garmentbag", /obj/item/storage/garmentbag, 8),
 	new /datum/stack_recipe_list("Job specific bags", list(
 		new /datum/stack_recipe("Bio bag", /obj/item/storage/bag/bio, 4),
 		new /datum/stack_recipe("Book bag", /obj/item/storage/bag/books, 4),
@@ -292,9 +297,9 @@ GLOBAL_LIST_INIT(cloth_recipes, list(
 	throwforce = 0
 	merge_type = /obj/item/stack/sheet/cloth
 
-/obj/item/stack/sheet/cloth/New(loc, amount=null)
+/obj/item/stack/sheet/cloth/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.cloth_recipes
-	..()
 
 /obj/item/stack/sheet/cloth/ten
 	amount = 10
@@ -323,8 +328,8 @@ GLOBAL_LIST_INIT(durathread_recipes, list(
 	merge_type = /obj/item/stack/sheet/durathread
 
 /obj/item/stack/sheet/durathread/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.durathread_recipes
-	return ..()
 
 /obj/item/stack/sheet/cotton
 	name = "raw cotton bundle"
@@ -394,9 +399,9 @@ GLOBAL_LIST_INIT(cardboard_recipes, list(
 	resistance_flags = FLAMMABLE
 	merge_type = /obj/item/stack/sheet/cardboard
 
-/obj/item/stack/sheet/cardboard/New(loc, amt = null)
+/obj/item/stack/sheet/cardboard/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.cardboard_recipes
-	return ..()
 
 /*
  * Runed Metal
@@ -410,6 +415,15 @@ GLOBAL_LIST_INIT(cult_recipes, list(
 	new /datum/stack_recipe/cult("Archives (crafts zealot's blindfolds, shuttle curse orbs, and veil shifters)", /obj/structure/cult/functional/archives, 3, time = 40, one_per_turf = TRUE, on_floor = TRUE, cult_structure = TRUE),
 	new /datum/stack_recipe/cult("Altar (crafts eldritch whetstones, construct shells, and flasks of unholy water)", /obj/structure/cult/functional/altar, 3, time = 40, one_per_turf = TRUE, on_floor = TRUE, cult_structure = TRUE),
 ))
+GLOBAL_LIST_INIT(cult_fake_recipes, list(
+	new /datum/stack_recipe/cult("Runed door", /obj/machinery/door/airlock/cult_fake, time = 50, one_per_turf = TRUE, on_floor = TRUE, cult_structure = FALSE),
+	new /datum/stack_recipe/cult("Runed girder", /obj/structure/girder/cult_fake, time = 10, one_per_turf = TRUE, on_floor = TRUE, cult_structure = FALSE),
+	new /datum/stack_recipe/cult("Pylon", /obj/structure/cult/pylon, 4, time = 40, one_per_turf = TRUE, on_floor = TRUE, cult_structure = FALSE),
+	new /datum/stack_recipe/cult("Forge", /obj/structure/cult/forge, 3, time = 40, one_per_turf = TRUE, on_floor = TRUE, cult_structure = FALSE),
+	new /datum/stack_recipe/cult("Archives", /obj/structure/cult/archives, 3, time = 40, one_per_turf = TRUE, on_floor = TRUE, cult_structure = FALSE),
+	new /datum/stack_recipe/cult("Altar", /obj/structure/cult/altar, 3, time = 40, one_per_turf = TRUE, on_floor = TRUE, cult_structure = FALSE),
+	new /datum/stack_recipe("Engraved floor tile", /obj/item/stack/tile/harsie, res_amount = 4, max_res_amount = 20),
+))
 
 /obj/item/stack/sheet/runed_metal
 	name = "runed metal"
@@ -421,7 +435,16 @@ GLOBAL_LIST_INIT(cult_recipes, list(
 	merge_type = /obj/item/stack/sheet/runed_metal
 	recipe_width = 700
 
-/obj/item/stack/sheet/runed_metal/New()
+/obj/item/stack/sheet/runed_metal_fake
+	name = "runed metal"
+	desc = "Sheets of cold metal with shifting inscriptions writ upon them. is that math formulas?"
+	singular_name = "runed metal sheet"
+	icon_state = "sheet-runed"
+	item_state = "sheet-runed"
+	sheettype = "runed"
+	merge_type = /obj/item/stack/sheet/runed_metal_fake
+
+/obj/item/stack/sheet/runed_metal/Initialize(mapload, new_amount, merge = TRUE)
 	. = ..()
 	icon_state = SSticker.cultdat?.runed_metal_icon_state
 
@@ -433,7 +456,7 @@ GLOBAL_LIST_INIT(cult_recipes, list(
 	if(isclocker(user))
 		user.visible_message("<span class='warning'>[user] drops [src] with burning wounds appearing!</span>", \
 		"<span class='cultlarge'>\"Go ahead. Try again.\"</span>")
-		user.drop_item()
+		user.drop_from_active_hand()
 		user.adjustFireLoss(20)
 		return
 	if(!iscultist(user))
@@ -461,9 +484,16 @@ GLOBAL_LIST_INIT(cult_recipes, list(
 /obj/item/stack/sheet/runed_metal/fifty
 	amount = 50
 
-/obj/item/stack/sheet/runed_metal/New(loc, amount=null)
+/obj/item/stack/sheet/runed_metal_fake/fifty
+	amount = 50
+
+/obj/item/stack/sheet/runed_metal/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.cult_recipes
-	return ..()
+
+/obj/item/stack/sheet/runed_metal_fake/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
+	recipes = GLOB.cult_fake_recipes
 
 /*
  * Brass
@@ -480,9 +510,28 @@ GLOBAL_LIST_INIT(brass_recipes, list(
 		new /datum/stack_recipe("Brass table frame", /obj/structure/table_frame/brass, time = 5, one_per_turf = TRUE, on_floor = TRUE),
 		new /datum/stack_recipe("Bronze ashtray", /obj/item/storage/ashtray/bronze, 2, one_per_turf = TRUE, on_floor = TRUE),
 		null,
+		new /datum/stack_recipe("Clockwork floor tile", /obj/item/stack/tile/clockwork, res_amount = 4, max_res_amount = 20),
 		new /datum/stack_recipe/window("Brass windoor", /obj/machinery/door/window/clockwork, 2, time = 30, on_floor = TRUE, window_checks = TRUE),
 		new /datum/stack_recipe/window("Directional brass window", /obj/structure/window/reinforced/clockwork, on_floor = TRUE, window_checks = TRUE),
 		new /datum/stack_recipe/window("Fulltile brass window", /obj/structure/window/reinforced/clockwork/fulltile, 2, on_floor = TRUE, window_checks = TRUE),
+	)),
+))
+
+GLOBAL_LIST_INIT(fake_brass_recipes, list(
+	new /datum/stack_recipe("Altar of credence", /obj/structure/clockwork/altar, 4, time = 40, one_per_turf = TRUE, on_floor = TRUE, cult_structure = FALSE),
+	new /datum/stack_recipe("Eternal workshop", /obj/structure/clockwork/workshop, 4, time = 40, one_per_turf = TRUE, on_floor = TRUE, cult_structure = FALSE),
+	new /datum/stack_recipe("Herald's beacon", /obj/structure/clockwork/beacon, 6, time = 80, one_per_turf = TRUE, on_floor = TRUE, cult_structure = FALSE),
+	new /datum/stack_recipe("Wall gear", /obj/structure/clockwork/wall_gear/fake, time = 10, one_per_turf = TRUE, on_floor = TRUE, cult_structure = FALSE),
+	null,
+	new /datum/stack_recipe_list("Windows and furniture", list(
+		new /datum/stack_recipe("Brass chair", /obj/structure/chair/brass/fake, one_per_turf = TRUE, on_floor = TRUE),
+		new /datum/stack_recipe("Brass table frame", /obj/structure/table_frame/brass/fake, time = 5, one_per_turf = TRUE, on_floor = TRUE),
+		new /datum/stack_recipe("Bronze ashtray", /obj/item/storage/ashtray/bronze, 2, one_per_turf = TRUE, on_floor = TRUE),
+		null,
+		new /datum/stack_recipe("Clockwork floor tile", /obj/item/stack/tile/clockwork, res_amount = 4, max_res_amount = 20),
+		new /datum/stack_recipe/window("Brass windoor", /obj/machinery/door/window/clockwork_fake, 2, time = 30, on_floor = TRUE, window_checks = TRUE),
+		new /datum/stack_recipe/window("Directional brass window", /obj/structure/window/reinforced/clockworkfake, on_floor = TRUE, window_checks = TRUE),
+		new /datum/stack_recipe/window("Fulltile brass window", /obj/structure/window/reinforced/clockworkfake/fulltile, 2, on_floor = TRUE, window_checks = TRUE),
 	)),
 ))
 
@@ -508,7 +557,7 @@ GLOBAL_LIST_INIT(brass_recipes, list(
 	if(iscultist(user))
 		user.visible_message("<span class='warning'>[user] drops [src] with burning wounds appearing!</span>", \
 		"<span class='clocklarge'>\"How dare you even to hold this piece of my art?\"</span>")
-		user.drop_item()
+		user.drop_from_active_hand()
 		user.adjustFireLoss(20)
 		return
 	if(!isclocker(user))
@@ -520,9 +569,9 @@ GLOBAL_LIST_INIT(brass_recipes, list(
 
 	return ..()
 
-/obj/item/stack/sheet/brass/New(loc, amount=null)
-	recipes = GLOB.brass_recipes
+/obj/item/stack/sheet/brass/Initialize(mapload, new_amount, merge = TRUE)
 	. = ..()
+	recipes = GLOB.brass_recipes
 
 /obj/item/stack/sheet/brass/ten
 	amount = 10
@@ -533,7 +582,43 @@ GLOBAL_LIST_INIT(brass_recipes, list(
 /obj/item/stack/sheet/brass/cyborg
 	materials = list()
 	is_cyborg = 1
+	cyborg_construction_stack = /obj/item/stack/sheet/brass
 
+
+/obj/item/stack/sheet/brass_fake
+	name = "brass"
+	desc = "Specially hand-crafted sheets of brass. These ones look tarnished. "
+	singular_name = "brass sheet"
+	icon_state = "sheet-brass"
+	item_state = "sheet-brass"
+	icon = 'icons/obj/items.dmi'
+	resistance_flags = FIRE_PROOF | ACID_PROOF
+	throwforce = 10
+	max_amount = 50
+	throw_speed = 1
+	throw_range = 3
+	merge_type = /obj/item/stack/sheet/brass_fake
+
+/obj/item/stack/sheet/brass_fake/narsie_act()
+	qdel(src)
+
+/obj/item/stack/sheet/brass_fake/attack_self(mob/living/user)
+	if(iscultist(user))
+		user.visible_message("<span class='clocklarge'>\"I can't resist you.. bloody fool..\"</span>")
+	if(!isclocker(user))
+		to_chat(user, "<span class='warning'>Only my followers have to work with it...but I can't prevent it.</span>")
+	if(!is_level_reachable(user.z))
+		to_chat(user, "<span class='warning'>The energies of this place interfere with the metal shaping!</span>")
+		return
+
+	return ..()
+
+/obj/item/stack/sheet/brass_fake/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
+	recipes = GLOB.fake_brass_recipes
+
+/obj/item/stack/sheet/brass_fake/fifty
+	amount = 50
 
 /*
  * Bones
@@ -559,6 +644,7 @@ GLOBAL_LIST_INIT(brass_recipes, list(
 GLOBAL_LIST_INIT(plastic_recipes, list(
 	new /datum/stack_recipe("Plastic ashtray", /obj/item/storage/ashtray/, 2, one_per_turf = TRUE, on_floor = TRUE),
 	new /datum/stack_recipe("Plastic bag", /obj/item/storage/bag/plasticbag, 3, on_floor = TRUE),
+	new /datum/stack_recipe("Baggie", /obj/item/reagent_containers/glass/beaker/drugs, 1, on_floor = TRUE),
 	new /datum/stack_recipe("Plastic crate", /obj/structure/closet/crate/plastic, 10, one_per_turf = TRUE, on_floor = TRUE),
 	new /datum/stack_recipe("Plastic flaps", /obj/structure/plasticflaps, 5, time = 40, one_per_turf = TRUE, on_floor = TRUE),
 	null,
@@ -637,9 +723,9 @@ GLOBAL_LIST_INIT(plastic_recipes, list(
 	materials = list(MAT_PLASTIC = MINERAL_MATERIAL_AMOUNT)
 	merge_type = /obj/item/stack/sheet/plastic
 
-/obj/item/stack/sheet/plastic/New()
-	recipes = GLOB.plastic_recipes
+/obj/item/stack/sheet/plastic/Initialize(mapload, new_amount, merge = TRUE)
 	. = ..()
+	recipes = GLOB.plastic_recipes
 
 /obj/item/stack/sheet/plastic/fifty
 	amount = 50
@@ -672,5 +758,38 @@ GLOBAL_LIST_INIT(bamboo_recipes, list(
 	merge_type = /obj/item/stack/sheet/bamboo
 
 /obj/item/stack/sheet/bamboo/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.bamboo_recipes
-	return ..()
+
+
+/*
+ * Cheese
+ */
+
+GLOBAL_LIST_INIT(cheese_recipes, list(
+	new /datum/stack_recipe("Cheesus statue", /obj/structure/statue/cheese/cheesus, 5, one_per_turf = TRUE, time = 100, on_floor = TRUE),
+))
+
+/obj/item/stack/sheet/cheese
+	name = "reinforced cheese"
+	desc = "A stack of cheese that seems sturdier than regular cheese."
+	icon_state = "sheet-cheese"
+	item_state = "sheet-cheese"
+	icon = 'icons/obj/items.dmi'
+	singular_name = "reinforced cheese block"
+	sheettype = "cheese"
+	force = 5
+	throwforce = 5
+	w_class = WEIGHT_CLASS_NORMAL
+	throw_speed = 1
+	throw_range = 3
+	max_amount = 15
+	resistance_flags = FLAMMABLE
+	merge_type = /obj/item/stack/sheet/cheese
+
+/obj/item/stack/sheet/cheese/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
+	recipes = GLOB.cheese_recipes
+
+/obj/item/stack/sheet/cheese/fifteen
+	amount = 15
