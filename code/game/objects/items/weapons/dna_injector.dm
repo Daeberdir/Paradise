@@ -70,19 +70,15 @@
 /obj/item/dnainjector/proc/inject(mob/living/M, mob/user)
 	if(used)
 		return
-	if(isliving(M))
+	if(istype(M,/mob/living))
 		M.apply_effect(rand(20 / (damage_coeff  ** 2), 50 / (damage_coeff  ** 2)), IRRADIATE, 0, 1)
 	var/mob/living/carbon/human/H
-	if(ishuman(M))
+	if(istype(M, /mob/living/carbon/human))
 		H = M
 
 	if(!buf)
 		log_runtime(EXCEPTION("[src] used by [user] on [M] failed to initialize properly."), src)
 		return
-
-	used = TRUE
-	icon_state = "[icon_state]0"
-	desc += " This one is used up."
 
 	spawn(0) //Some mutations have sleeps in them, like monkey
 		if(!(NOCLONE in M.mutations) && !(H && (NO_DNA in H.dna.species.species_traits))) // prevents drained people from having their DNA changed
@@ -154,6 +150,9 @@
 	add_attack_logs(user, M, attack_log, ATKLOG_ALL)
 
 	inject(M, user)
+	used = TRUE
+	icon_state = "[icon_state]0"
+	desc += " This one is used up."
 
 /obj/item/dnainjector/hulkmut
 	name = "DNA-Injector (Hulk)"
@@ -233,7 +232,7 @@
 	..()
 
 /obj/item/dnainjector/telemut/darkbundle
-	name = "DNA-injector"
+	name = "DNA injector"
 	desc = "Good. Let the hate flow through you."
 
 
