@@ -90,7 +90,6 @@
 	if(..())
 		apply_opacity_to_my_turfs(opacity)
 
-
 /obj/machinery/door/poddoor/multi_tile/close()
 	if(..())
 		apply_opacity_to_my_turfs(opacity)
@@ -106,6 +105,27 @@
 		T.has_opaque_atom = new_opacity
 		T.reconsider_lights()
 	update_freelook_sight()
+
+/obj/machinery/door/poddoor/multi_tile/proc/check_pod_access(obj/spacepod/pod)
+	if(check_access(pod.pilot.get_active_hand()) || check_access(pod.pilot.wear_id))
+		return TRUE
+	for(var/mob/living/carbon/human/passenger in pod.passengers)
+		if(check_access(passenger.get_active_hand()) || check_access(passenger.wear_id))
+			return TRUE
+
+/obj/machinery/door/poddoor/multi_tile/proc/pod_toggle_poddoors(obj/spacepod/pod)
+	if(!hasPower())
+		to_chat(pod.pilot, span_warning("Pod Door is unpowered!"))
+	else if(density)
+		INVOKE_ASYNC(src, PROC_REF(open), pod.pilot)
+		for(var/obj/machinery/door/poddoor/multi_tile/door in GLOB.airlocks)
+			if(door.z == z && door.id_tag == id_tag)
+				INVOKE_ASYNC(door, PROC_REF(open), pod.pilot)
+	else
+		INVOKE_ASYNC(src, PROC_REF(close), pod.pilot)
+		for(var/obj/machinery/door/poddoor/multi_tile/door in GLOB.airlocks)
+			if(door.z == z && door.id_tag == id_tag)
+				INVOKE_ASYNC(door, PROC_REF(close), pod.pilot)
 
 /obj/machinery/door/poddoor/multi_tile/four_tile_ver
 	icon = 'icons/obj/doors/1x4blast_vert.dmi'

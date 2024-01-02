@@ -445,9 +445,12 @@
 	return TRUE
 
 /obj/machinery/door/proc/CheckForMobs()
-	if(locate(/mob/living) in get_turf(src))
+	for(var/mob/living/intruder in get_turf(src))
+		if(intruder.checkpass(PASSDOOR))
+			continue
 		sleep(1)
 		open()
+		break
 
 /obj/machinery/door/proc/crush()
 	for(var/mob/living/L in get_turf(src))

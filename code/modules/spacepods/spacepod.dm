@@ -24,7 +24,7 @@
 	layer = 3.9
 	infra_luminosity = 15
 
-	var/mob/pilot	//There is only ever one pilot and he gets all the privledge
+	var/mob/living/carbon/human/pilot	//There is only ever one pilot and he gets all the privledge
 	var/list/mob/passengers = list() //passengers can't do anything and are variable in number
 	var/max_passengers = 0
 	var/obj/item/storage/internal/cargo_hold
@@ -906,33 +906,21 @@
 	set src = usr.loc
 
 	if(usr.incapacitated())
-		return
+		return FALSE
 
-	if(usr != src.pilot)
-		to_chat(usr, "<span class='notice'>You can't reach the controls from your chair</span>")
-		return
+	if(usr != pilot)
+		to_chat(usr, span_notice("You can't reach the controls from your chair."))
+		return FALSE
 
-	for(var/obj/machinery/door/poddoor/multi_tile/P in orange(3,src))
-		var/mob/living/carbon/human/L = usr
-		if(P.check_access(L.get_active_hand()) || P.check_access(L.wear_id))
-			if(P.density)
-				P.open()
-				return 1
-			else
-				P.close()
-				return 1
-		for(var/mob/living/carbon/human/O in passengers)
-			if(P.check_access(O.get_active_hand()) || P.check_access(O.wear_id))
-				if(P.density)
-					P.open()
-					return 1
-				else
-					P.close()
-					return 1
-		to_chat(usr, "<span class='warning'>Access denied.</span>")
-		return
+	for(var/obj/machinery/door/poddoor/multi_tile/door in orange(3,src))
+		if(door.check_pod_access(src))
+			door.pod_toggle_poddoors(src)
+			return TRUE
+		to_chat(usr, span_warning("Access denied."))
+		return FALSE
 
-	to_chat(usr, "<span class='warning'>You are not close to any pod doors.</span>")
+	to_chat(usr, span_warning("You are not close to any pod doors."))
+	return FALSE
 
 /obj/spacepod/verb/fireWeapon()
 	set name = "Fire Pod Weapons"
