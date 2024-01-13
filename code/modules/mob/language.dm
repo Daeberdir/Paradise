@@ -4,32 +4,41 @@
 	Datum based languages. Easily editable and modular.
 
 	Busy letters for language:
-	a b d f g j k o q v x y
-	aa as bo db fa fm fn fs vu
+	un ta vu sk vo di tr ki sl gr dr ni
+	xm db wr xh sp ch hs sh ab bo bi dt
+	sw gc sc tb gt cl nr mo ne st fa wo
 
-	Busy symbols for language:
-	0 1 2 3 4 5 6 7 8 9
-	% ? ^
 
-	CAUTION! The key must not repeat the key of the radio channel
-	and must not contain prohibited characters
+	Busy letters by radio(eng):
+	c e h i l m n p r s t u w x
+
+
+	Busy letters by radio(rus):
+	б г д е ё з к р с т у ц ч ш ы ь я э
+
+
+	Busy symbols by radio:
+	~ , $ _ - + * 1 2 3
+
+	CAUTION!	The key must not repeat the key of the radio channel
+				and must not contain prohibited characters!
 */
 
 /datum/language
-	var/name = "an unknown language"            // Fluff name of language if any.
-	var/desc = "A language."                    // Short description for 'Check Languages'.
-	var/speech_verb = "says"                    // 'says', 'hisses', 'farts'.
-	var/ask_verb = "asks"                       // Used when sentence ends in a ?
-	var/list/exclaim_verbs = list("exclaims")   // Used when sentence ends in a !
-	var/whisper_verb                            // Optional. When not specified speech_verb + quietly/softly is used instead.
-	var/colour = "body"                         // CSS style to use for strings in this language.
-	var/key = "x"                               // Character used to speak in language eg. :o for Unathi.
-	var/flags = 0                               // Various language flags.
-	var/native                                  // If set, non-native speakers will have trouble speaking.
-	var/list/syllables                          // Used when scrambling text for a non-speaker.
-	var/list/space_chance = 55                  // Likelihood of getting a space in the random scramble string.
-	var/follow = 0                              // Applies to HIVEMIND languages - should a follow link be included for dead mobs?
-	var/english_names = 0                       // Do we want English names by default, no matter what?
+	var/name = "an unknown language"			// Fluff name of language if any.
+	var/desc = "A language."					// Short description for 'Check Languages'.
+	var/speech_verb = "says"					// 'says', 'hisses', 'farts'.
+	var/ask_verb = "asks"						// Used when sentence ends in a ?
+	var/list/exclaim_verbs = list("exclaims")	// Used when sentence ends in a !
+	var/whisper_verb							// Optional. When not specified speech_verb + quietly/softly is used instead.
+	var/colour = "body"							// CSS style to use for strings in this language.
+	var/key = "hui"								// Character used to speak in language eg. :un for Unathi.
+	var/flags = 0								// Various language flags.
+	var/native									// If set, non-native speakers will have trouble speaking.
+	var/list/syllables							// Used when scrambling text for a non-speaker.
+	var/list/space_chance = 55					// Likelihood of getting a space in the random scramble string.
+	var/follow = 0								// Applies to HIVEMIND languages - should a follow link be included for dead mobs?
+	var/english_names = 0						// Do we want English names by default, no matter what?
 	var/list/scramble_cache = list()
 	/// Do we want to override the word-join character for scrambled text? If null, defaults to " " or ". "
 	var/join_override
@@ -165,7 +174,7 @@
 	ask_verb = "hisses"
 	exclaim_verbs = list("roars")
 	colour = "soghun"
-	key = "o"
+	key = "un"
 	flags = RESTRICTED
 	syllables = list("za","az","ze","ez","zi","iz","zo","oz","zu","uz","zs","sz","ha","ah","he","eh","hi","ih", \
 	"ho","oh","hu","uh","hs","sh","la","al","le","el","li","il","lo","ol","lu","ul","ls","sl","ka","ak","ke","ek", \
@@ -186,7 +195,7 @@
 	ask_verb = "mrowls"
 	exclaim_verbs = list("yowls")
 	colour = "tajaran"
-	key = "j"
+	key = "ta"
 	flags = RESTRICTED
 	syllables = list("rr","rr","tajr","kir","raj","kii","mir","kra","ahk","nal","vah","khaz","jri","ran","darr", \
 	"mi","jri","dynh","manq","rhe","zar","rrhaz","kal","chur","eech","thaa","dra","jurl","mah","sanu","dra","ii'r", \
@@ -226,7 +235,7 @@
 	ask_verb = "rurs"
 	exclaim_verbs = list("barks")
 	colour = "vulpkanin"
-	key = "7"
+	key = "vu"
 	flags = RESTRICTED
 	syllables = list("rur","ya","cen","rawr","bar","kuk","tek","qat","uk","wu","vuh","tah","tch","schz","auch", \
 	"ist","ein","entch","zwichs","tut","mir","wo","bis","es","vor","nic","gro","lll","enem","zandt","tzch","noch", \
@@ -240,7 +249,7 @@
 	ask_verb = "warbles"
 	exclaim_verbs = list("warbles")
 	colour = "skrell"
-	key = "k"
+	key = "sk"
 	flags = RESTRICTED
 	syllables = list("qr","qrr","xuq","qil","quum","xuqm","vol","xrim","zaoo","qu-uu","qix","qoo","zix","*","!")
 
@@ -251,7 +260,7 @@
 	ask_verb = "creels"
 	exclaim_verbs = list("loudly skrees")
 	colour = "vox"
-	key = "v"
+	key = "vo"
 	flags = RESTRICTED | WHITELISTED
 	syllables = list("ti","ti","ti","hi","hi","ki","ki","ki","ki","ya","ta","ha","ka","ya","yi","chi","cha","kah", \
 	"SKRE","AHK","EHK","RAWK","KRA","AAA","EEE","KI","II","KRI","KA")
@@ -273,7 +282,7 @@
 	ask_verb = "creaks"
 	exclaim_verbs = list("rustles")
 	colour = "diona"
-	key = "q"
+	key = "di"
 	flags = RESTRICTED
 	syllables = list("hs","zt","kr","st","sh")
 
@@ -289,7 +298,7 @@
 	ask_verb = "queries"
 	exclaim_verbs = list("exclaims")
 	colour = "trinary"
-	key = "5"
+	key = "tr"
 	flags = RESTRICTED | WHITELISTED
 	syllables = list("0+2+0+1+1","0+1+2+2+2","1+0+1+0+0","1+0+2+1+0","2+1+0+1+2","0+2+0+1+1","2+1+2+0+0","1+0+0+2","2+0+0+1","0+0+0+2","0+0+1+2","0+0+1+2","0+0+0","1+2+0","1+2+1","2+0+1","2+2+0","1+0","1+1","0")
 
@@ -308,7 +317,7 @@
 	ask_verb = "rubs their antennae together"
 	exclaim_verbs = list("rubs their antennae together")
 	colour = "kidan"
-	key = "4"
+	key = "ki"
 	flags = RESTRICTED | WHITELISTED
 	syllables = list("click","clack")
 
@@ -328,7 +337,7 @@
 	ask_verb = "bubbles and pops"
 	exclaim_verbs = list("bubbles and pops")
 	colour = "slime"
-	key = "f"
+	key = "sl"
 	flags = RESTRICTED | WHITELISTED
 	syllables = list("blob","plop","pop","bop","boop")
 
@@ -339,7 +348,7 @@
 	ask_verb = "inquires"
 	exclaim_verbs = list("imparts")
 	colour = "abductor"
-	key = "^"
+	key = "gr"
 	flags = RESTRICTED | HIVEMIND
 	follow = TRUE
 
@@ -374,7 +383,7 @@
 	ask_verb = "hums"
 	exclaim_verbs = list("rumbles")
 	colour = "drask"
-	key = "%"
+	key = "dr"
 	flags = RESTRICTED | WHITELISTED
 	syllables = list("hoorb","vrrm","ooorm","urrrum","ooum","ee","ffm","hhh","mn","ongg")
 
@@ -391,7 +400,7 @@
 	ask_verb = "flaps"
 	exclaim_verbs = list("chatters")
 	colour = "moth"
-	key = "#"
+	key = "ni"
 	flags = RESTRICTED | WHITELISTED
 	join_override = "-"
 	syllables = list("år", "i", "går", "sek", "mo", "ff", "ok", "gj", "ø", "gå", "la", "le",
@@ -412,7 +421,7 @@
 	speech_verb = "says"
 	exclaim_verbs = list("exclaims", "shouts", "yells")
 	whisper_verb = "whispers"
-	key = "9"
+	key = "gc"
 	flags = RESTRICTED
 	syllables = list("blah","blah","blah","bleh","meh","neh","nah","wah")
 	english_names = 1
@@ -424,7 +433,7 @@
 	exclaim_verbs = list("exclaims", "shouts", "yells")
 	whisper_verb = "whispers"
 	colour = "solcom"
-	key = "1"
+	key = "sc"
 	flags = RESTRICTED
 	syllables = list("tao","shi","tzu","yi","com","be","is","i","op","vi","ed","lec","mo","cle","te","dis","e")
 	english_names = 1
@@ -435,7 +444,7 @@
 	desc = "Maintained by the various trading cartels in major systems, this elegant, structured language is used for bartering and bargaining."
 	speech_verb = "enunciates"
 	colour = "say_quote"
-	key = "2"
+	key = "tb"
 	space_chance = 100
 	syllables = list("lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit",
 					 "sed", "do", "eiusmod", "tempor", "incididunt", "ut", "labore", "et", "dolore",
@@ -453,7 +462,7 @@
 	ask_verb = "gnarls"
 	exclaim_verbs = list("snarls")
 	colour = "gutter"
-	key = "3"
+	key = "gt"
 	syllables = list ("gra","ba","ba","breh","bra","rah","dur","ra","ro","gro","go","ber","bar","geh","heh","gra")
 
 /datum/language/clown
@@ -463,7 +472,7 @@
 	ask_verb = "honks"
 	exclaim_verbs = list("toots", "wubs", "honks")
 	colour = "clown"
-	key = "0"
+	key = "cl"
 	syllables = list ("honk","squeak","bonk","toot","narf","zub","wee","wub","norf")
 
 /datum/language/com_srus
@@ -473,7 +482,7 @@
 	whisper_verb = "mutters"
 	exclaim_verbs = list("exaggerates")
 	colour = "com_srus"
-	key = "?"
+	key = "nr"
 	space_chance = 65
 	english_names = 1
 	syllables = list("dyen","bar","bota","vyek","tvo","slov","slav","syen","doup","vah","laz","gloz","yet",
@@ -493,7 +502,7 @@
 	ask_verb = "chitters"
 	exclaim_verbs = list("buzzes")
 	colour = "alien"
-	key = "y"
+	key = "wr"
 	flags = RESTRICTED | HIVEMIND | NOBABEL
 	follow = TRUE
 
@@ -513,7 +522,7 @@
 	speech_verb = "hisses"
 	ask_verb = "hisses"
 	exclaim_verbs = list("hisses")
-	key = "6"
+	key = "xm"
 	flags = RESTRICTED
 	syllables = list("sss","sSs","SSS")
 
@@ -524,7 +533,7 @@
 	ask_verb = "hisses"
 	exclaim_verbs = list("hisses")
 	colour = "alien"
-	key = "a"
+	key = "xh"
 	flags = RESTRICTED | HIVEMIND | NOBABEL
 	follow = TRUE
 
@@ -535,7 +544,7 @@
 	ask_verb = "chitters"
 	exclaim_verbs = list("chitters")
 	colour = "terrorspider"
-	key = "as"
+	key = "sp"
 	flags = RESTRICTED | HIVEMIND | NOBABEL
 	follow = TRUE
 
@@ -545,7 +554,7 @@
 	desc = "Although they are normally wary and suspicious of each other, changelings can commune over a distance."
 	speech_verb = "says"
 	colour = "changeling"
-	key = "g"
+	key = "ch"
 	flags = RESTRICTED | HIVEMIND | NOBABEL
 	follow = TRUE
 
@@ -562,7 +571,7 @@
 	desc = "Although they are normally wary and suspicious of each other, changelings can commune over a distance."
 	speech_verb = "says"
 	colour = "changeling"
-	key = "gi"
+	key = "hs"
 	flags = RESTRICTED | HIVEMIND | NOBABEL
 	follow = TRUE
 
@@ -579,7 +588,7 @@
 	desc = "Shadowlings and their thralls are capable of communicating over a psychic hivemind."
 	speech_verb = "says"
 	colour = "shadowling"
-	key = "8"
+	key = "sh"
 	flags = RESTRICTED | HIVEMIND | NOBABEL
 	follow = TRUE
 
@@ -598,7 +607,7 @@
 	ask_verb = "gibbers"
 	exclaim_verbs = list("gibbers")
 	colour = "abductor"
-	key = "aa" //doesn't matter, this is their default and only language
+	key = "ab"
 	flags = RESTRICTED | HIVEMIND | NOBABEL
 	follow = TRUE
 
@@ -652,7 +661,7 @@
 	speech_verb = "states"
 	ask_verb = "queries"
 	exclaim_verbs = list("declares")
-	key = "b"
+	key = "bi"
 	flags = RESTRICTED | HIVEMIND | NOBABEL
 	follow = TRUE
 	var/drone_only
@@ -699,7 +708,7 @@
 	ask_verb = "transmits"
 	exclaim_verbs = list("transmits")
 	colour = "say_quote"
-	key = "d"
+	key = "dt"
 	flags = RESTRICTED | HIVEMIND | NOBABEL
 	drone_only = TRUE
 	follow = TRUE
@@ -722,7 +731,7 @@
 	ask_verb = "tones"
 	exclaim_verbs = list("tones")
 	colour = "say_quote"
-	key = "as"//Zwarmer...Or Zerg!
+	key = "sw"//Zwarmer...Or Zerg!
 	flags = RESTRICTED | HIVEMIND | NOBABEL
 	follow = TRUE
 
@@ -801,17 +810,17 @@
 	speech_verb = "chimpers"
 	ask_verb = "chimpers"
 	exclaim_verbs = list("screeches")
-	key = "fm"
+	key = "mo"
 
 /datum/language/skrell/monkey
 	name = "Neara"
 	desc = "Squik squik squik."
-	key = "fn"
+	key = "ne"
 
 /datum/language/unathi/monkey
 	name = "Stok"
 	desc = "Hiss hiss hiss."
-	key = "fs"
+	key = "st"
 
 /datum/language/tajaran/monkey
 	name = "Farwa"
@@ -821,7 +830,7 @@
 /datum/language/vulpkanin/monkey
 	name = "Wolpin"
 	desc = "Bark bark bark."
-	key = "vu"
+	key = "wo"
 
 /mob/proc/grant_all_babel_languages()
 	for(var/la in GLOB.all_languages)
