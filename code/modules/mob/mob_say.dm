@@ -122,7 +122,7 @@
 	var/ending = copytext(message, length(message))
 
 	if(speaking)
-		verb = speaking.get_spoken_verb(ending)
+		verb = genderize_decode(src, speaking.get_spoken_verb(ending))
 	else
 		if(ending == "!")
 			verb = pick("exclaims", "shouts", "yells")
@@ -208,7 +208,7 @@
 
 	// Noise language is a snowflake
 	if(copytext(message, 1, 2) == "!" && length(message) > 1)
-		return list(new /datum/multilingual_say_piece(GLOB.all_languages["Noise"], trim(strip_prefixes(copytext(message, 2)))))
+		return list(new /datum/multilingual_say_piece(GLOB.all_languages[LANGUAGE_NOISE], trim(strip_prefixes(copytext(message, 2)))))
 
 	// Scan the message for prefixes
 	var/list/prefix_locations = find_valid_prefixes(message)

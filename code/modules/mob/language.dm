@@ -5,7 +5,7 @@
 
 	Busy letters for language:
 	un ta vu sk vo di tr ki sl gr dr ni
-	xm db wr xh sp ch hs sh ab bo bi dt
+	xm db wr xh sp ch hs sh ab gl bo bi dt
 	sw gc sc tb gt cl nr mo ne st fa wo
 
 
@@ -125,7 +125,7 @@
 
 	if(!speaker_mask)
 		speaker_mask = speaker.name
-	var/msg = "<i><span class='game say'>[name], <span class='name'>[speaker_mask]</span> [get_spoken_verb(message)], [format_message(message)]</span></i>"
+	var/msg = "<i><span class='game say'>[name], <span class='name'>[speaker_mask]</span> [genderize_decode(speaker, get_spoken_verb(message))], [format_message(message)]</span></i>"
 
 	for(var/mob/player in GLOB.player_list)
 		if(istype(player,/mob/dead) && follow)
@@ -207,7 +207,7 @@
 	var/list/ru_name_syllables = list("кан","тай","кир","раи","кии","мир","кра","тэк","нал","вар","хар","марр","ран","дарр", \
 	"мирк","ири","дин","манг","рик","зар","раз","кель","шера","тар","кей","ар","но","маи","зир","кер","нир","ра",\
 	"ми","рир","сей","эка","гир","ари","нэй","нре","ак","таир","эрай","жин","мра","зур","рин","сар","кин","рид","эра","ри","эна")
-	var/apostrophe = "’"
+	var/apostrophe = "'"
 	var/new_name = ""
 	var/full_name = ""
 
@@ -227,6 +227,23 @@
 	else if(prob(80))
 		full_name += " [pick(list("Энай-Сэндай","Наварр-Сэндай","Року-Сэндай","Шенуар-Сэндай"))]"
 	return full_name
+
+/datum/language/unathi_tajaran
+	name = "Sinta'tajr"
+	desc = "The language is a bizarre mixture of gestures, tail flicks, hisses and a small set of words that are, by and large, short and clear commands. Was developed for communication between races of Tajaran and Unathi."
+	speech_verb = "gesticulates and wags %(his,her,its,their)% tail"
+	ask_verb = "gesticulates and wags %(his,her,its,their)% tail"
+	exclaim_verbs = list("actively gesticulates and beats %(his,her,its,their)% tail on the floor, shouting","yells, spreading %(his,her,its,their)% arms and hissing")
+	colour = "rough"
+	key = "st"
+	flags = UNIQUE
+	syllables = list("a","ala","alasa","ali","anpa","ante","anu","awen","e","en","esun","ijo","ike","ilo","insa","","jaki", \
+	"jan","jelo","jo","kala","kama","kasi","ken","kili","kin","ko","kon","ku","kule","kute","la","lape","laso", \
+	"lawa","leko","len","lete","li","lipu","loje","lon","luka","lupa","ma","mani","meli","meso", \
+	"mi","mije","moku","moli","mu","mun","musi","mute","n","nasa","nena","ni","nimi","noka", \
+	"o","oko","olin","ona","open","pali","pan","pana","pi","pini","pipi","poka","poki","pona","pu","sama", \
+	"seli","selo","seme","sewi","sike","sin","sina","soko","sona","suli","suno","supa","suwi","tan","taso","tawa", \
+	"telo","toki","tomo","tu","unpa","uta","walo","wan","waso","wa","weka","wile")
 
 /datum/language/vulpkanin
 	name = "Canilunzt"
@@ -622,15 +639,21 @@
 			return TRUE
 	return FALSE
 
-/datum/language/abductor/golem
+/datum/language/golem
 	name = "Golem Mindlink"
 	desc = "Communicate with other alien alloy golems through a psychic link."
+	speech_verb = "gibbers"
+	ask_verb = "gibbers"
+	exclaim_verbs = list("gibbers")
+	colour = "abductor"
+	key = "gl"
+	flags = RESTRICTED | HIVEMIND | NOBABEL
 	follow = TRUE
 
-/datum/language/abductor/golem/check_special_condition(mob/living/carbon/human/other, mob/living/carbon/human/speaker)
-	return TRUE
+/datum/language/golem/broadcast(mob/living/speaker, message, speaker_mask)
+	..(speaker,message,speaker.real_name)
 
-/datum/language/corticalborer
+/datum/language/borer
 	name = "Cortical Link"
 	desc = "Cortical borers possess a strange link between their tiny minds."
 	speech_verb = "sings"
@@ -641,7 +664,7 @@
 	flags = RESTRICTED | HIVEMIND | NOBABEL
 	follow = TRUE
 
-/datum/language/corticalborer/broadcast(mob/living/speaker, message, speaker_mask)
+/datum/language/borer/broadcast(mob/living/speaker, message, speaker_mask)
 	var/mob/living/simple_animal/borer/B
 
 	if(iscarbon(speaker))
@@ -736,8 +759,8 @@
 	follow = TRUE
 
 // Language handling.
-/mob/proc/add_language(language)
-	var/datum/language/new_language = GLOB.all_languages[language]
+/mob/proc/add_language(language_key)
+	var/datum/language/new_language = GLOB.all_languages[language_key]
 
 	if(!istype(new_language) || (new_language in languages))
 		return FALSE
@@ -745,13 +768,13 @@
 	languages |= new_language
 	return TRUE
 
-/mob/proc/remove_language(rem_language)
-	var/datum/language/L = GLOB.all_languages[rem_language]
+/mob/proc/remove_language(language_key)
+	var/datum/language/L = GLOB.all_languages[language_key]
 	. = (L in languages)
 	languages.Remove(L)
 
-/mob/living/remove_language(rem_language)
-	var/datum/language/L = GLOB.all_languages[rem_language]
+/mob/living/remove_language(language_key)
+	var/datum/language/L = GLOB.all_languages[language_key]
 	if(default_language == L)
 		default_language = null
 	return ..()
@@ -779,7 +802,7 @@
 			if(L == default_language)
 				. += "<b>[L.name] (:[L.key])</b> - default - <a href='byond://?src=[UID()];default_lang=reset'>reset</a><br>[L.desc]<br><br>"
 			else
-				. += "<b>[L.name] (:[L.key])</b> - <a href=\"byond://?src=[UID()];default_lang=[L]\">set default</a><br>[L.desc]<br><br>"
+				. += "<b>[L.name] (:[L.key])</b> - <a href=\"byond://?src=[UID()];default_lang=[L.key]\">set default</a><br>[L.desc]<br><br>"
 
 /mob/verb/check_languages()
 	set name = "Check Known Languages"

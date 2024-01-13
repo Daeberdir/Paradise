@@ -25,8 +25,8 @@
 		name = "alien larva ([rand(1, 1000)])"
 	real_name = name
 	regenerate_icons()
-	add_language("Xenomorph")
-	add_language("Hivemind")
+	add_language(LANGUAGE_XENOCOMMON)
+	add_language(LANGUAGE_XENOS)
 	hide_action = new
 	hide_action.Grant(src)
 	..()

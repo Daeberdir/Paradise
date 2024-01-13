@@ -716,8 +716,8 @@
 
 	H.rename_character(null, "[rank_list.len ? pick(rank_list) : "[H.gender==FEMALE ? pick(GLOB.first_names_female) : pick(GLOB.first_names_male)]"] [H.gender==FEMALE ? pick(GLOB.last_names_female) : pick(GLOB.last_names)]")
 
-	H.add_language("Neo-Russkiya")
-	H.set_default_language(GLOB.all_languages["Neo-Russkiya"])
+	H.add_language(LANGUAGE_COM_SRUS)
+	H.set_default_language(GLOB.all_languages[LANGUAGE_COM_SRUS])
 
 	var/obj/item/card/id/I = H.wear_id
 	if(istype(I))

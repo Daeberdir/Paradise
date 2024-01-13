@@ -270,7 +270,7 @@
 			setting_language = null
 		else
 			for(var/datum/multilingual_say_piece/S in message_pieces)
-				if(S.speaking != GLOB.all_languages["Noise"]) // check if they are emoting, these do not need to be translated
+				if(S.speaking != GLOB.all_languages[LANGUAGE_NOISE]) // check if they are emoting, these do not need to be translated
 					S.speaking = GLOB.all_languages[setting_language]
 
 	return tcm

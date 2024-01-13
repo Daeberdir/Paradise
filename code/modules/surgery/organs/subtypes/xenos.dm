@@ -184,14 +184,14 @@
 /obj/item/organ/internal/xenos/hivenode/insert(mob/living/carbon/M, special = ORGAN_MANIPULATION_DEFAULT)
 	. = ..()
 	M.faction |= "alien"
-	M.add_language("Hivemind")
-	M.add_language("Xenomorph")
+	M.add_language(LANGUAGE_XENOCOMMON)
+	M.add_language(LANGUAGE_XENOS)
 
 
 /obj/item/organ/internal/xenos/hivenode/remove(mob/living/carbon/M, special = ORGAN_MANIPULATION_DEFAULT)
 	M.faction -= "alien"
-	M.remove_language("Hivemind")
-	M.remove_language("Xenomorph")
+	M.remove_language(LANGUAGE_XENOCOMMON)
+	M.remove_language(LANGUAGE_XENOS)
 	. = ..()
 
 

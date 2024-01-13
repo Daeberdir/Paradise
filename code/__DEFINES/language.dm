@@ -1,12 +1,46 @@
 //Languages!
-#define LANGUAGE_HUMAN		1
-#define LANGUAGE_ALIEN		2
-#define LANGUAGE_DOG		4
-#define LANGUAGE_CAT		8
-#define LANGUAGE_BINARY		16
-#define LANGUAGE_OTHER		32768
+#define LANGUAGE_NONE				null
+#define LANGUAGE_NOISE				""
+#define LANGUAGE_UNATHI				"un"
+#define LANGUAGE_TAJARAN			"ta"
+#define LANGUAGE_UNATHI_TAJARAN		"st"
+#define LANGUAGE_VULPKANIN			"vu"
+#define LANGUAGE_SKRELL				"sk"
+#define LANGUAGE_VOX				"vo"
+#define LANGUAGE_DIONA				"di"
+#define LANGUAGE_TRINARY			"tr"
+#define LANGUAGE_KIDAN				"ki"
+#define LANGUAGE_SLIME				"sl"
+#define LANGUAGE_GREY				"gr"
+#define LANGUAGE_DRASK				"dr"
+#define LANGUAGE_MOTH				"ni"
+#define LANGUAGE_GALACTIC_COMMON	"gc"
+#define LANGUAGE_SOL_COMMON			"sc"
+#define LANGUAGE_TRADER				"tb"
+#define LANGUAGE_GUTTER				"gt"
+#define LANGUAGE_CLOWN				"cl"
+#define LANGUAGE_COM_SRUS			"nr"
+#define LANGUAGE_WRYN				"wr"
+#define LANGUAGE_XENOCOMMON			"xm"
+#define LANGUAGE_XENOS				"xh"
+#define LANGUAGE_TERRORSPIDER		"sp"
+#define LANGUAGE_LING				"ch"
+#define LANGUAGE_EVENTLING			"hs"
+#define LANGUAGE_SHADOWLING			"sh"
+#define LANGUAGE_ABDUCTOR			"ab"
+#define LANGUAGE_GOLEM				"gl"
+#define LANGUAGE_BORER				"bo"
+#define LANGUAGE_BINARY				"bi"
+#define LANGUAGE_DRONE_BINARY		"dt"
+#define LANGUAGE_DRONE				"db"
+#define LANGUAGE_SWARMER			"sw"
+#define LANGUAGE_MONKEY_HUMAN		"mo"
+#define LANGUAGE_MONKEY_SKRELL		"ne"
+#define LANGUAGE_MONKEY_UNATHI		"st"
+#define LANGUAGE_MONKEY_TAJARAN		"fa"
+#define LANGUAGE_MONKEY_VULPKANIN	"wo"
 
-#define LANGUAGE_UNIVERSAL	65535
+// #define LANGUAGE_UNIVERSAL	65535
 
 //Language flags.
 #define WHITELISTED 1  		// Language is available if the speaker is whitelisted.
@@ -17,6 +51,7 @@
 #define NO_TALK_MSG 128		// Do not show the "\The [speaker] talks into \the [radio]" message
 #define NO_STUTTER 256		// No stuttering, slurring, or other speech problems
 #define NOBABEL 512			// Not granted by book of babel. Typically antag languages.
+#define UNIQUE 1024			// Language can only be accquired by che-to-tam or an admin.
 
 //Auto-accent level defines.
 #define AUTOHISS_OFF 0
