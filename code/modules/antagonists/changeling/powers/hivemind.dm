@@ -35,11 +35,11 @@ GLOBAL_LIST_EMPTY(hivemind_bank)
 		linglink.cling = cling
 		linglink.Grant(user)*/
 
-	if(!((GLOB.all_languages[LANGUAGE_LING] in user.languages)||(GLOB.all_languages[LANGUAGE_EVENTLING] in user.languages)))
+	if(!((GLOB.all_languages[LANGUAGE_HIVE_CHANGELING] in user.languages)||(GLOB.all_languages[LANGUAGE_HIVE_EVENTLING] in user.languages)))
 		if(!cling.evented)
-			user.add_language(LANGUAGE_LING)
+			user.add_language(LANGUAGE_HIVE_CHANGELING)
 		else
-			user.add_language(LANGUAGE_EVENTLING)
+			user.add_language(LANGUAGE_HIVE_EVENTLING)
 
 
 /datum/action/changeling/hivemind_pick/Remove(mob/user)
@@ -52,10 +52,10 @@ GLOBAL_LIST_EMPTY(hivemind_bank)
 		linglink.Remove(user)
 		QDEL_NULL(linglink)*/
 
-	if(GLOB.all_languages[LANGUAGE_LING] in user.languages)
-		user.remove_language(LANGUAGE_LING)
-	if(GLOB.all_languages[LANGUAGE_EVENTLING] in user.languages)
-		user.remove_language(LANGUAGE_EVENTLING)
+	if(GLOB.all_languages[LANGUAGE_HIVE_CHANGELING] in user.languages)
+		user.remove_language(LANGUAGE_HIVE_CHANGELING)
+	if(GLOB.all_languages[LANGUAGE_HIVE_EVENTLING] in user.languages)
+		user.remove_language(LANGUAGE_HIVE_EVENTLING)
 
 	..()
 
@@ -67,10 +67,10 @@ GLOBAL_LIST_EMPTY(hivemind_bank)
 
 		QDEL_NULL(linglink)*/
 
-	if(owner && (GLOB.all_languages[LANGUAGE_LING] in owner.languages))
-		owner.remove_language(LANGUAGE_LING)
-	if(owner && (GLOB.all_languages[LANGUAGE_EVENTLING] in owner.languages))
-		owner.remove_language(LANGUAGE_EVENTLING)
+	if(owner && (GLOB.all_languages[LANGUAGE_HIVE_CHANGELING] in owner.languages))
+		owner.remove_language(LANGUAGE_HIVE_CHANGELING)
+	if(owner && (GLOB.all_languages[LANGUAGE_HIVE_EVENTLING] in owner.languages))
+		owner.remove_language(LANGUAGE_HIVE_EVENTLING)
 
 	return ..()
 

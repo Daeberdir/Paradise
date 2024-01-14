@@ -55,7 +55,7 @@
 		user.add_language(LANGUAGE_SLIME)
 		user.add_language(LANGUAGE_DRASK)
 		user.add_language(LANGUAGE_CLOWN)
-		user.add_language(LANGUAGE_COM_SRUS)
+		user.add_language(LANGUAGE_NEO_RUSSIAN)
 		user.add_language(LANGUAGE_MOTH)
 	else
 		user.remove_language(LANGUAGE_UNATHI)
@@ -69,7 +69,7 @@
 		user.remove_language(LANGUAGE_SLIME)
 		user.remove_language(LANGUAGE_DRASK)
 		user.remove_language(LANGUAGE_CLOWN)
-		user.remove_language(LANGUAGE_COM_SRUS)
+		user.remove_language(LANGUAGE_NEO_RUSSIAN)
 		user.remove_language(LANGUAGE_MOTH)
 
 /datum/pai_software/translator/is_active(mob/living/silicon/pai/user)

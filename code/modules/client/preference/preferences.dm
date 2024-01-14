@@ -1513,6 +1513,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 
 					species = tgui_input_list(user, "Please select a species", "Character Generation", sortTim(new_species, cmp = /proc/cmp_text_asc))
 					if(!species)
+						species = prev_species
 						return
 					var/datum/species/NS = GLOB.all_species[species]
 					if(!istype(NS)) //The species was invalid. Notify the user and fail out.
@@ -1607,18 +1608,18 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 							alert(user, "There are not currently any available secondary languages.")
 					else
 */
-					for(var/L in GLOB.all_languages)
-						var/datum/language/lang = GLOB.all_languages[L]
+					for(var/language_key in GLOB.all_languages)
+						var/datum/language/lang = GLOB.all_languages[language_key]
 						if(lang.flags & UNIQUE)
-							if(L in S.secondary_langs)
-								new_languages[lang.name] += L
+							if(language_key in S.secondary_langs)
+								new_languages[lang] += language_key
 						else if(!(lang.flags & RESTRICTED))
-							new_languages[lang.name] += L
+							new_languages[lang] += language_key
 
-					var/new_lang = tgui_input_list(user, "Please select a secondary language", "Character Generation", sortTim(new_languages, cmp = /proc/cmp_text_asc))
-					if(!new_lang)
+					var/new_language = tgui_input_list(user, "Please select a secondary language", "Character Generation", sortTim(new_languages, cmp = /proc/cmp_text_asc))
+					if(!new_language)
 						return
-					language = new_languages[new_lang]
+					language = new_languages[new_language]
 
 				if("autohiss_mode")
 					if(S.autohiss_basic_map)

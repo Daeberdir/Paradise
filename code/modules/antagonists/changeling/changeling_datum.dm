@@ -343,7 +343,7 @@ GLOBAL_LIST_INIT(possible_changeling_IDs, list("Alpha","Beta","Gamma","Delta","E
 	for(var/datum/language/language in new_languages)
 		if(is_type_in_UID_list(language, absorbed_languages))
 			continue
-		owner.current.add_language("[language.key]")
+		owner.current.add_language(language.key)
 		absorbed_languages += language.UID()
 
 
@@ -353,7 +353,7 @@ GLOBAL_LIST_INIT(possible_changeling_IDs, list("Alpha","Beta","Gamma","Delta","E
 /datum/antagonist/changeling/proc/update_languages()
 	for(var/lang_UID in absorbed_languages)
 		var/datum/language/lang = locateUID(lang_UID)
-		owner.current.add_language("[lang.key]")
+		owner.current.add_language(lang.key)
 
 
 /**

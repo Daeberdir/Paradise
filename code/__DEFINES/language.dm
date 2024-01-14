@@ -1,6 +1,6 @@
-//Languages!
+// Language keys.
 #define LANGUAGE_NONE				null
-#define LANGUAGE_NOISE				""
+#define LANGUAGE_NOISE				"no"
 #define LANGUAGE_UNATHI				"un"
 #define LANGUAGE_TAJARAN			"ta"
 #define LANGUAGE_UNATHI_TAJARAN		"st"
@@ -19,21 +19,21 @@
 #define LANGUAGE_TRADER				"tb"
 #define LANGUAGE_GUTTER				"gt"
 #define LANGUAGE_CLOWN				"cl"
-#define LANGUAGE_COM_SRUS			"nr"
+#define LANGUAGE_NEO_RUSSIAN		"nr"
 #define LANGUAGE_WRYN				"wr"
-#define LANGUAGE_XENOCOMMON			"xm"
-#define LANGUAGE_XENOS				"xh"
-#define LANGUAGE_TERRORSPIDER		"sp"
-#define LANGUAGE_LING				"ch"
-#define LANGUAGE_EVENTLING			"hs"
-#define LANGUAGE_SHADOWLING			"sh"
+#define LANGUAGE_XENOS				"xm"
+#define LANGUAGE_HIVE_XENOS			"xh"
+#define LANGUAGE_HIVE_TERRORSPIDER	"sp"
+#define LANGUAGE_HIVE_CHANGELING	"ch"
+#define LANGUAGE_HIVE_EVENTLING		"hs"
+#define LANGUAGE_HIVE_SHADOWLING	"sh"
 #define LANGUAGE_ABDUCTOR			"ab"
-#define LANGUAGE_GOLEM				"gl"
-#define LANGUAGE_BORER				"bo"
+#define LANGUAGE_HIVE_GOLEM			"gl"
+#define LANGUAGE_HIVE_BORER			"bo"
 #define LANGUAGE_BINARY				"bi"
 #define LANGUAGE_DRONE_BINARY		"dt"
 #define LANGUAGE_DRONE				"db"
-#define LANGUAGE_SWARMER			"sw"
+#define LANGUAGE_HIVE_SWARMER		"sw"
 #define LANGUAGE_MONKEY_HUMAN		"mo"
 #define LANGUAGE_MONKEY_SKRELL		"ne"
 #define LANGUAGE_MONKEY_UNATHI		"st"
@@ -42,7 +42,7 @@
 
 // #define LANGUAGE_UNIVERSAL	65535
 
-//Language flags.
+// Language flags.
 #define WHITELISTED 1  		// Language is available if the speaker is whitelisted.
 #define RESTRICTED 2   		// Language can only be accquired by spawning or an admin.
 #define HIVEMIND 16         // Broadcast to all mobs with this language.
@@ -51,7 +51,7 @@
 #define NO_TALK_MSG 128		// Do not show the "\The [speaker] talks into \the [radio]" message
 #define NO_STUTTER 256		// No stuttering, slurring, or other speech problems
 #define NOBABEL 512			// Not granted by book of babel. Typically antag languages.
-#define UNIQUE 1024			// Language can only be accquired by che-to-tam or an admin.
+#define UNIQUE 1024			// Secondary languages for species.
 
 //Auto-accent level defines.
 #define AUTOHISS_OFF 0

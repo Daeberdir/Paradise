@@ -64,7 +64,7 @@
 			binary.broadcast(M, strip_prefixes(multilingual_to_message(message_pieces)))
 			return RADIO_CONNECTION_NON_SUBSPACE
 		if(translate_hive)
-			var/datum/language/hivemind = GLOB.all_languages[LANGUAGE_XENOS]
+			var/datum/language/hivemind = GLOB.all_languages[LANGUAGE_HIVE_XENOS]
 			hivemind.broadcast(M, strip_prefixes(multilingual_to_message(message_pieces)))
 			return RADIO_CONNECTION_NON_SUBSPACE
 		return RADIO_CONNECTION_FAIL

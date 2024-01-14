@@ -32,7 +32,7 @@
 	var/list/exclaim_verbs = list("exclaims")	// Used when sentence ends in a !
 	var/whisper_verb							// Optional. When not specified speech_verb + quietly/softly is used instead.
 	var/colour = "body"							// CSS style to use for strings in this language.
-	var/key = "hui"								// Character used to speak in language eg. :un for Unathi.
+	var/key = "key"								// Character used to speak in language eg. :un for Unathi.
 	var/flags = 0								// Various language flags.
 	var/native									// If set, non-native speakers will have trouble speaking.
 	var/list/syllables							// Used when scrambling text for a non-speaker.
@@ -154,8 +154,7 @@
 /datum/language/noise
 	name = "Noise"
 	desc = "Noises"
-	key = ""
-	flags = RESTRICTED|NONGLOBAL|INNATE|NO_TALK_MSG|NO_STUTTER
+	flags = RESTRICTED|NONGLOBAL|INNATE|NO_TALK_MSG|NO_STUTTER|NOBABEL
 
 /datum/language/noise/format_message(message)
 	return "<span class='message'><span class='[colour]'>[message]</span></span>"

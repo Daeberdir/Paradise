@@ -124,7 +124,7 @@
 	R.add_language(LANGUAGE_SOL_COMMON, 1)
 	R.add_language(LANGUAGE_TRADER, 1)
 	R.add_language(LANGUAGE_GUTTER, 0)
-	R.add_language(LANGUAGE_COM_SRUS, 0)
+	R.add_language(LANGUAGE_NEO_RUSSIAN, 0)
 	R.add_language(LANGUAGE_UNATHI, 0)
 	R.add_language(LANGUAGE_TAJARAN, 0)
 	R.add_language(LANGUAGE_UNATHI_TAJARAN, 0)
@@ -465,7 +465,7 @@
 	R.add_language(LANGUAGE_SOL_COMMON, 1)
 	R.add_language(LANGUAGE_TRADER, 1)
 	R.add_language(LANGUAGE_GUTTER, 1)
-	R.add_language(LANGUAGE_COM_SRUS, 1)
+	R.add_language(LANGUAGE_NEO_RUSSIAN, 1)
 	R.add_language(LANGUAGE_UNATHI, 1)
 	R.add_language(LANGUAGE_TAJARAN, 1)
 	R.add_language(LANGUAGE_UNATHI_TAJARAN, 1)
@@ -744,7 +744,7 @@
 
 /obj/item/robot_module/hunter/add_languages(var/mob/living/silicon/robot/R)
 	..()
-	R.add_language(LANGUAGE_XENOCOMMON, 1)
+	R.add_language(LANGUAGE_XENOS, 1)
 
 /obj/item/robot_module/drone
 	name = "Drone"

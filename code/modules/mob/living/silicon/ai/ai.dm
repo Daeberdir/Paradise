@@ -176,7 +176,7 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 	add_language(LANGUAGE_GALACTIC_COMMON, 1)
 	add_language(LANGUAGE_SOL_COMMON, 1)
 	add_language(LANGUAGE_TRADER, 1)
-	add_language(LANGUAGE_COM_SRUS, 1)
+	add_language(LANGUAGE_NEO_RUSSIAN, 1)
 	add_language(LANGUAGE_GUTTER, 1)
 	add_language(LANGUAGE_UNATHI, 1)
 	add_language(LANGUAGE_TAJARAN, 1)
