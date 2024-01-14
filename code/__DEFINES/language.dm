@@ -3,7 +3,6 @@
 #define LANGUAGE_NOISE				"key"
 #define LANGUAGE_UNATHI				"un"
 #define LANGUAGE_TAJARAN			"ta"
-#define LANGUAGE_UNATHI_TAJARAN		"st"
 #define LANGUAGE_VULPKANIN			"vu"
 #define LANGUAGE_SKRELL				"sk"
 #define LANGUAGE_VOX				"vo"

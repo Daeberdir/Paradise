@@ -227,23 +227,6 @@
 		full_name += " [pick(list("Энай-Сэндай","Наварр-Сэндай","Року-Сэндай","Шенуар-Сэндай"))]"
 	return full_name
 
-/datum/language/unathi_tajaran
-	name = "Sinta'tajr"
-	desc = "The language is a bizarre mixture of gestures, tail flicks, hisses and a small set of words that are, by and large, short and clear commands. Was developed for communication between races of Tajaran and Unathi."
-	speech_verb = "gesticulates and wags %(his,her,its,their)% tail"
-	ask_verb = "gesticulates and wags %(his,her,its,their)% tail"
-	exclaim_verbs = list("actively gesticulates and beats %(his,her,its,their)% tail on the floor, shouting","yells, spreading %(his,her,its,their)% arms and hissing")
-	colour = "rough"
-	key = "st"
-	flags = UNIQUE
-	syllables = list("a","ala","alasa","ali","anpa","ante","anu","awen","e","en","esun","ijo","ike","ilo","insa","","jaki", \
-	"jan","jelo","jo","kala","kama","kasi","ken","kili","kin","ko","kon","ku","kule","kute","la","lape","laso", \
-	"lawa","leko","len","lete","li","lipu","loje","lon","luka","lupa","ma","mani","meli","meso", \
-	"mi","mije","moku","moli","mu","mun","musi","mute","n","nasa","nena","ni","nimi","noka", \
-	"o","oko","olin","ona","open","pali","pan","pana","pi","pini","pipi","poka","poki","pona","pu","sama", \
-	"seli","selo","seme","sewi","sike","sin","sina","soko","sona","suli","suno","supa","suwi","tan","taso","tawa", \
-	"telo","toki","tomo","tu","unpa","uta","walo","wan","waso","wa","weka","wile")
-
 /datum/language/vulpkanin
 	name = "Canilunzt"
 	desc = "The guttural language spoken and utilized by the inhabitants of Vazzend system, composed of growls, barks, yaps, and heavy utilization of ears and tail movements.Vulpkanin speak this language with ease."

@@ -33,14 +33,14 @@
 			"ш" = list("шш", "шшш", "шшшш"),
 			"ч" = list("щ", "щщ", "щщщ")
 		)
-	autohiss_exempt = list("Sinta'unathi","Sinta'tajr")
+	autohiss_exempt = list("Sinta'unathi")
 
 /datum/species/tajaran
 	autohiss_basic_map = list(
 			"r" = list("rr", "rrr", "rrrr"),
 			"р" = list("рр", "ррр", "рррр")
 		)
-	autohiss_exempt = list("Siik'tajr","Sinta'tajr")
+	autohiss_exempt = list("Siik'tajr")
 
 /datum/species/vulpkanin
 	autohiss_basic_map = list(
