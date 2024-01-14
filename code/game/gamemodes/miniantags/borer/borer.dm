@@ -155,7 +155,7 @@
 /mob/living/simple_animal/borer/say(message, verb = "says", sanitize = TRUE, ignore_speech_problems = FALSE, ignore_atmospherics = FALSE, ignore_languages = FALSE)
 	var/list/message_pieces = parse_languages(message)
 	for(var/datum/multilingual_say_piece/S in message_pieces)
-		if(S.speaking != GLOB.all_language[LANGUAGE_HIVE_BORER] && loc == host && !talk_inside_host)
+		if(S.speaking != GLOB.all_languages[LANGUAGE_HIVE_BORER] && loc == host && !talk_inside_host)
 			to_chat(src, span_warning("You've disabled audible speech while inside a host! Re-enable it under the borer tab, or stick to borer communications."))
 			return
 	return ..()
