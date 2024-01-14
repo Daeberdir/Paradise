@@ -180,7 +180,6 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 	add_language(LANGUAGE_GUTTER, 1)
 	add_language(LANGUAGE_UNATHI, 1)
 	add_language(LANGUAGE_TAJARAN, 1)
-	add_language(LANGUAGE_UNATHI_TAJARAN, 1)
 	add_language(LANGUAGE_VULPKANIN, 1)
 	add_language(LANGUAGE_SKRELL, 1)
 	add_language(LANGUAGE_VOX, 1)

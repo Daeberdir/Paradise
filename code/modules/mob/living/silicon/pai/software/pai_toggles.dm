@@ -46,7 +46,6 @@
 	if(user.translator_on)
 		user.add_language(LANGUAGE_UNATHI)
 		user.add_language(LANGUAGE_TAJARAN)
-		user.add_language(LANGUAGE_UNATHI_TAJARAN)
 		user.add_language(LANGUAGE_VULPKANIN)
 		user.add_language(LANGUAGE_SKRELL)
 		user.add_language(LANGUAGE_VOX)
@@ -60,7 +59,6 @@
 	else
 		user.remove_language(LANGUAGE_UNATHI)
 		user.remove_language(LANGUAGE_TAJARAN)
-		user.remove_language(LANGUAGE_UNATHI_TAJARAN)
 		user.remove_language(LANGUAGE_VULPKANIN)
 		user.remove_language(LANGUAGE_SKRELL)
 		user.remove_language(LANGUAGE_VOX)
