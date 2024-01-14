@@ -225,16 +225,16 @@ GLOBAL_LIST_EMPTY(channel_to_radio_key)
 	else
 		message_pieces = parse_languages(message)
 
-	if(istype(message_pieces, /datum/multilingual_say_piece)) // Little quirk to just easily deal with HIVEMIND languages
-		var/datum/multilingual_say_piece/S = message_pieces // Yay BYOND's hilarious typecasting
-		S.speaking.broadcast(src, S.message)
-		return TRUE
-
 	if(!LAZYLEN(message_pieces))
 		. = FALSE
 		CRASH("Message failed to generate pieces. [message] - [json_encode(message_pieces)]")
 
 	var/datum/multilingual_say_piece/first_piece = message_pieces[1]
+
+	if(first_piece.speaking?.flags & HIVEMIND) // Little quirk to just easily deal with HIVEMIND languages
+		first_piece.speaking.broadcast(src, first_piece.message)
+		return TRUE
+
 	var/message_mode = parse_message_mode(first_piece.message, "headset")
 
 	//parse the radio code and consume it

@@ -1,6 +1,6 @@
 // Language keys.
 #define LANGUAGE_NONE				null
-#define LANGUAGE_NOISE				"no"
+#define LANGUAGE_NOISE				"key"
 #define LANGUAGE_UNATHI				"un"
 #define LANGUAGE_TAJARAN			"ta"
 #define LANGUAGE_UNATHI_TAJARAN		"st"
