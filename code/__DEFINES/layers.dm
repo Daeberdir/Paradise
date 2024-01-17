@@ -3,6 +3,9 @@
 
 #define CLICKCATCHER_PLANE -99
 
+#define GRAVITY_PULSE_PLANE -96 //Needs to be behind space, otherwise it blocks space, lol
+#define GRAVITY_PULSE_RENDER_TARGET "*GRAVPULSE_RENDER_TARGET"
+
 #define PLANE_SPACE -95
 #define PLANE_SPACE_PARALLAX -90
 
@@ -11,6 +14,8 @@
 #define GAME_PLANE -1
 #define CINEMATIC_LAYER -1
 #define BLACKNESS_PLANE 0 //To keep from conflicts with SEE_BLACKNESS internals
+
+#define AREA_PLANE 1
 
 #define SPACE_LAYER 1.5
 #define GRASS_UNDER_LAYER 1.6
@@ -91,6 +96,11 @@
 #define AREA_LAYER 10
 #define MASSIVE_OBJ_LAYER 11
 
+/// This plane masks out lighting to create an "emissive" effect, ie for glowing lights in otherwise dark areas.
+#define EMISSIVE_PLANE 13
+/// The render target used by the emissive.
+#define EMISSIVE_RENDER_TARGET "*EMISSIVE_PLANE"
+
 #define POINT_PLANE 14
 #define POINT_LAYER 12
 
@@ -130,5 +140,11 @@
 #define SPLASHSCREEN_LAYER 23
 #define SPLASHSCREEN_PLANE 23
 
+#define HUD_PLANE_BUILDMODE 30
+
 // This should always be on top. No exceptions.
 #define HUD_PLANE_DEBUGVIEW 40
+
+///Plane master controller keys
+#define PLANE_MASTERS_GAME "plane_masters_game"
+
