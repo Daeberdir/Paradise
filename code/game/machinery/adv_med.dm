@@ -11,6 +11,7 @@
 	var/mob/living/carbon/human/occupant
 	var/known_implants = list(/obj/item/implant/chem, /obj/item/implant/death_alarm, /obj/item/implant/mindshield, /obj/item/implant/tracking, /obj/item/implant/health)
 	var/isPrinting = FALSE
+	var/controls_inside = FALSE
 
 /obj/machinery/bodyscanner/Destroy()
 	go_out()
@@ -144,9 +145,6 @@
 
 	if(stat & (NOPOWER|BROKEN))
 		return
-
-	if(occupant == user)
-		return // you cant reach that
 
 	if(panel_open)
 		to_chat(user, span_notice("Close the maintenance panel first."))
@@ -342,6 +340,8 @@
 /obj/machinery/bodyscanner/ui_act(action, params)
 	if(..())
 		return
+	if(!controls_inside && usr == occupant)
+		return
 	if(stat & (NOPOWER|BROKEN))
 		return
 
@@ -374,6 +374,10 @@
 			isPrinting = FALSE
 		else
 			return FALSE
+
+/obj/machinery/bodyscanner/ui_status(mob/user, datum/ui_state/state)
+	. = controls_inside && user == occupant
+	return min(..(), .)
 
 /obj/machinery/bodyscanner/proc/generate_printing_text()
 	var/dat = ""
@@ -541,3 +545,18 @@
 		dat += "[src] is empty."
 
 	return dat
+
+/obj/machinery/bodyscanner/syndie
+	name = "test body scanner"
+	controls_inside = TRUE
+
+
+/obj/machinery/bodyscanner/New()
+	..()
+	component_parts = list()
+	component_parts += new /obj/item/circuitboard/bodyscanner/syndicate(null)
+	component_parts += new /obj/item/stock_parts/scanning_module(null)
+	component_parts += new /obj/item/stack/sheet/glass(null)
+	component_parts += new /obj/item/stack/sheet/glass(null)
+	component_parts += new /obj/item/stack/cable_coil(null, 2)
+	RefreshParts()

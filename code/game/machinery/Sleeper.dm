@@ -291,6 +291,9 @@
 			return FALSE
 	add_fingerprint(usr)
 
+/obj/machinery/sleeper/ui_status(mob/user, datum/ui_state/state)
+	return !controls_inside && user == occupant ? -1 : ..()
+
 /obj/machinery/sleeper/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/reagent_containers/glass))
 		if(!beaker)

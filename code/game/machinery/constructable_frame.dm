@@ -951,6 +951,10 @@ to destroy them and players will be able to make replacements.
 							/obj/item/stack/cable_coil = 2,
 							/obj/item/stack/sheet/glass = 2)
 
+/obj/item/circuitboard/bodyscanner/syndicate
+	board_name = "Body Scanner - Syndicate"
+	build_path = /obj/machinery/bodyscanner/syndie
+
 /obj/item/circuitboard/cryo_tube
 	board_name = "Cryotube"
 	build_path = /obj/machinery/atmospherics/unary/cryo_cell
