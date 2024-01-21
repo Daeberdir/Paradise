@@ -10,7 +10,8 @@
 	desc = "Has a valve and pump attached to it"
 	use_power = IDLE_POWER_USE
 
-	layer = GAS_SCRUBBER_LAYER
+	layer = GAS_PIPE_VISIBLE_LAYER + GAS_SCRUBBER_OFFSET
+	layer_offset = GAS_SCRUBBER_OFFSET
 
 	can_unwrench = 1
 	var/open = 0
@@ -19,7 +20,7 @@
 	var/area_uid
 
 	var/on = 0
-	var/pump_direction = 1 //0 = siphoning, 1 = releasing
+	var/releasing = 1 //0 = siphoning, 1 = releasing
 
 	var/external_pressure_bound = EXTERNAL_PRESSURE_BOUND
 	var/internal_pressure_bound = INTERNAL_PRESSURE_BOUND
@@ -49,7 +50,7 @@
 	icon_state = "map_vent_out"
 
 /obj/machinery/atmospherics/unary/vent_pump/siphon
-	pump_direction = 0
+	releasing = 0
 
 /obj/machinery/atmospherics/unary/vent_pump/siphon/on
 	on = 1
@@ -100,7 +101,7 @@
 	else if(!powered())
 		vent_icon += "off"
 	else
-		vent_icon += "[on ? "[pump_direction ? "out" : "in"]" : "off"]"
+		vent_icon += "[on ? "[releasing ? "out" : "in"]" : "off"]"
 
 	overlays += SSair.icon_manager.get_atmos_icon("device", , , vent_icon)
 
@@ -139,7 +140,7 @@
 
 	if(welded)
 		if(air_contents.return_pressure() >= weld_burst_pressure && prob(5))	//the weld is on but the cover is welded shut, can it withstand the internal pressure?
-			visible_message("<span class='danger'>The welded cover of [src] bursts open!</span>")
+			visible_message(span_danger("The welded cover of [src] bursts open!"))
 			for(var/mob/living/M in range(1))
 				unsafe_pressure_release(M, air_contents.return_pressure())	//let's send everyone flying
 			welded = FALSE
@@ -148,7 +149,7 @@
 
 	var/datum/gas_mixture/environment = loc.return_air()
 	var/environment_pressure = environment.return_pressure()
-	if(pump_direction) //internal -> external
+	if(releasing) //internal -> external
 		var/pressure_delta = 10000
 		if(pressure_checks & 1)
 			pressure_delta = min(pressure_delta, (external_pressure_bound - environment_pressure))
@@ -214,7 +215,7 @@
 		"tag" = src.id_tag,
 		"device" = "AVP",
 		"power" = on,
-		"direction" = pump_direction?("release"):("siphon"),
+		"direction" = releasing?("release"):("siphon"),
 		"checks" = pressure_checks,
 		"internal" = internal_pressure_bound,
 		"external" = external_pressure_bound,
@@ -248,11 +249,11 @@
 
 	if(signal.data["purge"] != null)
 		pressure_checks &= ~1
-		pump_direction = 0
+		releasing = 0
 
 	if(signal.data["stabilize"] != null)
 		pressure_checks |= 1
-		pump_direction = 1
+		releasing = 1
 
 	if(signal.data["power"] != null)
 		on = text2num(signal.data["power"])
@@ -270,7 +271,7 @@
 		pressure_checks = (pressure_checks?0:3)
 
 	if(signal.data["direction"] != null)
-		pump_direction = text2num(signal.data["direction"])
+		releasing = text2num(signal.data["direction"])
 
 	if(signal.data["set_internal_pressure"] != null)
 		if(signal.data["set_internal_pressure"] == "default")
@@ -329,7 +330,7 @@
 /obj/machinery/atmospherics/unary/vent_pump/attack_alien(mob/user)
 	if(!welded || !(do_after(user, 20, target = src)))
 		return
-	user.visible_message("<span class='warning'>[user] furiously claws at [src]!</span>", "<span class='notice'>You manage to clear away the stuff blocking the vent.</span>", "<span class='italics'>You hear loud scraping noises.</span>")
+	user.visible_message(span_warning("[user] furiously claws at [src]!"), span_notice("You manage to clear away the stuff blocking the vent."), span_italics("You hear loud scraping noises."))
 	welded = FALSE
 	update_icon()
 	pipe_image = image(src, loc, layer = ABOVE_HUD_LAYER, dir = dir)
@@ -340,8 +341,8 @@
 	if(istype(W, /obj/item/paper) || istype(W, /obj/item/stack/spacecash))
 		if(!welded)
 			if(open)
-				user.drop_item(W)
-				W.forceMove(src)
+				add_fingerprint(user)
+				user.drop_transfer_item_to_loc(W, src)
 			if(!open)
 				to_chat(user, "You can't shove that down there when it is closed")
 		else
@@ -349,7 +350,7 @@
 		return 1
 	if(istype(W, /obj/item/wrench))
 		if(!(stat & NOPOWER) && on)
-			to_chat(user, "<span class='danger'>You cannot unwrench this [src], turn it off first.</span>")
+			to_chat(user, span_danger("You cannot unwrench this [src], turn it off first."))
 			return 1
 
 	return ..()
@@ -363,13 +364,13 @@
 		return FALSE
 	. = TRUE
 	if(open)
-		to_chat(user, "<span class='notice'>Now closing the vent.</span>")
+		to_chat(user, span_notice("Now closing the vent."))
 		if(do_after(user, 20 * I.toolspeed * gettoolspeedmod(user), target = src))
 			playsound(loc, I.usesound, 100, 1)
 			open = 0
 			user.visible_message("[user] screwdrivers the vent shut.", "You screwdriver the vent shut.", "You hear a screwdriver.")
 	else
-		to_chat(user, "<span class='notice'>Now opening the vent.</span>")
+		to_chat(user, span_notice("Now opening the vent."))
 		if(do_after(user, 20 * I.toolspeed * gettoolspeedmod(user), target = src))
 			playsound(loc, I.usesound, 100, 1)
 			open = 1
@@ -383,28 +384,30 @@
 	if(I.use_tool(src, user, 20, volume = I.tool_volume))
 		if(!welded)
 			welded = TRUE
-			user.visible_message("<span class='notice'>[user] welds [src] shut!</span>",\
-				"<span class='notice'>You weld [src] shut!</span>")
+			user.visible_message(span_notice("[user] welds [src] shut!"),\
+				span_notice("You weld [src] shut!"))
 		else
 			welded = FALSE
-			user.visible_message("<span class='notice'>[user] unwelds [src]!</span>",\
-				"<span class='notice'>You unweld [src]!</span>")
+			user.visible_message(span_notice("[user] unwelds [src]!"),\
+				span_notice("You unweld [src]!"))
 		update_icon()
 
 
 /obj/machinery/atmospherics/unary/vent_pump/attack_hand()
 	if(!welded)
 		if(open)
+			add_fingerprint(usr)
 			for(var/obj/item/W in src)
 				if(istype(W, /obj/item/pipe))
 					continue
+				W.add_fingerprint(usr)
 				W.forceMove(get_turf(src))
 
 
 /obj/machinery/atmospherics/unary/vent_pump/examine(mob/user)
 	. = ..()
 	if(welded)
-		. += "<span class = 'notice'>It seems welded shut.</span>"
+		. += span_notice("It seems welded shut.")
 
 /obj/machinery/atmospherics/unary/vent_pump/power_change()
 	var/old_stat = stat

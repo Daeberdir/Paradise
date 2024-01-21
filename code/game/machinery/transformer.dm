@@ -69,12 +69,14 @@
 	is_on_cooldown = FALSE
 	update_icon()
 
-/obj/machinery/transformer/Bumped(atom/movable/AM)
+/obj/machinery/transformer/Bumped(atom/movable/moving_atom)
+	..()
+
 	// They have to be human to be transformed.
-	if(is_on_cooldown || !ishuman(AM))
+	if(is_on_cooldown || !ishuman(moving_atom))
 		return
 
-	var/mob/living/carbon/human/H = AM
+	var/mob/living/carbon/human/H = moving_atom
 	var/move_dir = get_dir(loc, H.loc)
 
 	if((transform_standing || H.lying) && move_dir == acceptdir)
@@ -102,6 +104,7 @@
 	H.emote("scream")
 	if(!masterAI) // If the factory was placed via admin spawning or other means, it wont have an owner_AI.
 		var/mob/living/silicon/robot/R = H.Robotize(robot_cell_type)
+		SSticker?.score?.save_silicon_laws(R, additional_info = "malf AI factory transformation", log_all_laws = TRUE)
 		R.emagged = TRUE
 		return
 
@@ -109,26 +112,31 @@
 	R.emagged = TRUE
 	if(R.mind && !R.client && !R.grab_ghost()) // Make sure this is an actual player first and not just a humanized monkey or something.
 		message_admins("[key_name_admin(R)] was just transformed by a borg factory, but they were SSD. Polling ghosts for a replacement.")
-		var/list/candidates = SSghost_spawns.poll_candidates("Do you want to play as a malfunctioning cyborg?", ROLE_TRAITOR, poll_time = 15 SECONDS)
+		var/list/candidates = SSghost_spawns.poll_candidates("Do you want to play as a malfunctioning cyborg?", ROLE_MALF_AI, poll_time = 15 SECONDS)
 		if(!length(candidates))
 			return
 		var/mob/dead/observer/O = pick(candidates)
 		R.key= O.key
+		log_game("[R.key] has become malfunctioning cyborg.")
+	SSticker?.score?.save_silicon_laws(R, additional_info = "malf AI factory transformation", log_all_laws = TRUE)
+
 
 /obj/machinery/transformer/mime
 	name = "Mimetech Greyscaler"
 	desc = "Turns anything placed inside black and white."
 
-/obj/machinery/transformer/mime/Bumped(atom/movable/AM)
+/obj/machinery/transformer/mime/Bumped(atom/movable/moving_atom)
+	..()
+
 	if(is_on_cooldown)
 		return
 
 	// Crossed didn't like people lying down.
-	if(istype(AM))
-		AM.forceMove(drop_location())
-		do_transform_mime(AM)
+	if(istype(moving_atom))
+		moving_atom.forceMove(drop_location())
+		do_transform_mime(moving_atom)
 	else
-		to_chat(AM, "Only items can be greyscaled.")
+		to_chat(moving_atom, "Only items can be greyscaled.")
 		return
 
 /obj/machinery/transformer/proc/do_transform_mime(obj/item/I)
@@ -179,23 +187,25 @@
 	else
 		icon_state = initial(icon_state)
 
-/obj/machinery/transformer/xray/Bumped(atom/movable/AM)
+/obj/machinery/transformer/xray/Bumped(atom/movable/moving_atom)
+	..()
+
 	if(is_on_cooldown)
 		return
 
 	// Crossed didn't like people lying down.
-	if(ishuman(AM))
+	if(ishuman(moving_atom))
 		// Only humans can enter from the west side, while lying down.
-		var/mob/living/carbon/human/H = AM
+		var/mob/living/carbon/human/H = moving_atom
 		var/move_dir = get_dir(loc, H.loc)
 
 		if(H.lying && move_dir == acceptdir)
 			H.forceMove(drop_location())
 			irradiate(H)
 
-	else if(istype(AM))
-		AM.forceMove(drop_location())
-		scan(AM)
+	else if(istype(moving_atom))
+		moving_atom.forceMove(drop_location())
+		scan(moving_atom)
 
 /obj/machinery/transformer/xray/proc/irradiate(mob/living/carbon/human/H)
 	if(stat & (BROKEN|NOPOWER))
@@ -248,7 +258,7 @@
 	if(!istype(H))
 		return
 	if(!ispath(selected_outfit, /datum/outfit))
-		to_chat(H, "<span class='warning'>This equipper is not properly configured! 'selected_outfit': '[selected_outfit]'</span>")
+		to_chat(H, span_warning("This equipper is not properly configured! 'selected_outfit': '[selected_outfit]'"))
 		return
 
 	if(prestrip)
@@ -272,7 +282,7 @@
 	if(!istype(H))
 		return
 	if(!ispath(target_species))
-		to_chat(H, "<span class='warning'>'[target_species]' is not a valid species!</span>")
+		to_chat(H, span_warning("'[target_species]' is not a valid species!"))
 		return
 	H.set_species(target_species)
 
@@ -304,7 +314,7 @@
 	if(!istype(H))
 		return
 	if(!istype(template))
-		to_chat(H, "<span class='warning'>No genetic template configured!</span>")
+		to_chat(H, span_warning("No genetic template configured!"))
 		return
 	var/prev_ue = H.dna.unique_enzymes
 	H.set_species(template.species.type)
@@ -318,15 +328,16 @@
 /obj/machinery/transformer/gene_applier/attackby(obj/item/I, mob/living/user, params)
 	if(istype(I, /obj/item/disk/data))
 		if(locked)
-			to_chat(user, "<span class='warning'>Access Denied.</span>")
+			to_chat(user, span_warning("Access Denied."))
 			playsound(src, pick('sound/machines/button.ogg', 'sound/machines/button_alternate.ogg', 'sound/machines/button_meloboom.ogg'), 20)
 			return FALSE
 		var/obj/item/disk/data/D = I
 		if(!D.buf)
-			to_chat(user, "<span class='warning'>Error: No data found.</span>")
+			to_chat(user, span_warning("Error: No data found."))
 			return FALSE
+		add_fingerprint(user)
 		template = D.buf.dna.Clone()
-		to_chat(user, "<span class='notice'>Upload of gene template for '[template.real_name]' complete!</span>")
+		to_chat(user, span_notice("Upload of gene template for '[template.real_name]' complete!"))
 		return TRUE
 	else
 		return ..()

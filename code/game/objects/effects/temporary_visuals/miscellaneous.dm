@@ -1,12 +1,3 @@
-/obj/effect/temp_visual/point
-	name = "arrow"
-	desc = "It's an arrow hanging in mid-air. There may be a wizard about."
-	icon = 'icons/mob/screen_gen.dmi'
-	icon_state = "arrow"
-	layer = POINT_LAYER
-	duration = 20
-	randomdir = FALSE
-
 /obj/effect/temp_visual/dir_setting/bloodsplatter
 	icon = 'icons/effects/blood.dmi'
 	duration = 5
@@ -398,3 +389,36 @@
 		qdel(beta)
 	. = ..()
 
+/obj/effect/temp_visual/bsg_kaboom
+	name = "bluespace explosion"
+	icon = 'icons/effects/96x96.dmi'
+	icon_state = "explosionfast"
+	color = "blue"
+	pixel_x = -32
+	pixel_y = -32
+	duration = 42
+
+/obj/effect/temp_visual/bsg_kaboom/Initialize(mapload)
+	. = ..()
+	new /obj/effect/warp_effect/bsg(loc)
+
+/obj/effect/warp_effect/bsg
+
+/obj/effect/warp_effect/bsg/Initialize(mapload)
+	. = ..()
+	var/matrix/M = matrix() * 0.5
+	transform = M
+	animate(src, transform = M * 8, time = 0.8 SECONDS, alpha = 0)
+	QDEL_IN(src, 0.8 SECONDS)
+
+/obj/effect/temp_visual/love_heart
+	name = "love heart"
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "heart"
+	duration = 2.5 SECONDS
+
+/obj/effect/temp_visual/love_heart/Initialize(mapload)
+	. = ..()
+	pixel_x = rand(-10,10)
+	pixel_y = rand(-10,10)
+	animate(src, pixel_y = pixel_y + 32, alpha = 0, time = duration)

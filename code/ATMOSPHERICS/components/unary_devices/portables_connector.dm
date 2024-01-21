@@ -6,7 +6,8 @@
 	desc = "For connecting portables devices related to atmospherics control."
 
 	can_unwrench = 1
-	layer = GAS_FILTER_LAYER
+	layer = GAS_PIPE_VISIBLE_LAYER + GAS_FILTER_OFFSET
+	layer_offset = GAS_FILTER_OFFSET
 
 	var/obj/machinery/portable_atmospherics/connected_device
 
@@ -39,7 +40,7 @@
 /obj/machinery/atmospherics/unary/portables_connector/attackby(var/obj/item/W as obj, var/mob/user as mob, params)
 	if(istype(W, /obj/item/wrench))
 		if(connected_device)
-			to_chat(user, "<span class='danger'>You cannot unwrench this [src], detach [connected_device] first.</span>")
+			to_chat(user, span_danger("You cannot unwrench this [src], detach [connected_device] first."))
 			return 1
 	return ..()
 

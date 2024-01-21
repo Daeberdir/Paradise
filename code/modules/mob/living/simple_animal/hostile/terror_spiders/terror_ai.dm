@@ -42,7 +42,7 @@
 					else
 						targets3 += C
 				else if(ai_target_method == TS_DAMAGE_POISON)
-					if(C.can_inject(null, FALSE, "chest", FALSE))
+					if(C.can_inject(null, FALSE, BODY_ZONE_CHEST, FALSE))
 						targets1 += C
 					else if(C in enemies)
 						targets2 += C
@@ -166,12 +166,12 @@
 			spider_special_action()
 		..()
 
-/mob/living/simple_animal/hostile/poison/terror_spider/adjustBruteLoss(damage)
-	. = ..(damage)
+/mob/living/simple_animal/hostile/poison/terror_spider/adjustBruteLoss(amount, updating_health = TRUE)
+	. = ..()
 	Retaliate()
 
-/mob/living/simple_animal/hostile/poison/terror_spider/adjustFireLoss(damage)
-	. = ..(damage)
+/mob/living/simple_animal/hostile/poison/terror_spider/adjustFireLoss(amount, updating_health)
+	. = ..()
 	Retaliate()
 
 /mob/living/simple_animal/hostile/poison/terror_spider/Retaliate()

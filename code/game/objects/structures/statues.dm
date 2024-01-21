@@ -10,9 +10,9 @@
 	var/material_drop_type = /obj/item/stack/sheet/metal
 
 /obj/structure/statue/attackby(obj/item/W, mob/living/user, params)
-	add_fingerprint(user)
 	if(!(flags & NODECONSTRUCT))
 		if(default_unfasten_wrench(user, W))
+			add_fingerprint(user)
 			return
 		if(istype(W, /obj/item/gun/energy/plasmacutter))
 			playsound(src, W.usesound, 100, 1)
@@ -41,8 +41,8 @@
 
 
 /obj/structure/statue/attack_hand(mob/living/user)
+	. = ..()
 	user.changeNext_move(CLICK_CD_MELEE)
-	add_fingerprint(user)
 	user.visible_message("[user] rubs some dust off from the [name]'s surface.", \
 						 "<span class='notice'>You rub some dust off from the [name]'s surface.</span>")
 
@@ -76,26 +76,14 @@
 	desc = "This statue has a sickening green colour."
 	icon_state = "eng"
 
-/obj/structure/statue/uranium/attackby(obj/item/W, mob/user, params)
-	radiate()
-	return ..()
+/obj/structure/statue/uranium/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/radioactivity, \
+				rad_per_interaction = 12, \
+				rad_interaction_radius = 3, \
+				rad_interaction_cooldown = 1.5 SECONDS \
+	)
 
-/obj/structure/statue/uranium/Bumped(atom/user)
-	radiate()
-	..()
-
-/obj/structure/statue/uranium/attack_hand(mob/user)
-	radiate()
-	..()
-
-/obj/structure/statue/uranium/proc/radiate()
-	if(!active)
-		if(world.time > last_event+15)
-			active = 1
-			for(var/mob/living/L in range(3,src))
-				L.apply_effect(12,IRRADIATE,0)
-			last_event = world.time
-			active = null
 
 /obj/structure/statue/plasma
 	max_integrity = 200
@@ -129,6 +117,7 @@
 
 /obj/structure/statue/plasma/attackby(obj/item/W, mob/user, params)
 	if(is_hot(W) > 300)//If the temperature of the object is over 300, then ignite
+		add_fingerprint(user)
 		add_attack_logs(user, src, "Ignited using [W]", ATKLOG_FEW)
 		investigate_log("was <span class='warning'>ignited</span> by [key_name_log(user)]",INVESTIGATE_ATMOS)
 		ignite(is_hot(W))
@@ -231,7 +220,7 @@
 	name = "statue of a clown"
 	icon_state = "clown"
 
-/obj/structure/statue/bananium/Bumped(atom/user)
+/obj/structure/statue/bananium/Bumped(atom/movable/moving_atom)
 	honk()
 	..()
 
@@ -317,6 +306,11 @@
 	anchored = TRUE
 	oreAmount = 10
 
+/obj/structure/statue/armor
+	name = "Knight's armor"
+	desc = "Shiny metallic armor."
+	icon_state = "posarmor"
+	anchored = TRUE
 /obj/structure/statue/elwycco
 	name = "Unknown Hero"
 	desc = "Похоже это какой-то очень важный человек, или очень значимый для многих людей. Вы замечаете огроменный топор в его руках, с выгравированным числом 220. Что это число значит? Каждый понимает по своему, однако по слухам оно означает количество его жертв. \n Надпись на табличке - Мы с тобой, Шустрила! Аве, Легион!"
@@ -376,6 +370,86 @@
 	anchored = TRUE
 	oreAmount = 0
 
+/obj/structure/statue/noble
+	name = "Noble person"
+	desc = "Giant person, not like us... May be a hero from an ancient fairy tale?"
+	icon = 'icons/obj/statuelarge.dmi'
+	icon_state = "frank"
+	max_integrity = 2000
+	anchored = 1
+	layer = EDGED_TURF_LAYER
+
+/obj/structure/statue/dude
+	name = "Unknown monk"
+	desc = "Seems to be one of thinkers from ancient times."
+	icon = 'icons/obj/statuelarge.dmi'
+	icon_state = "dude"
+	max_integrity = 2000
+	anchored = 1
+	layer = EDGED_TURF_LAYER
+
+/obj/structure/statue/death
+	name = "Death"
+	desc = "One day It will come and take you and your dreams."
+	icon = 'icons/obj/statuebig.dmi'
+	icon_state = "death"
+	max_integrity = 2000
+	anchored = 1
+	bound_width = 64
+	layer = EDGED_TURF_LAYER
+
+/obj/structure/statue/unknown
+	name = "Unknown hero"
+	desc = "A pedestal for an unknown soldier, perhaps he was somehow connected with the solar system."
+	icon = 'icons/obj/statuebig.dmi'
+	icon_state = "unknown"
+	max_integrity = 2000
+	anchored = 1
+	bound_width = 64
+	var/lit = 0
+	layer = EDGED_TURF_LAYER
+
+/obj/structure/statue/unknown/Destroy()
+	return ..()
+
+/obj/structure/statue/unknown/update_icon()
+	if(lit)
+		lit = 1
+		icon_state = "unknown_lit"
+	else
+		icon_state = "unknown"
+
+/obj/structure/statue/unknown/attackby(obj/item/W, mob/user, params)
+	if(is_hot(W))
+		light(span_notice("[user] lights [src] with [W]."))
+		return
+	return ..()
+
+/obj/structure/statue/unknown/welder_act(mob/user, obj/item/I)
+	. = TRUE
+	if(I.tool_use_check(user, 0))
+		light(span_notice("[user] casually lights the [name] with [I], what a badass."))
+
+/obj/structure/statue/unknown/fire_act(datum/gas_mixture/air, exposed_temperature, exposed_volume, global_overlay = TRUE)
+	if(!lit)
+		light()
+	return ..()
+
+/obj/structure/statue/unknown/proc/light(show_message)
+	if(!lit)
+		lit = 1
+		if(show_message)
+			usr.visible_message(show_message)
+		set_light(CANDLE_LUM)
+		update_icon()
+
+/obj/structure/statue/unknown/attack_hand(mob/user)
+	if(lit)
+		user.visible_message(span_notice("[user] snuffs out [src]."))
+		lit = 0
+		update_icon()
+		set_light(0)
+
 ////////////////////////////////
 
 /obj/structure/snowman
@@ -396,6 +470,9 @@
 	new /obj/item/grown/log(drop_location())
 	return ..()
 
+/obj/structure/snowman/built/has_prints()
+	return FALSE
+
 /obj/structure/snowman/built/attackby(obj/item/I, mob/user)
 	if(istype(I, /obj/item/snowball) && obj_integrity < max_integrity)
 		to_chat(user, "<span class='notice'>You patch some of the damage on [src] with [I].</span>")
@@ -407,6 +484,16 @@
 /obj/structure/snowman/built/fire_act(datum/gas_mixture/air, exposed_temperature, exposed_volume, global_overlay = TRUE)
 	..()
 	qdel(src)
+
+/obj/structure/snowman/high
+	icon_state = "snowman_high"
+
+/obj/structure/snowman/medium
+	icon_state = "snowman_medium"
+
+/obj/structure/snowman/short
+	name = "snowboy"
+	icon_state = "snowman_short"
 
 ///////// Cheese
 /obj/structure/statue/cheese
@@ -429,3 +516,37 @@
 		icon_state = "cheesus2"
 		return ..()
 	return ..()
+
+//////BONES
+/obj/structure/bones
+	name = "large bone"
+	desc = "a large bone that belong to the unknown creature"
+	icon = 'icons/obj/bones_64x64.dmi'
+	icon_state = "l_bone"
+	anchored = TRUE
+	density = TRUE
+	max_integrity = 1000
+
+/obj/structure/bones/right
+	icon_state = "r_bone"
+
+/obj/structure/bones/skull
+	name = "large skull"
+	desc = "a large skull that belong to the unknown creature"
+	icon_state = "skull"
+
+/obj/structure/bones/ribs_left
+	name = "large ribs"
+	desc = "a large ribs that belong to the unknown creature"
+	icon_state = "l_ribs"
+
+/obj/structure/bones/ribs_right
+	name = "large ribs"
+	desc = "a large ribs that belong to the unknown creature"
+	icon_state = "r_ribs"
+
+/obj/structure/statue/bone/rib
+	name = "colossal rib"
+	desc = "It's staggering to think that something this big could have lived, let alone died."
+	icon = 'icons/obj/statuelarge.dmi'
+	icon_state = "rib"

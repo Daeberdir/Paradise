@@ -13,7 +13,7 @@
 	actions_types = list(/datum/action/item_action/toggle_paddles)
 	armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 50, "acid" = 50)
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/back.dmi'
+		"Vox" = 'icons/mob/clothing/species/vox/back.dmi'
 		)
 
 	var/paddles_on_defib = TRUE //if the paddles are on the defib (TRUE)
@@ -63,7 +63,7 @@
 	else
 		powered = FALSE
 
-/obj/item/defibrillator/proc/update_overlays()
+/obj/item/defibrillator/update_overlays()
 	overlays.Cut()
 	if(paddles_on_defib)
 		overlays += "[icon_state]-paddles"
@@ -85,13 +85,20 @@
 	cell = locate(/obj/item/stock_parts/cell) in contents
 	update_icon()
 
-/obj/item/defibrillator/ui_action_click()
-	if(ishuman(usr) && Adjacent(usr))
-		toggle_paddles()
 
-/obj/item/defibrillator/CtrlClick()
-	if(ishuman(usr) && Adjacent(usr))
-		toggle_paddles()
+/obj/item/defibrillator/ui_action_click(mob/user)
+	if(!ishuman(user) || !Adjacent(user))
+		return
+
+	toggle_paddles()
+
+
+/obj/item/defibrillator/CtrlClick(mob/user)
+	if(!ishuman(user) || !Adjacent(user))
+		return
+
+	toggle_paddles()
+
 
 /obj/item/defibrillator/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/stock_parts/cell))
@@ -102,8 +109,9 @@
 			if(C.maxcharge < paddles.revivecost)
 				to_chat(user, "<span class='notice'>[src] requires a higher capacity cell.</span>")
 				return
-			user.drop_item()
-			W.loc = src
+			if(!user.drop_transfer_item_to_loc(W, src))
+				return
+
 			cell = W
 			to_chat(user, "<span class='notice'>You install a cell in [src].</span>")
 
@@ -115,21 +123,22 @@
 			to_chat(user, "<span class='notice'>You remove the cell from the [src].</span>")
 
 	else if(W == paddles)
-		paddles.unwield()
 		toggle_paddles()
 
 	update_icon()
 	return
 
-/obj/item/defibrillator/emag_act(user as mob)
+/obj/item/defibrillator/emag_act(mob/user)
 	if(safety)
 		add_attack_logs(user, src, "emagged")
 		safety = FALSE
-		to_chat(user, "<span class='warning'>You silently disable [src]'s safety protocols with the card.")
+		if(user)
+			to_chat(user, "<span class='warning'>You silently disable [src]'s safety protocols with the card.")
 	else
 		add_attack_logs(user, src, "un-emagged")
 		safety = TRUE
-		to_chat(user, "<span class='notice'>You silently enable [src]'s safety protocols with the card.")
+		if(user)
+			to_chat(user, "<span class='notice'>You silently enable [src]'s safety protocols with the card.")
 	update_icon()
 
 /obj/item/defibrillator/emp_act(severity)
@@ -150,29 +159,40 @@
 	set name = "Toggle Paddles"
 	set category = "Object"
 
-	var/mob/living/carbon/human/user = usr
-	var/obj/item/organ/external/temp2 = user.bodyparts_by_name["r_hand"]
-	var/obj/item/organ/external/temp = user.bodyparts_by_name["l_hand"]
+	if(!paddles)
+		to_chat(usr, span_warning("[src] has no paddles!</span>"))
+		return
 
 	if(paddles_on_defib)
 		//Detach the paddles into the user's hands
-		if(usr.incapacitated()) return
+
+		var/mob/living/carbon/human/user = usr
+		var/obj/item/organ/external/temp2 = user.bodyparts_by_name[BODY_ZONE_PRECISE_R_HAND]
+		var/obj/item/organ/external/temp = user.bodyparts_by_name[BODY_ZONE_PRECISE_L_HAND]
+
+		if(user.incapacitated())
+			return
 
 		if(!temp || !temp.is_usable() && !temp2 || !temp2.is_usable())
-			to_chat(user, "<span class='warning'>You can't use your hand to take out the paddles!</span>")
+			to_chat(user, span_warning("You can't use your hand to take out the paddles!"))
 			return
 
-		if((usr.r_hand != null && usr.l_hand != null))
-			to_chat(user, "<span class='warning'>You need a free hand to hold the paddles!</span>")
+		if((user.r_hand != null && user.l_hand != null))
+			to_chat(user, span_warning("You need a free hand to hold the paddles!"))
 			return
 
-		if(!usr.put_in_hands(paddles))
-			to_chat(user, "<span class='warning'>You need a free hand to hold the paddles!</span>")
+		//We need to do this like that since defib paddles have their own behavior on dropped()
+		if(!is_on_user(user))
+			paddles.forceMove_turf()
+
+		if(!user.put_in_hands(paddles, ignore_anim = FALSE))
+			paddles.forceMove(src)
+			to_chat(user, span_warning("You need a free hand to hold the paddles!"))
 			return
-		paddles.loc = user
+
 		paddles_on_defib = FALSE
 	else //remove in any case because some automatic shit
-		remove_paddles(user)
+		remove_paddles(usr)
 
 	update_icon()
 
@@ -188,12 +208,10 @@
 		return TRUE
 
 /obj/item/defibrillator/proc/remove_paddles(mob/user) // from your hands
-	var/mob/living/carbon/human/M = user
-	if(paddles in get_both_hands(M))
-		M.unEquip(paddles)
-		paddles_on_defib = TRUE
-	update_icon()
-	return
+	if(user.is_in_hands(paddles))
+		return user.drop_item_ground(paddles)
+	return TRUE
+
 
 /obj/item/defibrillator/Destroy()
 	if(!paddles_on_defib)
@@ -276,7 +294,6 @@
 
 /obj/item/defibrillator/compact/advanced/attackby(obj/item/W, mob/user, params)
 	if(W == paddles)
-		paddles.unwield()
 		toggle_paddles()
 		update_icon()
 
@@ -350,27 +367,30 @@
 	playsound(get_turf(src), 'sound/machines/defib_zap.ogg', 50, 1, -1)
 	return OXYLOSS
 
-/obj/item/twohanded/shockpaddles/dropped(mob/user as mob)
-	if(user)
-		var/obj/item/twohanded/offhand/O = user.get_inactive_hand()
-		if(istype(O))
-			O.unwield()
-		to_chat(user, "<span class='notice'>The paddles snap back into the main unit.</span>")
+/obj/item/twohanded/shockpaddles/dropped(mob/user, silent = FALSE)
+	update_icon()
+	if(defib)
+		to_chat(user, span_notice("The paddles snap back into the main unit."))
+		if(!defib.is_on_user(user))
+			do_pickup_animation(defib)
+		forceMove(defib)
 		defib.paddles_on_defib = TRUE
-		loc = defib
 		defib.update_icon()
-		update_icon()
-	return unwield(user)
+	else
+		return ..()
+
+
+/obj/item/twohanded/shockpaddles/equip_to_best_slot(mob/user, force = FALSE)
+	 user.drop_item_ground(src)
+
 
 /obj/item/twohanded/shockpaddles/on_mob_move(dir, mob/user)
-	if(defib)
-		var/turf/t = get_turf(defib)
-		if(!t.Adjacent(user))
-			defib.remove_paddles(user)
+	if(defib && !in_range(defib, src))
+		user.drop_item_ground(src, force = TRUE)
 
 /obj/item/twohanded/shockpaddles/proc/check_defib_exists(mainunit, var/mob/living/carbon/human/M, var/obj/O)
 	if(!mainunit || !istype(mainunit, /obj/item/defibrillator))	//To avoid weird issues from admin spawns
-		M.unEquip(O)
+		M.temporarily_remove_item_from_inventory(O, TRUE)
 		qdel(O)
 		return FALSE
 	else
@@ -419,7 +439,7 @@
 			H.visible_message("<span class='danger'>[user] has touched [H.name] with [src]!</span>", \
 					"<span class='userdanger'>[user] has touched [H.name] with [src]!</span>")
 			H.adjustStaminaLoss(50)
-			H.Weaken(2)
+			H.Weaken(4 SECONDS)
 			playsound(get_turf(src), 'sound/machines/defib_zap.ogg', 50, 1, -1)
 			H.emote("gasp")
 			if(!H.undergoing_cardiac_arrest() && (prob(10) || defib?.combat)) // Your heart explodes.
@@ -445,8 +465,6 @@
 			var/tplus = world.time - H.timeofdeath
 			var/tlimit = DEFIB_TIME_LIMIT
 			var/tloss = DEFIB_TIME_LOSS
-			var/total_burn	= 0
-			var/total_brute	= 0
 			if(do_after(user, 20 * toolspeed * gettoolspeedmod(user), target = M)) //placed on chest and short delay to shock for dramatic effect, revive time is 5sec total
 				for(var/obj/item/carried_item in H.contents)
 					if(istype(carried_item, /obj/item/clothing/suit/space))
@@ -463,7 +481,7 @@
 						return
 					else
 						var/obj/item/organ/internal/heart/heart = H.get_int_organ(/obj/item/organ/internal/heart)
-						if(heart.status & ORGAN_DEAD)
+						if(heart.is_dead())
 							user.visible_message("<span class='boldnotice'>[defib || src] buzzes: Resuscitation failed - Heart necrosis detected.</span>")
 							playsound(get_turf(src), 'sound/machines/defib_failed.ogg', 50, 0)
 							busy = FALSE
@@ -484,21 +502,22 @@
 					M.visible_message("<span class='warning'>[M]'s body convulses a bit.")
 					playsound(get_turf(src), "bodyfall", 50, 1)
 					playsound(get_turf(src), 'sound/machines/defib_zap.ogg', 50, 1, -1)
-					for(var/obj/item/organ/external/O in H.bodyparts)
-						total_brute	+= O.brute_dam
-						total_burn	+= O.burn_dam
-					if(total_burn <= 180 && total_brute <= 180 && !H.suiciding && !ghost && tplus < tlimit && !(NOCLONE in H.mutations) && (H.mind && H.mind.is_revivable()) && (H.get_int_organ(/obj/item/organ/internal/heart) || H.get_int_organ(/obj/item/organ/internal/brain/slime)))
+					var/total_cloneloss = H.cloneloss
+					var/total_bruteloss = 0
+					var/total_burnloss = 0
+					for(var/obj/item/organ/external/O as anything in H.bodyparts)
+						total_bruteloss += O.brute_dam
+						total_burnloss += O.burn_dam
+					if(total_cloneloss <= 180 && total_bruteloss <= 180 && total_burnloss <= 180 && !H.suiciding && !ghost && tplus < tlimit && !(NOCLONE in H.mutations) && (H.mind && H.mind.is_revivable()) && (H.get_int_organ(/obj/item/organ/internal/heart) || H.get_int_organ(/obj/item/organ/internal/brain/slime)))
 						tobehealed = min(health + threshold, 0) // It's HILARIOUS without this min statement, let me tell you
 						tobehealed -= 5 //They get 5 of each type of damage healed so excessive combined damage will not immediately kill them after they get revived
 						H.adjustOxyLoss(tobehealed)
 						H.adjustToxLoss(tobehealed)
-						H.adjustFireLoss(tobehealed)
-						H.adjustBruteLoss(tobehealed)
 						user.visible_message("<span class='boldnotice'>[defib || src] pings: Resuscitation successful.</span>")
 						playsound(get_turf(src), 'sound/machines/defib_success.ogg', 50, 0)
-						H.update_revive()
+						H.update_revive(TRUE, TRUE)
 						H.KnockOut()
-						H.Paralyse(5)
+						H.Paralyse(10 SECONDS)
 						H.emote("gasp")
 						if(tplus > tloss)
 							H.setBrainLoss( max(0, min(99, ((tlimit - tplus) / tlimit * 100))))
@@ -516,7 +535,7 @@
 					else
 						if(tplus > tlimit|| !H.get_int_organ(/obj/item/organ/internal/heart))
 							user.visible_message("<span class='boldnotice'>[defib || src] buzzes: Resuscitation failed - Heart tissue damage beyond point of no return for defibrillation.</span>")
-						else if(total_burn >= 180 || total_brute >= 180)
+						else if(total_cloneloss > 180 || total_bruteloss > 180 || total_burnloss > 180)
 							user.visible_message("<span class='boldnotice'>[defib || src] buzzes: Resuscitation failed - Severe tissue damage detected.</span>")
 						else if(ghost)
 							if(!ghost.can_reenter_corpse) // DNR or AntagHUD
@@ -546,10 +565,10 @@
 		return
 
 	if(electrocute_mob(affecting, defib.cell, origin)) // shock anyone touching them >:)
-		var/obj/item/organ/internal/heart/HE = affecting.get_organ_slot("heart")
-		if(HE.parent_organ == "chest" && affecting.has_both_hands()) // making sure the shock will go through their heart (drask hearts are in their head), and that they have both arms so the shock can cross their heart inside their chest
+		var/obj/item/organ/internal/heart/HE = affecting.get_organ_slot(INTERNAL_ORGAN_HEART)
+		if(HE.parent_organ_zone == BODY_ZONE_CHEST && affecting.has_both_hands()) // making sure the shock will go through their heart (drask hearts are in their head), and that they have both arms so the shock can cross their heart inside their chest
 			affecting.visible_message("<span class='danger'>[affecting]'s entire body shakes as a shock travels up their arm!</span>", \
-							"<span class='userdanger'>You feel a powerful shock travel up your [affecting.hand ? affecting.get_organ("l_arm") : affecting.get_organ("r_arm")] and back down your [affecting.hand ? affecting.get_organ("r_arm") : affecting.get_organ("l_arm")]!</span>")
+							"<span class='userdanger'>You feel a powerful shock travel up your [affecting.hand ? affecting.get_organ(BODY_ZONE_L_ARM) : affecting.get_organ(BODY_ZONE_R_ARM)] and back down your [affecting.hand ? affecting.get_organ(BODY_ZONE_L_ARM) : affecting.get_organ(BODY_ZONE_R_ARM)]!</span>")
 			affecting.set_heartattack(TRUE)
 
 /obj/item/twohanded/shockpaddles/borg
@@ -560,7 +579,8 @@
 /obj/item/twohanded/shockpaddles/borg/check_defib_exists()
 	// No-op.
 
-/obj/item/twohanded/shockpaddles/borg/dropped()
+/obj/item/twohanded/shockpaddles/borg/dropped(mob/user, silent = FALSE)
+	SHOULD_CALL_PARENT(FALSE)
 	// No-op.
 
 /obj/item/twohanded/shockpaddles/borg/spend_charge(mob/user)

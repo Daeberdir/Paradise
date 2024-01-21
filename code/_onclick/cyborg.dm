@@ -7,7 +7,7 @@
 */
 
 /mob/living/silicon/robot/ClickOn(atom/A, params)
-	if(client.click_intercept)
+	if(client?.click_intercept)
 		client.click_intercept.InterceptClickOn(src, params, A)
 		return
 
@@ -17,7 +17,7 @@
 
 	if(is_ventcrawling(src)) // To stop drones interacting with anything while ventcrawling
 		return
-	if(stat == DEAD)
+	if(stat == DEAD || lockcharge || IsWeakened() || IsStunned() || IsParalyzed() || low_power_mode)
 		return
 
 	var/list/modifiers = params2list(params)

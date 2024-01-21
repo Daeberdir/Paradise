@@ -11,18 +11,21 @@
 	permeability_coefficient = 0.01
 	resistance_flags = NONE
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/mask.dmi',
-		"Unathi" = 'icons/mob/species/unathi/mask.dmi',
-		"Tajaran" = 'icons/mob/species/tajaran/mask.dmi',
-		"Vulpkanin" = 'icons/mob/species/vulpkanin/mask.dmi',
-		"Drask" = 'icons/mob/species/drask/mask.dmi',
-		"Grey" = 'icons/mob/species/grey/mask.dmi',
-		"Plasmaman" = 'icons/mob/species/plasmaman/mask.dmi',
-		"Monkey" = 'icons/mob/species/monkey/mask.dmi',
-		"Farwa" = 'icons/mob/species/monkey/mask.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/mask.dmi',
-		"Neara" = 'icons/mob/species/monkey/mask.dmi',
-		"Stok" = 'icons/mob/species/monkey/mask.dmi'
+		"Vox" = 'icons/mob/clothing/species/vox/mask.dmi',
+		"Unathi" = 'icons/mob/clothing/species/unathi/mask.dmi',
+		"Ash Walker" = 'icons/mob/clothing/species/unathi/mask.dmi',
+		"Ash Walker Shaman" = 'icons/mob/clothing/species/unathi/mask.dmi',
+		"Draconid" = 'icons/mob/clothing/species/unathi/mask.dmi',
+		"Tajaran" = 'icons/mob/clothing/species/tajaran/mask.dmi',
+		"Vulpkanin" = 'icons/mob/clothing/species/vulpkanin/mask.dmi',
+		"Drask" = 'icons/mob/clothing/species/drask/mask.dmi',
+		"Grey" = 'icons/mob/clothing/species/grey/mask.dmi',
+		"Plasmaman" = 'icons/mob/clothing/species/plasmaman/mask.dmi',
+		"Monkey" = 'icons/mob/clothing/species/monkey/mask.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/mask.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/mask.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/mask.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/mask.dmi'
 	)
 
 // **** Welding gas mask ****
@@ -55,17 +58,20 @@
 	resistance_flags = FIRE_PROOF
 
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/mask.dmi',
-		"Unathi" = 'icons/mob/species/unathi/mask.dmi',
-		"Tajaran" = 'icons/mob/species/tajaran/mask.dmi',
-		"Vulpkanin" = 'icons/mob/species/vulpkanin/mask.dmi',
-		"Drask" = 'icons/mob/species/drask/mask.dmi',
-		"Grey" = 'icons/mob/species/grey/mask.dmi',
-		"Monkey" = 'icons/mob/species/monkey/mask.dmi',
-		"Farwa" = 'icons/mob/species/monkey/mask.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/mask.dmi',
-		"Neara" = 'icons/mob/species/monkey/mask.dmi',
-		"Stok" = 'icons/mob/species/monkey/mask.dmi'
+		"Vox" = 'icons/mob/clothing/species/vox/mask.dmi',
+		"Unathi" = 'icons/mob/clothing/species/unathi/mask.dmi',
+		"Ash Walker" = 'icons/mob/clothing/species/unathi/mask.dmi',
+		"Ash Walker Shaman" = 'icons/mob/clothing/species/unathi/mask.dmi',
+		"Draconid" = 'icons/mob/clothing/species/unathi/mask.dmi',
+		"Tajaran" = 'icons/mob/clothing/species/tajaran/mask.dmi',
+		"Vulpkanin" = 'icons/mob/clothing/species/vulpkanin/mask.dmi',
+		"Drask" = 'icons/mob/clothing/species/drask/mask.dmi',
+		"Grey" = 'icons/mob/clothing/species/grey/mask.dmi',
+		"Monkey" = 'icons/mob/clothing/species/monkey/mask.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/mask.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/mask.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/mask.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/mask.dmi'
 	)
 
 /obj/item/clothing/mask/gas/explorer/attack_self(mob/user)
@@ -161,6 +167,9 @@
 	desc = "A colorful clown mask for the clown that loves to dazzle and impress. Its form can be changed by using it in your hand."
 	icon_state = "rainbow"
 	item_state = "rainbow"
+	sprite_sheets = list(
+		"Vulpkanin" = 'icons/mob/clothing/species/vulpkanin/head.dmi'
+	)
 
 /obj/item/clothing/mask/gas/clownwiz
 	name = "wizard clown wig and mask"
@@ -183,6 +192,47 @@
 	flags_cover = MASKCOVERSEYES
 	resistance_flags = FLAMMABLE
 
+
+/obj/item/clothing/mask/gas/mime/equipped(mob/user, slot, initial)
+	. = ..()
+
+	if(!user?.mind || slot != slot_wear_mask)
+		return
+
+	var/obj/effect/proc_holder/spell/mime/speak/mask/mask_spell = null
+	for(var/obj/effect/proc_holder/spell/mime/speak/spell in user.mind.spell_list)
+		if(istype(spell, /obj/effect/proc_holder/spell/mime/speak/mask))
+			mask_spell = spell
+			continue
+		if(spell)
+			return
+
+	if(mask_spell)
+		mask_spell.action.enable_invisibility(FALSE)
+		return
+
+	user.mind.AddSpell(new /obj/effect/proc_holder/spell/mime/speak/mask)
+
+
+/obj/item/clothing/mask/gas/mime/dropped(mob/user, silent = FALSE)
+	. = ..()
+
+	if(!user?.mind)
+		return
+
+	var/obj/effect/proc_holder/spell/mime/speak/mask/spell = locate() in user.mind.spell_list
+	if(!spell)
+		return
+
+	if(spell.cooldown_handler.is_on_cooldown())
+		spell.action.enable_invisibility(TRUE)
+		return
+
+	if(user.mind.miming)
+		spell.cast(list(user))
+	user.mind.RemoveSpell(spell)
+
+
 /obj/item/clothing/mask/gas/mime/wizard
 	name = "magical mime mask"
 	desc = "A mime mask glowing with power. Its eyes gaze deep into your soul."
@@ -199,13 +249,11 @@
 	item_state = "monkeymask"
 	resistance_flags = FLAMMABLE
 
-/obj/item/clothing/mask/gas/sexymime
+/obj/item/clothing/mask/gas/mime/sexy
 	name = "sexy mime mask"
 	desc = "A traditional female mime's mask."
 	icon_state = "sexymime"
 	item_state = "sexymime"
-	flags_cover = MASKCOVERSEYES
-	resistance_flags = FLAMMABLE
 
 /obj/item/clothing/mask/gas/cyborg
 	name = "cyborg visor"
@@ -248,7 +296,7 @@
 
 								"halt" 			= "HALT! HALT! HALT! HALT!",
 								"bobby" 		= "Stop in the name of the Law.",
-								"compliance" 	        = "Compliance is in your best interest.",
+								"compliance"	= "Compliance is in your best interest.",
 								"justice"		= "Prepare for justice!",
 								"running"		= "Running will only increase your sentence.",
 								"dontmove"		= "Don't move, Creep!",
@@ -265,6 +313,16 @@
 								"super"			= "Face the wrath of the golden bolt.",
 								"dredd"			= "I am, the LAW!"
 								)
+
+/obj/item/clothing/mask/gas/sechailer/equipped(mob/user, slot, initial)
+	. = ..()
+	if(slot == slot_wear_mask && !HAS_TRAIT(user, TRAIT_SECDEATH))
+		ADD_TRAIT(user, TRAIT_SECDEATH, src)
+
+/obj/item/clothing/mask/gas/sechailer/dropped(mob/user, silent = FALSE)
+	. = ..()
+	REMOVE_TRAIT(user, TRAIT_SECDEATH, src)
+
 /obj/item/clothing/mask/gas/sechailer/hos
 	name = "\improper HOS SWAT mask"
 	desc = "A close-fitting tactical mask with an especially aggressive Compli-o-nator 3000. It has a tan stripe."
@@ -377,9 +435,8 @@
 /obj/item/clothing/mask/gas/sechailer/emag_act(mob/user as mob)
 	if(safety)
 		safety = 0
-		to_chat(user, "<span class='warning'>You silently fry [src]'s vocal circuit with the cryptographic sequencer.")
-	else
-		return
+		if(user)
+			to_chat(user, "<span class='warning'>You silently fry [src]'s vocal circuit with the cryptographic sequencer.")
 
 /obj/item/clothing/mask/gas/sechailer/proc/halt()
 	var/key = phrase_list[phrase]

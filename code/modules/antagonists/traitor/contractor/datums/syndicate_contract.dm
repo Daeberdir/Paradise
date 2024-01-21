@@ -3,14 +3,14 @@
 #define EXTRACTION_PHASE_PREPARE 5 SECONDS
 #define EXTRACTION_PHASE_PORTAL 5 SECONDS
 #define COMPLETION_NOTIFY_DELAY 5 SECONDS
-#define RETURN_BRUISE_CHANCE 50
-#define RETURN_BRUISE_DAMAGE 20
+#define RETURN_BRUISE_CHANCE 80
+#define RETURN_BRUISE_DAMAGE 40
 #define RETURN_SOUVENIR_CHANCE 10
 
 /**
   * # Syndicate Contract
   *
-  * Describes a contract that can be completed by a [/datum/antagonist/traitor/contractor].
+  * Describes a contract that can be completed by a [/datum/antagonist/contractor].
   */
 /datum/syndicate_contract
 	// Settings
@@ -39,9 +39,9 @@
 	/// The base credits reward upon completion. Multiplied by the two lower bounds below.
 	var/credits_base = 100
 	// The lower bound of the credits reward multiplier.
-	var/credits_lower_mult = 25
+	var/credits_lower_mult = 50
 	// The upper bound of the credits reward multiplier.
-	var/credits_upper_mult = 40
+	var/credits_upper_mult = 75
 	// Implants (non cybernetic ones) that shouldn't be removed when a victim gets kidnapped.
 	// Typecache; initialized in New()
 	var/static/implants_to_keep = null
@@ -304,7 +304,7 @@
 	U.message_holder("Extraction signal received, agent. [SSmapping.map_datum.station_name]'s bluespace transport jamming systems have been sabotaged. "\
 			 	   + "We have opened a temporary portal at your flare location - proceed to the target's extraction by inserting them into the portal.", 'sound/effects/confirmdropoff.ogg')
 	// Open a portal
-	var/obj/effect/portal/redspace/contractor/P = new(get_turf(F), pick(GLOB.syndieprisonwarp), null, 0)
+	var/obj/effect/portal/redspace/contractor/P = new(get_turf(F), pick(GLOB.syndieprisonwarp), F, 0, M)
 	P.contract = src
 	P.contractor_mind = M.mind
 	P.target_mind = contract.target
@@ -357,6 +357,14 @@
 	victim_belongings = list()
 	var/list/obj/item/stuff_to_transfer = list()
 
+	// Speciall skrell headpocket handling
+	var/obj/item/organ/internal/headpocket/headpocket = M.get_organ_slot(INTERNAL_ORGAN_HEADPOCKET)
+	if(headpocket)
+		var/turf/target_turf = get_turf(M)
+		for(var/obj/item/item in headpocket.pocket.contents)
+			stuff_to_transfer += item
+			headpocket.pocket.remove_from_storage(item, target_turf)
+
 	// Cybernetic implants get removed first (to deal with NODROP stuff)
 	for(var/obj/item/organ/internal/cyberimp/I in H.internal_organs)
 		// Greys get to keep their implant
@@ -395,8 +403,16 @@
 			qdel(I)
 			continue
 
-		if(M.unEquip(I))
+		if(M.drop_item_ground(I))
 			stuff_to_transfer += I
+
+	// Remove accessories from the suit if present
+	if(length(H.w_uniform?.accessories))
+		for(var/obj/item/clothing/accessory/A in H.w_uniform.accessories)
+			A.on_removed(H)
+			H.w_uniform.accessories -= A
+			H.drop_item_ground(A)
+			stuff_to_transfer += A
 
 	// Transfer it all (or drop it if not possible)
 	for(var/i in stuff_to_transfer)
@@ -418,8 +434,8 @@
 			mask = new /obj/item/clothing/mask/breath(H)
 
 		if(tank)
-			H.equip_to_appropriate_slot(tank)
-			H.equip_to_appropriate_slot(mask)
+			tank.equip_to_best_slot(H)
+			mask.equip_to_best_slot(H)
 			tank.toggle_internals(H, TRUE)
 
 	M.update_icons()
@@ -446,10 +462,10 @@
 		M.reagents.add_reagent("omnizine", 20)
 
 		to_chat(M, "<span class='warning'>You feel strange...</span>")
-		M.Paralyse(30 SECONDS_TO_LIFE_CYCLES)
-		M.EyeBlind(35 SECONDS_TO_LIFE_CYCLES)
-		M.EyeBlurry(35 SECONDS_TO_LIFE_CYCLES)
-		M.AdjustConfused(35 SECONDS_TO_LIFE_CYCLES)
+		M.Paralyse(30 SECONDS)
+		M.EyeBlind(35 SECONDS)
+		M.EyeBlurry(35 SECONDS)
+		M.AdjustConfused(35 SECONDS)
 
 		sleep(6 SECONDS)
 		to_chat(M, "<span class='warning'>That portal did something to you...</span>")
@@ -506,16 +522,25 @@
 		var/obj/item/souvenir = pick(souvenirs)
 		new souvenir(closet)
 	else if(prob(RETURN_BRUISE_CHANCE) && M.health >= 50)
-		to_chat(M, "<span class='warning'>You were roughed up a little by your captors before being sent back!</span>")
-		M.adjustBruteLoss(RETURN_BRUISE_DAMAGE)
+		var/mob/living/carbon/human/H = M
+		if(istype(H))
+			to_chat(M,"<span class='warning'>Your kidnappers beat you badly before sending you back!</span>")
+			var/parts_to_fuck_up = pick(BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG, BODY_ZONE_HEAD)
+			var/obj/item/organ/external/BP = H.bodyparts_by_name[parts_to_fuck_up]
+			if(!BP)
+				BP = H.bodyparts_by_name[BODY_ZONE_CHEST]
+			H.apply_damage(RETURN_BRUISE_DAMAGE, BRUTE, BP)
+			BP.fracture()
+		else
+			M.take_overall_damage(RETURN_BRUISE_DAMAGE)
 
 	// Return them a bit confused.
 	M.visible_message("<span class='notice'>[M] vanishes...</span>")
 	M.forceMove(closet)
-	M.Paralyse(3 SECONDS_TO_LIFE_CYCLES)
-	M.EyeBlurry(5 SECONDS_TO_LIFE_CYCLES)
-	M.AdjustConfused(5 SECONDS_TO_LIFE_CYCLES)
-	M.Dizzy(35)
+	M.Paralyse(3 SECONDS)
+	M.EyeBlurry(5 SECONDS)
+	M.AdjustConfused(5 SECONDS)
+	M.Dizzy(70 SECONDS)
 	do_sparks(4, FALSE, destination)
 
 	// Newscaster story

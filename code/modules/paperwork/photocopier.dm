@@ -152,8 +152,7 @@
 			if(copyitem)
 				copyitem.forceMove(get_turf(src))
 				if(ishuman(usr))
-					if(!usr.get_active_hand())
-						usr.put_in_hands(copyitem)
+					usr.put_in_hands(copyitem, ignore_anim = FALSE)
 				to_chat(usr, "<span class='notice'>You take \the [copyitem] out of \the [src].</span>")
 				copyitem = null
 			else if(check_ass())
@@ -246,19 +245,19 @@
 		forms[++forms.len] = form
 
 /obj/machinery/photocopier/attackby(obj/item/O as obj, mob/user as mob, params)
-	add_fingerprint(user)
 	if(istype(O, /obj/item/paper) || istype(O, /obj/item/photo) || istype(O, /obj/item/paper_bundle))
 		if(!copyitem)
-			user.drop_item()
+			add_fingerprint(user)
+			user.drop_transfer_item_to_loc(O, src)
 			copyitem = O
-			O.forceMove(src)
 			to_chat(user, "<span class='notice'>You insert \the [O] into \the [src].</span>")
 			flick(insert_anim, src)
 		else
 			to_chat(user, "<span class='notice'>There is already something in \the [src].</span>")
 	else if(istype(O, /obj/item/toner))
 		if(toner <= 10) //allow replacing when low toner is affecting the print darkness
-			user.drop_item()
+			add_fingerprint(user)
+			user.drop_transfer_item_to_loc(O, src)
 			to_chat(user, "<span class='notice'>You insert the toner cartridge into \the [src].</span>")
 			var/obj/item/toner/T = O
 			toner += T.toner_amount
@@ -272,6 +271,7 @@
 			visible_message("<span class='warning'>[usr] drags [GM.name] onto the photocopier!</span>")
 			GM.forceMove(get_turf(src))
 			ass = GM
+			add_fingerprint(user)
 			if(copyitem)
 				copyitem.forceMove(get_turf(src))
 				copyitem = null
@@ -299,16 +299,19 @@
 	c.stamps = copy.stamps
 	c.stamped = copy.stamped
 	c.ico = copy.ico
+	c.language = copy.language
 	c.offset_x = copy.offset_x
 	c.offset_y = copy.offset_y
 	var/list/temp_overlays = copy.overlays       //Iterates through stamps
 	var/image/img                                //and puts a matching
 	for(var/j = 1, j <= temp_overlays.len, j++) //gray overlay onto the copy
 		if(copy.ico.len)
-			if(findtext(copy.ico[j], "cap") || findtext(copy.ico[j], "cent") || findtext(copy.ico[j], "rep"))
+			if(findtext(copy.ico[j], "cap") || findtext(copy.ico[j], "cent") || findtext(copy.ico[j], "rep") || findtext(copy.ico[j], "magistrate") || findtext(copy.ico[j], "navcom"))
 				img = image('icons/obj/bureaucracy.dmi', "paper_stamp-circle")
 			else if(findtext(copy.ico[j], "deny"))
 				img = image('icons/obj/bureaucracy.dmi', "paper_stamp-x")
+			else if(findtext(copy.ico[j], "ok"))
+				img = image('icons/obj/bureaucracy.dmi', "paper_stamp-check")
 			else
 				img = image('icons/obj/bureaucracy.dmi', "paper_stamp-dots")
 			img.pixel_x = copy.offset_x[j]
@@ -374,6 +377,7 @@
 	else
 		ass_holder = ass
 	p.desc = "You see [ass_holder]'s ass on the photo."
+	p.log_text = "*Ass of [ass?.client?.ckey ? ass.client.ckey : "INVALID"]/([ass])*"
 	p.pixel_x = rand(-10, 10)
 	p.pixel_y = rand(-10, 10)
 	p.img = temp_img
@@ -421,14 +425,14 @@
 			new /obj/effect/decal/cleanable/blood/oil(get_turf(src))
 			toner = 0
 
-/obj/machinery/photocopier/MouseDrop_T(mob/target, mob/user)
+/obj/machinery/photocopier/MouseDrop_T(mob/target, mob/living/user)
 	check_ass() //Just to make sure that you can re-drag somebody onto it after they moved off.
 	if(!istype(target) || target.buckled || get_dist(user, src) > 1 || get_dist(user, target) > 1 || user.stat || istype(user, /mob/living/silicon/ai) || target == ass)
 		return
 	add_fingerprint(user)
 	if(target == user && !user.incapacitated())
 		visible_message("<span class='warning'>[usr] jumps onto [src]!</span>")
-	else if(target != user && !user.restrained() && !user.stat && !user.IsWeakened() && !user.stunned && !user.paralysis)
+	else if(target != user && !user.restrained() && !user.stat && !user.IsWeakened() && !user.IsStunned() && !user.IsParalyzed())
 		if(target.anchored) return
 		if(!ishuman(user)) return
 		visible_message("<span class='warning'>[usr] drags [target.name] onto [src]!</span>")
@@ -450,11 +454,12 @@
 		atom_say("Внимание: обнаружена задница на печатном полотне!")
 		return 1
 
-/obj/machinery/photocopier/emag_act(user as mob)
+/obj/machinery/photocopier/emag_act(mob/user)
 	if(!emagged)
 		emagged = 1
-		to_chat(user, "<span class='notice'>You overload [src]'s laser printing mechanism.</span>")
-	else
+		if(user)
+			to_chat(user, "<span class='notice'>You overload [src]'s laser printing mechanism.</span>")
+	else if(user)
 		to_chat(user, "<span class='notice'>[src]'s laser printing mechanism is already overloaded!</span>")
 
 /obj/item/toner

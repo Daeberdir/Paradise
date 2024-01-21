@@ -10,7 +10,6 @@ Pipelines + Other Objects -> Pipe network
 */
 /obj/machinery/atmospherics
 	anchored = 1
-	layer = GAS_PIPE_HIDDEN_LAYER  //under wires
 	resistance_flags = FIRE_PROOF
 	max_integrity = 200
 	plane = GAME_PLANE
@@ -19,6 +18,8 @@ Pipelines + Other Objects -> Pipe network
 	power_channel = ENVIRON
 	on_blueprints = TRUE
 	var/can_unwrench = 0
+	/// Can this be put under a tile?
+	var/can_be_undertile = FALSE
 
 	var/connect_types[] = list(1) //1=regular, 2=supply, 3=scrubber
 	var/connected_to = 1 //same as above, currently not used for anything
@@ -29,6 +30,8 @@ Pipelines + Other Objects -> Pipe network
 	var/pipe_color
 	var/obj/item/pipe/stored
 	var/image/pipe_image
+	layer = GAS_PIPE_HIDDEN_LAYER  //under wires
+	var/layer_offset = 0.0 // generic over VISIBLE and HIDDEN, should be less than 0.01, or you'll reorder non-pipe things
 
 /obj/machinery/atmospherics/New()
 	if (!armor)
@@ -70,14 +73,13 @@ Pipelines + Other Objects -> Pipe network
 
 // Icons/overlays/underlays
 /obj/machinery/atmospherics/update_icon()
-	var/turf/T = get_turf(loc)
-	if(T?.transparent_floor)
-		plane = FLOOR_PLANE
-	else
-		if(!T || level == 2 || !T.intact)
-			plane = GAME_PLANE
-		else
+	switch(level)
+		if(1)
 			plane = FLOOR_PLANE
+			layer = GAS_PIPE_HIDDEN_LAYER + layer_offset
+		if(2)
+			plane = GAME_PLANE
+			layer = GAS_PIPE_VISIBLE_LAYER + layer_offset
 
 /obj/machinery/atmospherics/proc/update_pipe_image()
 	pipe_image = image(src, loc, layer = ABOVE_HUD_LAYER, dir = dir) //the 20 puts it above Byond's darkness (not its opacity view)
@@ -181,11 +183,11 @@ Pipelines + Other Objects -> Pipe network
 /obj/machinery/atmospherics/attackby(obj/item/W, mob/user)
 	var/turf/T = get_turf(src)
 	if(can_unwrench && istype(W, /obj/item/wrench))
-		if(T.transparent_floor && istype(src, /obj/machinery/atmospherics/pipe) && layer != GAS_PIPE_VISIBLE_LAYER) //pipes on GAS_PIPE_VISIBLE_LAYER are above the transparent floor and should be interactable
-			to_chat(user, "<span class='danger'>You can't interact with something that's under the floor!</span>")
+		if(level == 1 && T.transparent_floor && istype(src, /obj/machinery/atmospherics/pipe))
+			to_chat(user, span_danger("You can't interact with something that's under the floor!"))
 			return
 		if(level == 1 && isturf(T) && T.intact)
-			to_chat(user, "<span class='danger'>You must remove the plating first.</span>")
+			to_chat(user, span_danger("You must remove the plating first."))
 			return
 		var/datum/gas_mixture/int_air = return_air()
 		var/datum/gas_mixture/env_air = loc.return_air()
@@ -198,16 +200,16 @@ Pipelines + Other Objects -> Pipe network
 		var/internal_pressure = I - E
 
 		playsound(src.loc, W.usesound, 50, 1)
-		to_chat(user, "<span class='notice'>You begin to unfasten \the [src]...</span>")
+		to_chat(user, span_notice("You begin to unfasten \the [src]..."))
 		if(internal_pressure > 2*ONE_ATMOSPHERE)
-			to_chat(user, "<span class='warning'>As you begin unwrenching \the [src] a gust of air blows in your face... maybe you should reconsider?</span>")
+			to_chat(user, span_warning("As you begin unwrenching \the [src] a gust of air blows in your face... maybe you should reconsider?"))
 			unsafe_wrenching = TRUE //Oh dear oh dear
 
 		if(do_after(user, 40 * W.toolspeed * gettoolspeedmod(user), target = src) && !QDELETED(src))
 			user.visible_message( \
 				"[user] unfastens \the [src].", \
-				"<span class='notice'>You have unfastened \the [src].</span>", \
-				"<span class='italics'>You hear ratcheting.</span>")
+				span_notice("You have unfastened \the [src]."), \
+				span_italics("You hear ratcheting."))
 			investigate_log("was <span class='warning'>REMOVED</span> by [key_name_log(usr)]", INVESTIGATE_ATMOS)
 
 			for(var/obj/item/clothing/shoes/magboots/usermagboots in user.get_equipped_items())
@@ -217,13 +219,13 @@ Pipelines + Other Objects -> Pipe network
 			//You unwrenched a pipe full of pressure? let's splat you into the wall silly.
 			if(unsafe_wrenching)
 				if(safefromgusts)
-					to_chat(user, "<span class='italics'>Your magboots cling to the floor as a great burst of wind bellows against you.</span>")
+					to_chat(user, span_italics("Your magboots cling to the floor as a great burst of wind bellows against you."))
 				else
 					unsafe_pressure_release(user,internal_pressure)
 			deconstruct(TRUE)
 	else
 		if(T.transparent_floor)
-			to_chat(user, "<span class='danger'>You can't interact with something that's under the floor!</span>")
+			to_chat(user, span_danger("You can't interact with something that's under the floor!"))
 			return TRUE
 		return ..()
 
@@ -240,7 +242,7 @@ Pipelines + Other Objects -> Pipe network
 
 	var/fuck_you_dir = get_dir(src, user)
 	var/turf/general_direction = get_edge_target_turf(user, fuck_you_dir)
-	user.visible_message("<span class='danger'>[user] is sent flying by pressure!</span>","<span class='userdanger'>The pressure sends you flying!</span>")
+	user.visible_message(span_danger("[user] is sent flying by pressure!"),span_userdanger("The pressure sends you flying!"))
 	//Values based on 2*ONE_ATMOS (the unsafe pressure), resulting in 20 range and 4 speed
 	user.throw_at(general_direction, pressures/10, pressures/50)
 
@@ -262,11 +264,10 @@ Pipelines + Other Objects -> Pipe network
 	initialize_directions = P
 	var/turf/T = loc
 	if(!T.transparent_floor)
-		level = T.intact ? 2 : 1
+		level = (T.intact || !can_be_undertile) ? 2 : 1
 	else
 		level = 2
-		plane = GAME_PLANE
-		layer = GAS_PIPE_VISIBLE_LAYER
+	update_icon()
 	add_fingerprint(usr)
 	if(!SSair.initialized) //If there's no atmos subsystem, we can't really initialize pipenets
 		SSair.machinery_to_construct.Add(src)
@@ -312,6 +313,7 @@ Pipelines + Other Objects -> Pipe network
 			if(world.time - user.last_played_vent > VENT_SOUND_DELAY)
 				user.last_played_vent = world.time
 				playsound(src, 'sound/machines/ventcrawl.ogg', 50, 1, -3)
+			user.update_light() //if we can see through pipes - then why we can't glow through them?
 	else
 		if((direction & initialize_directions) || is_type_in_list(src, GLOB.ventcrawl_machinery)) //if we move in a way the pipe can connect, but doesn't - or we're in a vent
 			user.remove_ventcrawl()
@@ -322,12 +324,7 @@ Pipelines + Other Objects -> Pipe network
 		user.canmove = 1
 
 /obj/machinery/atmospherics/AltClick(mob/living/user)
-	if(!istype(user) || user.incapacitated())
-		to_chat(user, "<span class='warning'>You can't do that right now!</span>")
-		return
-	if(is_type_in_list(src, GLOB.ventcrawl_machinery))
-		user.handle_ventcrawl(src)
-		return
+	user.handle_ventcrawl(src)
 
 /obj/machinery/atmospherics/proc/can_crawl_through()
 	return 1

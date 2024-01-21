@@ -45,8 +45,7 @@
 			to_chat(user, "<span class='userdanger'>Somehow, this MMI still has a brain in it. Report this to the bug tracker.</span>")
 			log_runtime(EXCEPTION("[user] tried to stick a [O] into [src] in [get_area(src)], but the held brain variable wasn't cleared"), src)
 			return
-		if(user.drop_item())
-			B.forceMove(src)
+		if(user.drop_transfer_item_to_loc(B, src))
 			visible_message("<span class='notice'>[user] sticks \a [O] into \the [src].</span>")
 			brainmob = B.brainmob
 			B.brainmob = null
@@ -86,7 +85,7 @@
 			user.visible_message("<span class='notice'>[user] begins to install the [O] into [src]...</span>", \
 				"<span class='notice'>You start to install the [O] into [src]...</span>")
 			if(do_after(user, 20, target=src))
-				if(user.drop_item())
+				if(user.drop_transfer_item_to_loc(O, src))
 					user.visible_message("<span class='notice'>[user] installs [O] in [src].</span>", \
 						"<span class='notice'>You install [O] in [src].</span>")
 					if(brainmob)
@@ -139,10 +138,10 @@
 	brainmob.dna = H.dna.Clone()
 	brainmob.container = src
 
-	if(!istype(H.dna.species) || isnull(H.dna.species.return_organ("brain"))) // Diona/buggy people
+	if(!istype(H.dna.species) || isnull(H.dna.species.return_organ(INTERNAL_ORGAN_BRAIN))) // Diona/buggy people
 		held_brain = new(src)
 	else // We have a species, and it has a brain
-		var/brain_path = H.dna.species.return_organ("brain")
+		var/brain_path = H.dna.species.return_organ(INTERNAL_ORGAN_BRAIN)
 		if(!ispath(brain_path, /obj/item/organ/internal/brain))
 			brain_path = /obj/item/organ/internal/brain
 		held_brain = new brain_path(src) // Slime people will keep their slimy brains this way
@@ -254,6 +253,7 @@
 		radio_action.Grant(A)
 
 /obj/item/mmi/Exited(atom/movable/A)
+	..()
 	if(radio && istype(A, /mob/living/carbon/brain))
 		radio_action.Remove(A)
 
@@ -263,29 +263,29 @@
 	origin_tech = "biotech=4;programming=4;syndicate=2"
 	syndiemmi = 1
 
-/obj/item/mmi/attempt_become_organ(obj/item/organ/external/parent,mob/living/carbon/human/H)
+
+/obj/item/mmi/attempt_become_organ(obj/item/organ/external/parent, mob/living/carbon/human/target)
 	if(!brainmob)
-		return 0
+		return FALSE
 	if(!parent)
 		log_debug("Attempting to insert into a null parent!")
-		return 0
-	if(H.get_int_organ(/obj/item/organ/internal/brain))
-		// one brain at a time
-		return 0
-	var/obj/item/organ/internal/brain/mmi_holder/holder = new()
-	holder.parent_organ = parent.limb_name
+		return FALSE
+	if(target.get_organ_slot(INTERNAL_ORGAN_BRAIN))	// one brain at a time
+		return FALSE
+	var/obj/item/organ/internal/brain/mmi_holder/holder = new
+	holder.parent_organ_zone = parent.limb_zone
 	forceMove(holder)
 	holder.stored_mmi = src
 	holder.update_from_mmi()
 	if(brainmob && brainmob.mind)
-		brainmob.mind.transfer_to(H)
-	holder.insert(H)
+		brainmob.mind.transfer_to(target)
+	holder.insert(target)
+	return TRUE
 
-	return 1
 
 // As a synthetic, the only limit on visibility is view range
 /obj/item/mmi/contents_ui_distance(src_object, mob/living/user)
 	. = ..()
-	if((src_object in view(src)) && get_dist(src_object, src) <= user.client.view)
+	if((src_object in view(user.client)) && get_dist(src_object, src) <= user.client.maxview())
 		return STATUS_INTERACTIVE	// interactive (green visibility)
 	return user.shared_living_ui_distance()

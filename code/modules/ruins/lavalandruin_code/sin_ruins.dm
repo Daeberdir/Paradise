@@ -11,6 +11,7 @@
 	var/win_prob = 5
 
 /obj/structure/cursed_slot_machine/attack_hand(mob/user)
+	add_fingerprint(user)
 	interact(user)
 
 /obj/structure/cursed_slot_machine/interact(mob/living/carbon/human/user)
@@ -72,9 +73,9 @@
 		"<span class='boldwarning'>You open the bag...!</span>\n\
 		<span class='danger'>And see a bag full of dice. Confused, \
 		you take one... and the bag vanishes.</span>")
-	var/turf/T = get_turf(user)
-	var/obj/item/dice/d20/fate/one_use/critical_fail = new(T)
-	user.put_in_hands(critical_fail)
+
+	var/obj/item/dice/d20/fate/one_use/critical_fail = new(drop_location())
+	user.put_in_hands(critical_fail, ignore_anim = FALSE)
 	qdel(src)
 
 // Gluttony
@@ -115,8 +116,13 @@
 	for(var/level in levels)
 		if(!is_teleport_allowed(level))
 			levels -= level
+			continue
+		if(is_taipan(level))
+			levels -= level
+			continue
 		if(text2num(level) == T.z)
 			levels -= level
+			continue
 
 	T.ChangeTurf(/turf/simulated/floor/chasm)
 	var/turf/simulated/floor/chasm/C = T

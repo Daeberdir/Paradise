@@ -4,8 +4,12 @@
 	max_integrity = 300
 	pull_push_speed_modifier = 1.2
 	var/climbable
-	var/mob/climber
+	/// Determines if a structure adds the TRAIT_TURF_COVERED to its turf.
+	var/creates_cover = FALSE
+	var/mob/living/climber
 	var/broken = FALSE
+	/// Amount of SSobj ticks (Roughly 2 seconds) that a extinguished structure has been lit up
+	var/light_process = 0
 
 /obj/structure/New()
 	..()
@@ -22,6 +26,8 @@
 /obj/structure/Initialize(mapload)
 	if(!armor)
 		armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 50, "acid" = 50)
+	if(creates_cover && isturf(loc))
+		ADD_TRAIT(loc, TRAIT_TURF_COVERED, UNIQUE_TRAIT_SOURCE(src))
 	return ..()
 
 /obj/structure/Destroy()
@@ -31,6 +37,36 @@
 		var/turf/T = get_turf(src)
 		spawn(0)
 			queue_smooth_neighbors(T)
+	if(creates_cover && isturf(loc))
+		REMOVE_TRAIT(loc, TRAIT_TURF_COVERED, UNIQUE_TRAIT_SOURCE(src))
+	if(isprocessing)
+		STOP_PROCESSING(SSobj, src)
+	return ..()
+
+/obj/structure/Move()
+	var/atom/old = loc
+	if(!..())
+		return FALSE
+
+	if(creates_cover)
+		if(isturf(old))
+			REMOVE_TRAIT(old, TRAIT_TURF_COVERED, UNIQUE_TRAIT_SOURCE(src))
+		if(isturf(loc))
+			ADD_TRAIT(loc, TRAIT_TURF_COVERED, UNIQUE_TRAIT_SOURCE(src))
+	return TRUE
+
+
+/obj/structure/has_prints()
+	return TRUE
+
+/obj/structure/attack_hand(mob/living/user)
+	if(has_prints() && Adjacent(user))
+		add_fingerprint(user)
+	return ..()
+
+/obj/structure/attackby(obj/item/P, mob/user, params)
+	if(has_prints() && Adjacent(user) && !(istype(P, /obj/item/detective_scanner)))
+		add_fingerprint(user)
 	return ..()
 
 /obj/structure/proc/climb_on()
@@ -135,7 +171,7 @@
 
 		if(M.lying) return //No spamming this on people.
 
-		M.Weaken(5)
+		M.Weaken(10 SECONDS)
 		to_chat(M, "<span class='warning'>You topple as \the [src] moves under you!</span>")
 
 		if(prob(25))
@@ -151,15 +187,15 @@
 
 			switch(pick(list("ankle","wrist","head","knee","elbow")))
 				if("ankle")
-					affecting = H.get_organ(pick("l_foot", "r_foot"))
+					affecting = H.get_organ(pick(BODY_ZONE_PRECISE_L_FOOT, BODY_ZONE_PRECISE_R_FOOT))
 				if("knee")
-					affecting = H.get_organ(pick("l_leg", "r_leg"))
+					affecting = H.get_organ(pick(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
 				if("wrist")
-					affecting = H.get_organ(pick("l_hand", "r_hand"))
+					affecting = H.get_organ(pick(BODY_ZONE_PRECISE_L_HAND, BODY_ZONE_PRECISE_R_HAND))
 				if("elbow")
-					affecting = H.get_organ(pick("l_arm", "r_arm"))
+					affecting = H.get_organ(pick(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM))
 				if("head")
-					affecting = H.get_organ("head")
+					affecting = H.get_organ(BODY_ZONE_HEAD)
 
 			if(affecting)
 				to_chat(M, "<span class='warning'>You land heavily on your [affecting.name]!</span>")
@@ -173,15 +209,15 @@
 			H.UpdateDamageIcon()
 	return
 
-/obj/structure/proc/can_touch(var/mob/user)
-	if(!user)
+/obj/structure/proc/can_touch(mob/living/user)
+	if(!istype(user))
 		return 0
 	if(!Adjacent(user))
 		return 0
 	if(user.restrained() || user.buckled)
 		to_chat(user, "<span class='notice'>You need your hands and legs free for this.</span>")
 		return 0
-	if(user.stat || user.paralysis || user.sleeping || user.lying || user.IsWeakened())
+	if(user.stat || user.IsParalyzed() || user.IsSleeping() || user.lying || user.IsWeakened())
 		return 0
 	if(issilicon(user))
 		to_chat(user, "<span class='notice'>You need hands for this.</span>")
@@ -212,3 +248,33 @@
 
 /obj/structure/proc/prevents_buckled_mobs_attacking()
 	return FALSE
+
+
+/obj/structure/extinguish_light(force = FALSE)
+	if(light_range)
+		light_power = 0
+		light_range = 0
+		update_light()
+		name = "dimmed [name]"
+		desc = "Something shadowy moves to cover the object. Perhaps shining a light will force it to clear?"
+		START_PROCESSING(SSobj, src)
+
+
+/obj/structure/process()
+	var/turf/source_turf = get_turf(src)
+	if(source_turf.get_lumcount() > 0.2)
+		light_process++
+		if(light_process > 3)
+			reset_light()
+		return
+	light_process = 0
+
+
+/obj/structure/proc/reset_light()
+	light_process = 0
+	light_power = initial(light_power)
+	light_range = initial(light_range)
+	update_light()
+	name = initial(name)
+	desc = initial(desc)
+	STOP_PROCESSING(SSobj, src)

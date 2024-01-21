@@ -31,7 +31,7 @@ GLOBAL_LIST_EMPTY(total_extraction_beacons)
 	else
 		var/A
 
-		A = input("Select a beacon to connect to", "Balloon Extraction Pack", A) as null|anything in possible_beacons
+		A = tgui_input_list(user, "Select a beacon to connect to", "Balloon Extraction Pack", possible_beacons)
 
 		if(!A)
 			return
@@ -45,6 +45,7 @@ GLOBAL_LIST_EMPTY(total_extraction_beacons)
 		return FALSE
 	if(usr.stat || !ishuman(usr) || usr.incapacitated())
 		return FALSE
+	over.add_fingerprint(usr)
 	afterattack(over, usr, TRUE)
 	return TRUE
 
@@ -79,14 +80,14 @@ GLOBAL_LIST_EMPTY(total_extraction_beacons)
 					B.handle_item_insertion(src)
 			uses_left--
 			if(uses_left <= 0)
-				user.drop_item(src)
+				user.drop_from_active_hand(src)
 				forceMove(A)
 			var/mutable_appearance/balloon
 			var/mutable_appearance/balloon2
 			var/mutable_appearance/balloon3
 			if(isliving(A))
 				var/mob/living/M = A
-				M.Weaken(16) // Keep them from moving during the duration of the extraction
+				M.Weaken(32 SECONDS) // Keep them from moving during the duration of the extraction
 				M.buckled = 0 // Unbuckle them to prevent anchoring problems
 			else
 				A.anchored = TRUE
@@ -120,7 +121,7 @@ GLOBAL_LIST_EMPTY(total_extraction_beacons)
 			if(ishuman(A))
 				var/mob/living/carbon/human/L = A
 				L.SetParalysis(0)
-				L.drowsyness = 0
+				L.SetDrowsy(0)
 				L.SetSleeping(0)
 			sleep(30)
 			var/list/flooring_near_beacon = list()
@@ -163,7 +164,8 @@ GLOBAL_LIST_EMPTY(total_extraction_beacons)
 
 /obj/item/fulton_core/attack_self(mob/user)
 	if(do_after(user, 15, target = user) && !QDELETED(src))
-		new /obj/structure/extraction_point(get_turf(user))
+		var/obj/structure/extraction_point/point = new(get_turf(user))
+		point.add_fingerprint(user)
 		qdel(src)
 
 /obj/structure/extraction_point

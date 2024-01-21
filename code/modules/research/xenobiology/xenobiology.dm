@@ -188,6 +188,9 @@
 	if(!isanimal(M) && !ismonkeybasic(M)) //работает только на животных и низших формах карбонов
 		to_chat(user, "<span class='warning'>[M] is not animal nor lesser life form!</span>")
 		return ..()
+	if(istype(M, /mob/living/simple_animal/hostile/poison/giant_spider/nurse))
+		to_chat(user, "<span class='warning'>unknown power prevents you from using sentience potion on [M]</span>")
+		return ..()
 	if(M.stat)
 		to_chat(user, "<span class='warning'>[M] is dead!</span>")
 		return ..()
@@ -246,11 +249,13 @@
 			to_chat(user, "<span class='warning'>[src] won't work on [SM].</span>")
 			return ..()
 
+		var/reason_text = input(user, "Enter reason for giving sentience", "Reason for sentience potion", "") as null|text
+
 		to_chat(user, "<span class='notice'>You offer [src.name] to [SM]...</span>")
 		being_used = TRUE
 
-		var/ghostmsg = "Play as [SM.name], pet of [user.name]?"
-		var/list/candidates = SSghost_spawns.poll_candidates(ghostmsg, ROLE_SENTIENT, FALSE, 10 SECONDS, source = M)
+		var/ghostmsg = "Play as [SM.name], pet of [user.name]?[reason_text? "\nReason: [reason_text]\n":""]"
+		var/list/candidates = SSghost_spawns.poll_candidates(ghostmsg, ROLE_SENTIENT, FALSE, 10 SECONDS, source = M, reason = reason_text)
 
 		if(!src)
 			return
@@ -298,11 +303,13 @@
 			to_chat(user, "<span class='warning'>[LF] совершенно безразлично смотрит на [src.name] в ваших руках.</span>")
 			return ..()
 
+		var/reason_text = input(user, "Enter reason for giving sentience", "Reason for sentience potion", "") as null|text
+
 		to_chat(user, "<span class='notice'>Вы предлагаете [src] [LF]... Он[genderize_ru(LF.gender, "", "а", "о", "и")] осторожно осматрива[pluralize_ru(LF.gender,"ет","ют")] его</span>")
 		being_used = TRUE
 
-		var/ghostmsg = "Play as [LF.name], pet of [user.name]?"
-		var/list/candidates = SSghost_spawns.poll_candidates(ghostmsg, ROLE_SENTIENT, FALSE, 10 SECONDS, source = M)
+		var/ghostmsg = "Play as [LF.name], pet of [user.name]?[reason_text? "\nReason: [reason_text]\n":""]"
+		var/list/candidates = SSghost_spawns.poll_candidates(ghostmsg, ROLE_SENTIENT, FALSE, 10 SECONDS, source = M, reason = reason_text)
 
 		if(!src)
 			return
@@ -381,6 +388,10 @@
 	to_chat(SM, "<span class='notice'>In a quick flash, you feel your consciousness flow into [SM]!</span>")
 	to_chat(SM, "<span class='warning'>You are now [SM]. Your allegiances, alliances, and roles are still the same as they were prior to consciousness transfer!</span>")
 	SM.name = "[SM.name] as [user.real_name]"
+	if(istype(SM, /mob/living/simple_animal/hostile/lightgeist))
+		if(!GLOB.med_hud_users.Find(SM))
+			var/datum/atom_hud/medsensor = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
+			medsensor.add_hud_to(SM)
 	qdel(src)
 
 /obj/item/slimepotion/slime/steroid
@@ -470,7 +481,7 @@
 	icon_state = "bottle3"
 	origin_tech = "biotech=5"
 
-/obj/item/slimepotion/speed/afterattack(obj/O, mob/user, proximity_flag)
+/obj/item/slimepotion/speed/afterattack(obj/O, mob/user, proximity_flag, drop = FALSE)
 	if(!proximity_flag)
 		return
 	..()
@@ -482,25 +493,42 @@
 		if(I.slowdown <= 0 || I.is_speedslimepotioned)
 			to_chat(user, "<span class='warning'>[I] can't be made any faster!</span>")
 			return ..()
+		if(I.cant_be_faster)
+			to_chat(user, "<span class='warning'>[I] can't be made any faster!</span>")
+			return
 		I.is_speedslimepotioned = TRUE
 
 	if(istype(O, /obj/vehicle))
 		var/obj/vehicle/V = O
-		var/vehicle_speed_mod = config.run_speed
+		var/vehicle_speed_mod = CONFIG_GET(number/run_speed)
 		if(V.vehicle_move_delay <= vehicle_speed_mod)
 			to_chat(user, "<span class='warning'>[V] can't be made any faster!</span>")
 			return ..()
 		V.vehicle_move_delay = vehicle_speed_mod
+	else if (!drop && istype(O, /obj/machinery/smartfridge))
+		// apply speed potion to smart fridge only if the potions drag'n'drop onto it
+		return ..()
 
 	to_chat(user, "<span class='notice'>You slather the red gunk over [O], making it faster.</span>")
 	O.add_atom_colour("#FF0000", WASHABLE_COLOUR_PRIORITY)
 	qdel(src)
 
-/obj/item/slimepotion/speed/MouseDrop(obj/over_object)
-	if(usr.incapacitated())
-		return
-	if(loc == usr && loc.Adjacent(over_object))
-		afterattack(over_object, usr, TRUE)
+
+/obj/item/slimepotion/speed/MouseDrop(atom/over)
+	. = ..()
+	if(!.)
+		return FALSE
+
+	var/mob/user = usr
+	if(istype(over, /obj/screen))
+		return FALSE
+
+	if(over == user || loc != user || user.incapacitated() || !ishuman(user))
+		return FALSE
+
+	afterattack(over, user, TRUE, drop = TRUE)
+	return TRUE
+
 
 /obj/item/slimepotion/clothing
 	var/inapplicable_caption
@@ -552,11 +580,22 @@
 	if (!uses)
 		qdel(src)
 
-/obj/item/slimepotion/clothing/MouseDrop(obj/over_object)
-	if(usr.incapacitated())
-		return
-	if(loc == usr && loc.Adjacent(over_object))
-		afterattack(over_object, usr, TRUE)
+
+/obj/item/slimepotion/clothing/MouseDrop(atom/over)
+	. = ..()
+	if(!.)
+		return FALSE
+
+	var/mob/user = usr
+	if(istype(over, /obj/screen))
+		return FALSE
+
+	if(over == user || loc != user || user.incapacitated() || !ishuman(user))
+		return FALSE
+
+	afterattack(over, user, TRUE)
+	return TRUE
+
 
 /obj/item/slimepotion/clothing/fireproof
 	name = "slime chill potion"
@@ -731,7 +770,7 @@
 /obj/effect/timestop/New()
 	..()
 	for(var/mob/living/M in GLOB.player_list)
-		for(var/obj/effect/proc_holder/spell/aoe_turf/conjure/timestop/T in M.mind.spell_list) //People who can stop time are immune to timestop
+		for(var/obj/effect/proc_holder/spell/aoe/conjure/timestop/T in M.mind.spell_list) //People who can stop time are immune to timestop
 			immune |= M
 
 
@@ -783,6 +822,9 @@
 /obj/effect/timestop/wizard/New()
 	..()
 	timestop()
+
+/obj/effect/timestop/clockwork
+	duration = 80
 
 /obj/effect/timestop/clockwork/Initialize(mapload)
 	. = ..()

@@ -15,6 +15,16 @@
 	var/template_id = "shelter_alpha"
 	var/datum/map_template/shelter/template
 	var/used = FALSE
+	var/emagged = FALSE
+
+/obj/item/survivalcapsule/emag_act(mob/user)
+	if(!emagged)
+		if(user)
+			to_chat(user, "<span class='warning'>You short out the safeties, allowing it to be placed in the station sector.</span>")
+		emagged = TRUE
+		return
+	if(user)
+		to_chat(user, "<span class='warning'>The safeties are already shorted out!</span>")
 
 /obj/item/survivalcapsule/proc/get_template()
 	if(template)
@@ -34,6 +44,11 @@
 	// Can't grab when capsule is New() because templates aren't loaded then
 	get_template()
 	if(used == FALSE)
+		var/turf/UT = get_turf(usr)
+		if((UT.z == level_name_to_num(MAIN_STATION)) && !emagged)
+			to_chat(usr, "<span class='notice'>Error. Deployment was attempted on the station sector. Deployment aborted.</span>")
+			playsound(usr, 'sound/machines/buzz-sigh.ogg', 15, TRUE)
+			return
 		loc.visible_message("<span class='warning'>[src] begins to shake. Stand back!</span>")
 		used = TRUE
 		sleep(50)
@@ -66,6 +81,11 @@
 	desc = "An exorbitantly expensive luxury suite stored within a pocket of bluespace."
 	origin_tech = "engineering=3;bluespace=4"
 	template_id = "shelter_beta"
+
+/obj/item/survivalcapsule/luxuryelite
+	name = "luxury elite bar capsule"
+	desc = "A luxury bar in a capsule. Bartender required and not included."
+	template_id = "shelter_charlie"
 
 //Pod turfs and objects
 
@@ -187,7 +207,8 @@
 		user.visible_message("<span class='warning'>[user] disassembles the gps.</span>", \
 						"<span class='notice'>You start to disassemble the gps...</span>", "You hear clanking and banging noises.")
 		if(do_after(user, 20 * W.toolspeed * gettoolspeedmod(user), target = src))
-			new /obj/item/gps(loc)
+			var/obj/item/gps/gps = new(loc)
+			gps.add_fingerprint(user)
 			qdel(src)
 			return ..()
 
@@ -322,7 +343,8 @@
 		user.visible_message("<span class='warning'>[user] disassembles [src].</span>", \
 							 "<span class='notice'>You start to disassemble [src]...</span>", "You hear clanking and banging noises.")
 		if(do_after(user, 20 * W.toolspeed * gettoolspeedmod(user), target = src))
-			new /obj/item/stack/rods(loc)
+			var/obj/item/stack/rods/rods = new(loc)
+			rods.add_fingerprint(user)
 			qdel(src)
 			return ..()
 
@@ -343,7 +365,7 @@
 						/obj/item/gun/magic/staff/spellblade,
 						/obj/item/gun/magic/wand/death,
 						/obj/item/gun/magic/wand/fireball,
-						/obj/item/stack/telecrystal/twenty,
+						/obj/item/stack/telecrystal/hundread,
 						/obj/item/banhammer)
 
 /obj/item/fakeartefact/New()

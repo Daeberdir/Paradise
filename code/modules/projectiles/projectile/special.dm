@@ -50,6 +50,7 @@
 	damage = 0
 	damage_type = BURN
 	nodamage = 1
+	reflectability = REFLECTABILITY_ENERGY
 	flag = "energy"
 	var/temperature = 300
 	pass_flags = PASSTABLE | PASSGLASS | PASSGRILLE
@@ -92,8 +93,10 @@
 			icon_state = "temp_4"
 
 
-/obj/item/projectile/temp/on_hit(var/atom/target, var/blocked = 0)//These two could likely check temp protection on the mob
-	..()
+/obj/item/projectile/temp/on_hit(atom/target, blocked = 0)//These two could likely check temp protection on the mob
+	if(!..())
+		return FALSE
+
 	if(isliving(target))
 		var/mob/living/M = target
 		M.bodytemperature = temperature
@@ -142,7 +145,7 @@
 		if(IS_PLANT in H.dna.species.species_traits)
 			if(prob(15))
 				M.apply_effect((rand(30,80)),IRRADIATE)
-				M.Weaken(5)
+				M.Weaken(10 SECONDS)
 				M.visible_message("<span class='warning'>[M] writhes in pain as [M.p_their()] vacuoles boil.</span>", "<span class='userdanger'>You writhe in pain as your vacuoles boil!</span>", "<span class='italics'>You hear the crunching of leaves.</span>")
 				if(prob(80))
 					randmutb(M)
@@ -188,7 +191,7 @@
 	if(ishuman(target))
 		var/mob/living/carbon/human/M = target
 		M.adjustBrainLoss(20)
-		M.AdjustHallucinate(20)
+		M.AdjustHallucinate(20 SECONDS)
 		M.last_hallucinator_log = name
 
 /obj/item/projectile/clown
@@ -208,18 +211,14 @@
 	icon_state = "spark"
 	hitsound = "sparks"
 	damage = 0
-	var/obj/item/gun/energy/wormhole_projector/gun
 	color = "#33CCFF"
 	nodamage = TRUE
+	var/is_orange = FALSE
 
 /obj/item/projectile/beam/wormhole/orange
 	name = "orange bluespace beam"
 	color = "#FF6600"
-
-/obj/item/projectile/beam/wormhole/New(var/obj/item/ammo_casing/energy/wormhole/casing)
-	. = ..()
-	if(casing)
-		gun = casing.gun
+	is_orange = TRUE
 
 /obj/item/projectile/beam/wormhole/on_hit(atom/target)
 	if(ismob(target))
@@ -227,14 +226,16 @@
 			var/turf/portal_destination = pick(orange(6, src))
 			do_teleport(target, portal_destination)
 		return ..()
-	if(!gun)
+	if(!firer_source_atom)
 		qdel(src)
-	gun.create_portal(src)
+	var/obj/item/gun/energy/wormhole_projector/gun = firer_source_atom
+	if(!(locate(/obj/effect/portal) in get_turf(target)))
+		gun.create_portal(src)
 
 /obj/item/projectile/bullet/frag12
 	name ="explosive slug"
 	damage = 25
-	weaken = 5
+	weaken = 10 SECONDS
 
 /obj/item/projectile/bullet/frag12/on_hit(atom/target, blocked = 0)
 	..()
@@ -249,6 +250,7 @@
 	hitsound = "bullet"
 	range = 3
 	dismemberment = 20
+	dismember_limbs = TRUE
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/purple_laser
 
 /obj/item/projectile/plasma/on_hit(atom/target, pointblank = 0)
@@ -260,7 +262,7 @@
 			return
 		forcedodge = 1
 		var/turf/simulated/mineral/M = target
-		M.gets_drilled(firer)
+		M.attempt_drill(firer)
 	else
 		forcedodge = 0
 
@@ -268,9 +270,30 @@
 	damage = 7
 	range = 5
 
+/obj/item/projectile/plasma/adv/mega
+	icon_state = "plasmacutter_mega"
+	impact_effect_type = /obj/effect/temp_visual/impact_effect/red_laser
+	range = 7
+
+/obj/item/projectile/plasma/adv/mega/on_hit(atom/target)
+	if(istype(target, /turf/simulated/mineral/gibtonite))
+		var/turf/simulated/mineral/gibtonite/gib = target
+		gib.defuse()
+	. = ..()
+
+/obj/item/projectile/plasma/adv/mega/shotgun
+	damage = 2
+	range = 6
+	dismemberment = 0
+
 /obj/item/projectile/plasma/adv/mech
 	damage = 10
 	range = 9
+
+/obj/item/projectile/plasma/shotgun
+	damage = 2
+	range = 4
+	dismemberment = 0
 
 /obj/item/projectile/energy/teleport
 	name = "teleportation burst"
@@ -319,11 +342,11 @@
 
 /obj/item/projectile/ornament/on_hit(atom/target)	//knockback
 	..()
-	if(istype(target, /turf))
+	if(!istype(target, /mob))
 		return 0
 	var/obj/T = target
 	var/throwdir = get_dir(firer,target)
-	T.throw_at(get_edge_target_turf(target, throwdir),10,10)
+	T.throw_at(get_edge_target_turf(target, throwdir),5,5) // 10,10 tooooo much
 	return 1
 
 /obj/item/projectile/mimic
@@ -353,3 +376,78 @@
 	var/mob/living/simple_animal/hostile/mimic/copy/ranged/R = new /mob/living/simple_animal/hostile/mimic/copy/ranged(T, G, firer)
 	if(ismob(target))
 		R.target = target
+
+/obj/item/projectile/bullet/a84mm_hedp
+	name ="\improper HEDP rocket"
+	desc = "USE A WEEL GUN"
+	icon_state= "84mm-hedp"
+	damage = 80
+	//shrapnel thing
+	var/shrapnel_range = 5
+	var/max_shrapnel = 5
+	var/embed_prob = 100
+	var/embedded_type = /obj/item/embedded/shrapnel
+	speed = 0.8 //rockets need to be slower than bullets
+	var/anti_armour_damage = 200
+	armour_penetration = 100
+	dismemberment = 100
+	ricochets_max = 0
+
+/obj/item/projectile/bullet/a84mm_hedp/on_hit(atom/target, blocked = FALSE)
+	..()
+	explosion(target, -1, 1, 3, 1, 0, flame_range = 6)
+
+	if(ismecha(target))
+		var/obj/mecha/M = target
+		M.take_damage(anti_armour_damage)
+	if(issilicon(target))
+		var/mob/living/silicon/S = target
+		S.take_overall_damage(anti_armour_damage*0.75, anti_armour_damage*0.25)
+
+	for(var/turf/T in view(shrapnel_range, loc))
+		for(var/mob/living/carbon/human/H in T)
+			var/shrapnel_amount = max_shrapnel - T.Distance(target)
+			if(shrapnel_amount > 0)
+				embed_shrapnel(H, shrapnel_amount)
+
+/obj/item/projectile/bullet/a84mm_hedp/proc/embed_shrapnel(mob/living/carbon/human/H, amount)
+	for(var/i = 0, i < amount, i++)
+		if(prob(embed_prob - H.getarmor(null, "bomb")))
+			var/obj/item/embedded/S = new embedded_type(src)
+			H.hitby(S, skipcatch = 1)
+			S.throwforce = 1
+			S.throw_speed = 1
+			S.sharp = FALSE
+		else
+			to_chat(H, "<span class='warning'>Shrapnel bounces off your armor!</span>")
+
+/obj/item/projectile/bullet/a84mm_he
+	name ="\improper HE missile"
+	desc = "Boom."
+	icon_state = "84mm-he"
+	damage = 30
+	speed = 0.8
+	ricochets_max = 0
+
+/obj/item/projectile/bullet/a84mm_he/on_hit(atom/target, blocked=0)
+	..()
+	explosion(target, 1, 3, 5, 7) //devastating
+
+/obj/item/projectile/limb
+	name = "limb"
+	icon = 'icons/mob/human_races/r_human.dmi'
+	icon_state = "l_arm"
+	speed = 2
+	range = 3
+	flag = "melee"
+	damage = 20
+	damage_type = BRUTE
+	stun = 0.5
+	eyeblur = 20
+
+/obj/item/projectile/limb/New(loc, var/obj/item/organ/external/limb)
+	..(loc)
+	if(istype(limb))
+		name = limb.name
+		icon = limb.icobase
+		icon_state = limb.icon_name

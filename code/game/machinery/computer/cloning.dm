@@ -2,7 +2,7 @@
 #define MENU_RECORDS 2
 
 /obj/machinery/computer/cloning
-	name = "cloning console"
+	name = "biomass pod console"
 	icon = 'icons/obj/machines/computer.dmi'
 	icon_keyboard = "med_key"
 	icon_screen = "dna"
@@ -93,8 +93,8 @@
 /obj/machinery/computer/cloning/attackby(obj/item/W as obj, mob/user as mob, params)
 	if(istype(W, /obj/item/disk/data)) //INSERT SOME DISKETTES
 		if(!src.diskette)
-			user.drop_item()
-			W.loc = src
+			add_fingerprint(user)
+			user.drop_transfer_item_to_loc(W, src)
 			src.diskette = W
 			to_chat(user, "You insert [W].")
 			SStgui.update_uis(src)
@@ -104,10 +104,11 @@
 		if(M.buffer && istype(M.buffer, /obj/machinery/clonepod))
 			var/obj/machinery/clonepod/P = M.buffer
 			if(P && !(P in pods))
+				add_fingerprint(user)
 				pods += P
 				P.connected = src
 				P.name = "[initial(P.name)] #[pods.len]"
-				to_chat(user, "<span class='notice'>You connect [P] to [src].</span>")
+				to_chat(user, span_notice("You connect [P] to [src]."))
 	else
 		return ..()
 
@@ -116,6 +117,9 @@
 	return attack_hand(user)
 
 /obj/machinery/computer/cloning/attack_hand(mob/user as mob)
+	if(..())
+		return TRUE
+
 	user.set_machine(src)
 	add_fingerprint(user)
 
@@ -362,7 +366,7 @@
 						set_temp(emagged ? "Error: Not enough MEAT!" : "Error: Not enough biomass.", "danger")
 					else if(pod.mess)
 						set_temp(emagged ? "Error: The killing pod is ok." : "Error: The cloning pod is malfunctioning.", emagged? "good" : "danger")
-					else if(!config.revival_cloning)
+					else if(!CONFIG_GET(flag/revival_cloning))
 						set_temp(emagged ? "Error: Unable to initiate killing cycle. " : "Error: Unable to initiate cloning cycle.", "danger")
 					else
 						cloneresult = pod.growclone(C)

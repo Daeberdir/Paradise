@@ -211,22 +211,23 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 		else
 			to_chat(user, "<span class='danger'>Machine cannot accept disks in that format.</span>")
 			return
-		if(!user.drop_item())
+		if(!user.drop_transfer_item_to_loc(D, src))
 			return
-		D.loc = src
 		to_chat(user, "<span class='notice'>You add the disk to the machine!</span>")
 	else if(!(linked_destroy && linked_destroy.busy) && !(linked_lathe && linked_lathe.busy) && !(linked_imprinter && linked_imprinter.busy))
 		..()
+	add_fingerprint(user)
 	SStgui.update_uis(src)
 	return
 
-/obj/machinery/computer/rdconsole/emag_act(user as mob)
+/obj/machinery/computer/rdconsole/emag_act(mob/user)
 	if(!emagged)
 		add_attack_logs(user, src, "emagged")
 		playsound(src.loc, 'sound/effects/sparks4.ogg', 75, 1)
 		req_access = list()
 		emagged = TRUE
-		to_chat(user, "<span class='notice'>You disable the security protocols</span>")
+		if(user)
+			to_chat(user, "<span class='notice'>You disable the security protocols</span>")
 
 /obj/machinery/computer/rdconsole/proc/valid_nav(next_menu, next_submenu)
 	switch(next_menu)
@@ -561,7 +562,7 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 			if(t_disk)
 				t_disk.forceMove(loc)
 				if(Adjacent(usr) && !issilicon(usr))
-					usr.put_in_hands(t_disk)
+					usr.put_in_hands(t_disk, ignore_anim = FALSE)
 				t_disk = null
 			menu = MENU_MAIN
 			submenu = SUBMENU_MAIN
@@ -589,7 +590,7 @@ won't update every console in existence) but it's more of a hassle to do. Also, 
 			if(d_disk)
 				d_disk.forceMove(loc)
 				if(Adjacent(usr) && !issilicon(usr))
-					usr.put_in_hands(d_disk)
+					usr.put_in_hands(d_disk, ignore_anim = FALSE)
 				d_disk = null
 			menu = MENU_MAIN
 			submenu = SUBMENU_MAIN

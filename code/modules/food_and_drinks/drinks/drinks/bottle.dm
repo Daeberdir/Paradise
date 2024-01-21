@@ -20,7 +20,7 @@
 	if(ranged)
 		B.loc = new_location
 	else
-		user.drop_item()
+		user.drop_from_active_hand()
 		user.put_in_active_hand(B)
 	B.icon_state = icon_state
 
@@ -66,14 +66,14 @@
 
 		var/mob/living/carbon/human/H = target
 		var/headarmor = 0 // Target's head armor
-		armor_block = H.run_armor_check(affecting, "melee","","",armour_penetration) // For normal attack damage
+		armor_block = H.run_armor_check(affecting, MELEE,"","",armour_penetration) // For normal attack damage
 
 		//If they have a hat/helmet and the user is targeting their head.
-		if(istype(H.head, /obj/item/clothing/head) && affecting == "head")
+		if(istype(H.head, /obj/item/clothing/head) && affecting == BODY_ZONE_HEAD)
 
 			// If their head has an armor value, assign headarmor to it, else give it 0.
-			if(H.head.armor.getRating("melee"))
-				headarmor = H.head.armor.getRating("melee")
+			if(H.head.armor.getRating(MELEE))
+				headarmor = H.head.armor.getRating(MELEE)
 			else
 				headarmor = 0
 		else
@@ -84,8 +84,8 @@
 
 	else
 		//Only humans can have armor, right?
-		armor_block = target.run_armor_check(affecting, "melee")
-		if(affecting == "head")
+		armor_block = target.run_armor_check(affecting, MELEE)
+		if(affecting == BODY_ZONE_HEAD)
 			armor_duration = duration + force
 	armor_duration /= 10
 
@@ -95,11 +95,12 @@
 
 	// You are going to knock someone out for longer if they are not wearing a helmet.
 	var/head_attack_message = ""
-	if(affecting == "head" && iscarbon(target))
+	if(affecting == BODY_ZONE_HEAD && iscarbon(target))
 		head_attack_message = " on the head"
 		//Weaken the target for the duration that we calculated and divide it by 5.
 		if(armor_duration)
-			target.apply_effect(min(armor_duration, 10) , WEAKEN) // Never weaken more than a flash!
+			var/stun_time = (min(armor_duration, 10)) STATUS_EFFECT_CONSTANT
+			target.Weaken(stun_time)
 
 	//Display an attack message.
 	if(target != user)
@@ -388,7 +389,7 @@
 			desc += " You're not sure if making this out of a carton was the brightest idea."
 			isGlass = 0
 
-/obj/item/reagent_containers/food/drinks/bottle/molotov/throw_impact(atom/target,mob/thrower)
+/obj/item/reagent_containers/food/drinks/bottle/molotov/throw_impact(atom/target, datum/thrownthing/throwingdatum)
 	var/firestarter = 0
 	for(var/datum/reagent/R in reagents.reagent_list)
 		for(var/A in accelerants)

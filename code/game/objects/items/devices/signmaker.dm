@@ -49,7 +49,8 @@
 /obj/item/signmaker/emag_act(mob/user)
 	add_attack_logs(user, src, "emagged")
 	clear_holosign()
-	to_chat(user, "You broke the pointer, oh no")
+	if(user)
+		to_chat(user, "You broke the pointer, oh no")
 	holosign_type = /obj/structure/holosoap/holosoap_emagged
 
 /obj/item/signmaker/attack_self(mob/user)
@@ -93,13 +94,13 @@
 			energy -= 1
 			icon_flick()
 			var/mob/living/carbon/C = target
-			if(user.zone_selected == "eyes")
+			if(user.zone_selected == BODY_ZONE_PRECISE_EYES)
 				add_attack_logs(user, C, "Shone a laser in the eyes with [src]")
 				//20% chance to actually hit the eyes
 				if(prob(20))
 					visible_message("<span class='notice'>You blind [C] by shining [src] in [C.p_their()] eyes.</span>")
 					if(C.weakeyes)
-						C.Stun(1)
+						C.Stun(2 SECONDS)
 				else
 					visible_message("<span class='warning'>You fail to blind [C] by shining [src] at [C.p_their()] eyes!</span>")
 			else
@@ -108,11 +109,11 @@
 			energy -= 1
 			icon_flick()
 			var/mob/living/silicon/S = target
-			if(user.zone_selected == "eyes")
+			if(user.zone_selected == BODY_ZONE_PRECISE_EYES)
 				//20% chance to actually hit the sensors
 				if(prob(20))
 					S.flash_eyes(affect_silicon = 1)
-					S.Weaken(rand(5,10))
+					S.Weaken(rand(10 SECONDS,20 SECONDS))
 					to_chat(S, "<span class='warning'>Your sensors were overloaded by a laser!</span>")
 					visible_message("<span class='notice'>You overload [S] by shining [src] at [S.p_their()] sensors.</span>")
 
@@ -183,6 +184,9 @@
 /obj/structure/holosoap/Destroy()
 	projector.sign = null
 	return ..()
+
+/obj/structure/holosoap/has_prints()
+	return FALSE
 
 /obj/structure/holosoap/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
 	switch(damage_type)

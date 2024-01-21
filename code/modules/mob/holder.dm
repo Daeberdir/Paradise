@@ -57,7 +57,7 @@
 	var/mob/M = src.loc                      //Get our mob holder (if any).
 
 	if(istype(M))
-		M.unEquip(src)
+		M.drop_item_ground(src)
 		to_chat(M, "[src.name] вырывается из вашей хватки!")
 		to_chat(L, "Вы вырываетесь из хвата [M.name]!")
 	else if(istype(loc,/obj/item))
@@ -74,17 +74,20 @@
 	return
 
 //Mob procs and vars for scooping up
-/mob/living/var/holder_type
+/mob/living
+	var/holder_type = null
 
 /mob/living/proc/get_scooped(var/mob/living/carbon/grabber)
-	if(!holder_type)	return
+	if(!holder_type)
+		return
 
 	var/obj/item/holder/H = new holder_type(loc)
 	src.forceMove(H)
 	H.name = name
-	if(istype(H, /obj/item/holder/mouse))	H.icon_state = icon_state
-	if(istype(H, /obj/item/holder/chicken))	H.icon_state = icon_state
-	if(desc)	H.desc = desc
+	H.icon = icon
+	H.icon_state = icon_state
+	if(desc)
+		H.desc = desc
 	H.attack_hand(grabber)
 
 	to_chat(grabber, "<span class='notice'>Вы подняли [src.name].")
@@ -125,7 +128,7 @@
 /obj/item/holder/cogscarab
 	name = "cogscarab"
 	desc = "A strange, drone-like machine. It constantly emits the hum of gears."
-	icon_state = "cogscarab"
+	icon_state = "drone_holder"
 	origin_tech = "materials=3;magnets=4;powerstorage=9;bluespace=4"
 
 /obj/item/holder/pai
@@ -297,6 +300,7 @@
 	desc = "It's a pet"
 	icon = 'icons/mob/animal.dmi'
 	icon_state = "snake"
+	slot_flags = SLOT_HEAD | SLOT_NECK
 
 /obj/item/holder/parrot
 	name = "pet"

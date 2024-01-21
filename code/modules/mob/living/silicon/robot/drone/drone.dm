@@ -75,6 +75,10 @@
 	// NO BRAIN.
 	mmi = null
 
+	// Give us our action button
+	var/datum/action/innate/hide/drone/hide = new()
+	hide.Grant(src)
+
 	//We need to screw with their HP a bit. They have around one fifth as much HP as a full borg.
 	for(var/V in components) if(V != "power cell")
 		var/datum/robot_component/C = components[V]
@@ -99,6 +103,14 @@
 	//Some tidying-up.
 	scanner.Grant(src)
 	update_icons()
+
+
+/mob/living/silicon/robot/drone/Destroy()
+	for(var/datum/action/innate/hide/drone/hide in actions)
+		hide.Remove(src)
+
+	. = ..()
+
 
 /mob/living/silicon/robot/drone/init(alien = FALSE, mob/living/silicon/ai/ai_to_sync_to = null)
 	laws = new /datum/ai_laws/drone()
@@ -150,7 +162,7 @@
 
 	else if(W.GetID())
 		if(stat == DEAD)
-			if(!config.allow_drone_spawn || emagged || health < -35) //It's dead, Dave.
+			if(!CONFIG_GET(flag/allow_drone_spawn) || emagged || health < -35) //It's dead, Dave.
 				to_chat(user, "<span class='warning'>The interface is fried, and a distressing burned smell wafts from the robot's interior. You're not rebooting this one.</span>")
 				return
 
@@ -170,7 +182,7 @@
 			for(var/mob/living/silicon/robot/drone/D in GLOB.silicon_mob_list)
 				if(D.key && D.client)
 					drones++
-			if(drones < config.max_maint_drones)
+			if(drones < CONFIG_GET(number/max_maint_drones))
 				request_player()
 			return
 
@@ -191,7 +203,7 @@
 
 	..()
 
-/mob/living/silicon/robot/drone/emag_act(user as mob)
+/mob/living/silicon/robot/drone/emag_act(mob/user)
 	if(!client || stat == DEAD)
 		to_chat(user, "<span class='warning'>There's not much point subverting this heap of junk.</span>")
 		return
@@ -231,6 +243,7 @@
 	clear_inherent_laws()
 	laws = new /datum/ai_laws/syndicate_override
 	set_zeroth_law("Only [H.real_name] and people [H.real_name] designates as being such are Syndicate Agents.")
+	SSticker?.score?.save_silicon_laws(src, user, "EMAG act", log_all_laws = TRUE)
 
 	to_chat(src, "<b>Obey these laws:</b>")
 	laws.show_laws(src)
@@ -316,7 +329,7 @@
 
 	mind = new
 	mind.current = src
-	mind.original = src
+	mind.set_original_mob(src)
 	mind.assigned_role = "Drone"
 	SSticker.minds += mind
 	mind.key = player.key
@@ -349,10 +362,10 @@
 	if(is_type_in_list(AM, allowed_bumpable_objects))
 		return ..()
 
-/mob/living/silicon/robot/drone/Bumped(atom/movable/AM)
-	return
+/mob/living/silicon/robot/drone/Bumped(atom/movable/moving_atom)
+	return ..()
 
-/mob/living/silicon/robot/drone/start_pulling(atom/movable/AM, state, force = pull_force, show_message = FALSE)
+/mob/living/silicon/robot/drone/start_pulling(atom/movable/AM, force = pull_force, show_message = FALSE)
 
 	if(is_type_in_list(AM, pullable_drone_items))
 		..(AM, force = INFINITY) // Drone power! Makes them able to drag pipes and such
@@ -361,13 +374,13 @@
 		var/obj/item/O = AM
 		if(O.w_class > WEIGHT_CLASS_SMALL)
 			if(show_message)
-				to_chat(src, "<span class='warning'>You are too small to pull that.</span>")
+				to_chat(src, span_warning("You are too small to pull that."))
 			return
 		else
 			..()
 	else
 		if(show_message)
-			to_chat(src, "<span class='warning'>You are too small to pull that.</span>")
+			to_chat(src, span_warning("You are too small to pull that."))
 
 /mob/living/silicon/robot/drone/add_robot_verbs()
 	src.verbs |= silicon_subsystems

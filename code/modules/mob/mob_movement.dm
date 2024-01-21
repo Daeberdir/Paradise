@@ -39,6 +39,11 @@
 
 #define MOVEMENT_DELAY_BUFFER 0.75
 #define MOVEMENT_DELAY_BUFFER_DELTA 1.25
+#define CONFUSION_LIGHT_COEFFICIENT		0.15
+#define CONFUSION_HEAVY_COEFFICIENT		0.075
+#define CONFUSION_MAX					80 SECONDS
+
+
 /client/Move(n, direct)
 	if(world.time < move_delay)
 		return
@@ -135,17 +140,20 @@
 
 	if(locate(/obj/item/grab, mob))
 		current_move_delay += 7
-	else if(mob.confused)
-		var/newdir = NONE
-		if(mob.confused > 40)
-			newdir = pick(GLOB.alldirs)
-		else if(prob(mob.confused * 1.5))
-			newdir = angle2dir(dir2angle(direct) + pick(90, -90))
-		else if(prob(mob.confused * 3))
-			newdir = angle2dir(dir2angle(direct) + pick(45, -45))
-		if(newdir)
-			direct = newdir
-			n = get_step(mob, direct)
+	else if(isliving(mob))
+		var/mob/living/L = mob
+		if(L.get_confusion())
+			var/newdir = NONE
+			var/confusion = L.get_confusion()
+			if(confusion > CONFUSION_MAX)
+				newdir = pick(GLOB.alldirs)
+			else if(prob(confusion * CONFUSION_HEAVY_COEFFICIENT))
+				newdir = angle2dir(dir2angle(direct) + pick(90, -90))
+			else if(prob(confusion * CONFUSION_LIGHT_COEFFICIENT))
+				newdir = angle2dir(dir2angle(direct) + pick(45, -45))
+			if(newdir)
+				direct = newdir
+				n = get_step(mob, direct)
 
 	. = mob.SelfMove(n, direct, current_move_delay)
 	mob.setDir(direct)
@@ -161,10 +169,14 @@
 	moving = 0
 	if(mob && .)
 		if(mob.throwing)
-			mob.throwing.finalize(FALSE)
+			mob.throwing.finalize()
 
 	for(var/obj/O in mob)
 		O.on_mob_move(direct, mob)
+
+#undef CONFUSION_LIGHT_COEFFICIENT
+#undef CONFUSION_HEAVY_COEFFICIENT
+#undef CONFUSION_MAX
 
 
 /mob/proc/SelfMove(turf/n, direct, movetime)
@@ -321,31 +333,24 @@
 /mob/proc/mob_negates_gravity()
 	return 0
 
-/mob/proc/Move_Pulled(atom/A)
+
+/mob/proc/Move_Pulled(atom/target)
 	if(!canmove || restrained() || !pulling)
 		return
 	if(pulling.anchored || pulling.move_resist > move_force || !pulling.Adjacent(src))
 		stop_pulling()
 		return
 	if(isliving(pulling))
-		var/mob/living/L = pulling
-		if(L.buckled && L.buckled.buckle_prevents_pull) //if they're buckled to something that disallows pulling, prevent it
+		var/mob/living/living_pulling = pulling
+		if(living_pulling.buckled?.buckle_prevents_pull) //if they're buckled to something that disallows pulling, prevent it
 			stop_pulling()
 			return
-	if(A == loc && pulling.density)
+	if(target == loc && pulling.density)
 		return
-	if(!Process_Spacemove(get_dir(pulling.loc, A)))
+	if(!Process_Spacemove(get_dir(pulling.loc, target)))
 		return
-	if(ismob(pulling))
-		var/mob/M = pulling
-		var/atom/movable/t = M.pulling
-		M.stop_pulling()
-		step(pulling, get_dir(pulling.loc, A))
-		if(M)
-			M.start_pulling(t)
-	else
-		step(pulling, get_dir(pulling.loc, A))
-	return
+	step(pulling, get_dir(pulling.loc, target))
+
 
 /mob/proc/update_gravity(has_gravity)
 	return
@@ -370,7 +375,7 @@
 			next_in_line = BODY_ZONE_HEAD
 
 	var/obj/screen/zone_sel/selector = mob.hud_used.zone_select
-	selector.set_selected_zone(next_in_line, mob)
+	selector.set_selected_zone(next_in_line)
 
 /client/verb/body_r_arm()
 	set name = "body-r-arm"
@@ -385,7 +390,7 @@
 		next_in_line = BODY_ZONE_R_ARM
 
 	var/obj/screen/zone_sel/selector = mob.hud_used.zone_select
-	selector.set_selected_zone(next_in_line, mob)
+	selector.set_selected_zone(next_in_line)
 
 /client/verb/body_chest()
 	set name = "body-chest"
@@ -399,7 +404,7 @@
 	else
 		next_in_line = BODY_ZONE_CHEST
 	var/obj/screen/zone_sel/selector = mob.hud_used.zone_select
-	selector.set_selected_zone(next_in_line, mob)
+	selector.set_selected_zone(next_in_line)
 
 /client/verb/body_l_arm()
 	set name = "body-l-arm"
@@ -415,7 +420,7 @@
 		next_in_line = BODY_ZONE_L_ARM
 
 	var/obj/screen/zone_sel/selector = mob.hud_used.zone_select
-	selector.set_selected_zone(next_in_line, mob)
+	selector.set_selected_zone(next_in_line)
 
 /client/verb/body_r_leg()
 	set name = "body-r-leg"
@@ -431,7 +436,7 @@
 		next_in_line = BODY_ZONE_R_LEG
 
 	var/obj/screen/zone_sel/selector = mob.hud_used.zone_select
-	selector.set_selected_zone(next_in_line, mob)
+	selector.set_selected_zone(next_in_line)
 
 /client/verb/body_groin()
 	set name = "body-groin"
@@ -441,7 +446,7 @@
 		return
 
 	var/obj/screen/zone_sel/selector = mob.hud_used.zone_select
-	selector.set_selected_zone(BODY_ZONE_PRECISE_GROIN, mob)
+	selector.set_selected_zone(BODY_ZONE_PRECISE_GROIN)
 
 /client/verb/body_tail()
 	set name = "body-tail"
@@ -451,7 +456,7 @@
 		return
 
 	var/obj/screen/zone_sel/selector = mob.hud_used.zone_select
-	selector.set_selected_zone(BODY_ZONE_TAIL, mob)
+	selector.set_selected_zone(BODY_ZONE_TAIL)
 
 /client/verb/body_l_leg()
 	set name = "body-l-leg"
@@ -467,7 +472,7 @@
 		next_in_line = BODY_ZONE_L_LEG
 
 	var/obj/screen/zone_sel/selector = mob.hud_used.zone_select
-	selector.set_selected_zone(next_in_line, mob)
+	selector.set_selected_zone(next_in_line)
 
 /client/verb/toggle_walk_run()
 	set name = "toggle-walk-run"
@@ -480,9 +485,9 @@
 	if(iscarbon(src))
 		var/mob/living/carbon/C = src
 		if(C.legcuffed)
-			to_chat(C, "<span class='notice'>Ваши ноги скованы! Вы не можете бежать, пока не снимете [C.legcuffed]!</span>")
+			to_chat(C, span_notice("Ваши ноги скованы! Вы не можете бежать, пока не снимете [C.legcuffed]!"))
 			C.m_intent = MOVE_INTENT_WALK	//Just incase
-			C.hud_used.move_intent.icon_state = "walking"
+			C.hud_used?.move_intent.icon_state = "walking"
 			return
 
 	var/icon_toggle
@@ -496,4 +501,4 @@
 	if(hud_used && hud_used.move_intent && hud_used.static_inventory)
 		hud_used.move_intent.icon_state = icon_toggle
 		for(var/obj/screen/mov_intent/selector in hud_used.static_inventory)
-			selector.update_icon(src)
+			selector.update_icon()

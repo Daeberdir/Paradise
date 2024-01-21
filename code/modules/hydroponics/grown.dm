@@ -87,7 +87,7 @@
 			return ..()
 
 	if (istype(O, /obj/item/plant_analyzer))
-		var/msg = "<span class='info'>*---------*\n This is \a <span class='name'>[src]</span>.\n"
+		var/msg = "<span class='info'>This is \a <span class='name'>[src].</span>\n"
 		if(seed)
 			msg += seed.get_analyzer_text()
 		var/reag_txt = ""
@@ -99,7 +99,6 @@
 
 		if(reag_txt)
 			msg += reag_txt
-			msg += "<br><span class='info'>*---------*</span>"
 		to_chat(user, msg)
 	else
 		if(seed)
@@ -110,17 +109,20 @@
 // Various gene procs
 /obj/item/reagent_containers/food/snacks/grown/attack_self(mob/user)
 	if(seed && seed.get_gene(/datum/plant_gene/trait/squash))
+		if(!do_after(user, 1 SECONDS, target = user))
+			return
 		squash(user, user)
 	..()
 
-/obj/item/reagent_containers/food/snacks/grown/throw_impact(atom/hit_atom)
+/obj/item/reagent_containers/food/snacks/grown/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	if(!..()) //was it caught by a mob?
 		if(seed)
-			log_action(thrownby, hit_atom, "Thrown [src] at")
+			var/mob/thrower = locateUID(thrownby)
+			log_action(thrower, hit_atom, "Thrown [src] at")
 			for(var/datum/plant_gene/trait/T in seed.genes)
 				T.on_throw_impact(src, hit_atom)
 			if(seed.get_gene(/datum/plant_gene/trait/squash))
-				squash(hit_atom, thrownby)
+				squash(hit_atom, thrower)
 
 /obj/item/reagent_containers/food/snacks/grown/proc/squash(atom/target, mob/thrower)
 	var/turf/T = get_turf(target)
@@ -175,7 +177,7 @@
 
 // For item-containing growns such as eggy or gatfruit
 /obj/item/reagent_containers/food/snacks/grown/shell/attack_self(mob/user)
-	user.unEquip(src)
+	user.temporarily_remove_item_from_inventory(src)
 	if(trash)
 		var/obj/item/T = generate_trash()
 		user.put_in_hands(T)
@@ -202,4 +204,12 @@
 		genes_str = english_list(plant_gene_names)
 
 	add_attack_logs(user, target, "[what_done] ([reagent_str] | [genes_str])")
+
+
+/obj/item/reagent_containers/food/snacks/grown/extinguish_light(force = FALSE)
+	if(!force)
+		return
+	if(seed.get_gene(/datum/plant_gene/trait/glow/shadow))
+		return
+	set_light(0)
 

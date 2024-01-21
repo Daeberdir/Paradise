@@ -94,12 +94,13 @@
 	. = ..()
 	attempt_reload()
 
-/obj/item/gun/energy/kinetic_accelerator/equipped(mob/user)
+/obj/item/gun/energy/kinetic_accelerator/equipped(mob/user, slot, initial)
 	. = ..()
+
 	if(!can_shoot())
 		attempt_reload()
 
-/obj/item/gun/energy/kinetic_accelerator/dropped()
+/obj/item/gun/energy/kinetic_accelerator/dropped(mob/user, silent = FALSE)
 	. = ..()
 	if(!QDELING(src) && !holds_charge)
 		// Put it on a delay because moving item from slot to hand
@@ -166,11 +167,22 @@
 
 /obj/item/gun/energy/kinetic_accelerator/experimental
 	name = "experimental kinetic accelerator"
-	desc = "A modified version of the proto-kinetic accelerator, with twice the modkit space of the standard version."
+	desc = "A modified version of the proto-kinetic accelerator, with more modkit space of the standard version."
 	icon_state = "kineticgun_h"
 	item_state = "kineticgun_h"
 	origin_tech = "combat=5;powerstorage=3;engineering=5"
+	max_mod_capacity = 150
+
+/obj/item/gun/energy/kinetic_accelerator/mega
+	name = "magmite proto-kinetic accelerator"
+	icon_state = "kineticgun_m"
+	item_state = "kineticgun_mega"
+	empty_state = "kineticgun_m_empty"
+	desc = "A self recharging, ranged mining tool that does increased damage in low pressure. This one has been enhanced with plasma magmite."
+	origin_tech = "combat=5;powerstorage=3;engineering=5"
 	max_mod_capacity = 200
+	trigger_guard = TRIGGER_GUARD_ALLOW_ALL
+
 
 //Casing
 /obj/item/ammo_casing/energy/kinetic
@@ -196,10 +208,15 @@
 	damage_type = BRUTE
 	flag = "bomb"
 	range = 3
+	var/power = 1
 
 	var/pressure_decrease_active = FALSE
 	var/pressure_decrease = 0.25
 	var/obj/item/gun/energy/kinetic_accelerator/kinetic_gun
+
+/obj/item/projectile/kinetic/mech
+	range = 5
+	power = 3 // more power for the god of power!
 
 /obj/item/projectile/kinetic/pod
 	range = 4
@@ -248,7 +265,7 @@
 			visible_message("<span class='notice'>This rock appears to be resistant to all mining tools except pickaxes!</span>")
 		else
 			var/turf/simulated/mineral/M = target_turf
-			M.gets_drilled(firer)
+			M.attempt_drill(firer, 0, power)
 	var/obj/effect/temp_visual/kinetic_blast/K = new /obj/effect/temp_visual/kinetic_blast(target_turf)
 	K.color = color
 
@@ -319,8 +336,7 @@
 		if(.)
 			to_chat(user, "<span class='notice'>You install the modkit.</span>")
 			playsound(loc, usesound, 100, 1)
-			user.unEquip(src)
-			forceMove(KA)
+			user.drop_transfer_item_to_loc(src, KA)
 			KA.modkits += src
 		else
 			to_chat(user, "<span class='notice'>The modkit you're trying to install would conflict with an already installed modkit. Use a crowbar to remove existing modkits.</span>")
@@ -405,8 +421,9 @@
 	var/stats_stolen = FALSE
 
 /obj/item/borg/upgrade/modkit/aoe/install(obj/item/gun/energy/kinetic_accelerator/KA, mob/user)
-	if(..())
-		return
+	. = ..()
+	if(!.)
+		return FALSE
 	for(var/obj/item/borg/upgrade/modkit/aoe/AOE in KA.modkits) //make sure only one of the aoe modules has values if somebody has multiple
 		if(AOE.stats_stolen || AOE == src)
 			continue
@@ -430,7 +447,7 @@
 		for(var/T in RANGE_TURFS(1, target_turf) - target_turf)
 			if(ismineralturf(T) && !isancientturf(T))
 				var/turf/simulated/mineral/M = T
-				M.gets_drilled(K.firer)
+				M.attempt_drill(K.firer)
 	if(modifier)
 		for(var/mob/living/L in range(1, target_turf) - K.firer - target)
 			var/armor = L.run_armor_check(K.def_zone, K.flag, "", "", K.armour_penetration)
@@ -459,6 +476,16 @@
 	name = "minebot passthrough"
 	desc = "Causes kinetic accelerator shots to pass through minebots."
 	cost = 0
+
+//Hardness
+/obj/item/borg/upgrade/modkit/hardness
+	name = "hardness increase"
+	desc = "Increases the maximum piercing power of a kinetic accelerator when installed."
+	denied_type = /obj/item/borg/upgrade/modkit/hardness
+	cost = 30
+
+/obj/item/borg/upgrade/modkit/hardness/modify_projectile(obj/item/projectile/kinetic/K)
+	K.power += modifier
 
 //Tendril-unique modules
 /obj/item/borg/upgrade/modkit/cooldown/repeater

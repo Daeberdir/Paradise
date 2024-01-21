@@ -178,10 +178,8 @@
 	desc = "An energy gun that recharges wirelessly during away missions. Does not work on the main station."
 	force = 10
 	origin_tech = null
-	selfcharge = 1
-	can_charge = 0
-	// Selfcharge is enabled and disabled, and used as the away mission tracker
-	selfcharge = TRUE
+	can_charge = FALSE
+	selfcharge = TRUE	// Selfcharge is enabled and disabled, and used as the away mission tracker
 
 /obj/item/gun/energy/laser/awaymission_aeg/Initialize(mapload)
 	. = ..()
@@ -227,6 +225,7 @@
 				D.access |= this_access
 				did_upgrade = 1
 		if(did_upgrade)
+			add_fingerprint(user)
 			to_chat(user, "<span class='notice'>An access type was added to your ID card.</span>")
 			if(beenused)
 				return

@@ -152,17 +152,14 @@
 	paintable = FALSE
 	var/event_step = 20
 
-/obj/machinery/door/airlock/uranium/New()
-	..()
-	addtimer(CALLBACK(src, PROC_REF(radiate)), event_step)
-
-
-/obj/machinery/door/airlock/uranium/proc/radiate()
-	if(prob(50))
-		for(var/mob/living/L in range (3,src))
-			L.apply_effect(15,IRRADIATE,0)
-	addtimer(CALLBACK(src, PROC_REF(radiate)), event_step)
-
+/obj/machinery/door/airlock/uranium/Initialize()
+	. = ..()
+	AddComponent(/datum/component/radioactivity, \
+				rad_per_cycle = 15, \
+				rad_cycle_chance = 50, \
+				rad_cycle = 2 SECONDS, \
+				rad_cycle_radius = 3 \
+	)
 
 /obj/machinery/door/airlock/uranium/glass
 	opacity = 0
@@ -198,6 +195,7 @@
 
 /obj/machinery/door/airlock/plasma/attackby(obj/C, mob/user, params)
 	if(is_hot(C) > 300)
+		add_fingerprint(user)
 		add_attack_logs(user, src, "ignited using [C]", ATKLOG_FEW)
 		investigate_log("was <font color='red'><b>ignited</b></font> by [key_name_log(user)]", INVESTIGATE_ATMOS)
 		ignite(is_hot(C))
@@ -312,10 +310,12 @@
 	assemblytype = /obj/structure/door_assembly/door_assembly_centcom
 	normal_integrity = 1000
 	security_level = 6
+	hackable = FALSE
 
-/obj/machinery/door/airlock/centcom/emag_act(mob/user)
-	to_chat(user, "<span class='notice'>The electronic systems in this door are far too advanced for your primitive hacking peripherals.</span>")
-	return
+/obj/machinery/door/airlock/centcom/attack_hand(mob/user)
+	. = ..()
+	if(user.a_intent == INTENT_HARM && ishuman(user) && user.dna.species.obj_damage)
+		return
 
 /////////////////////////////////
 /*
@@ -331,6 +331,12 @@
 	normal_integrity = 400 // reverse engieneerd: 400 * 1.5 (sec lvl 6) = 600 = original
 	security_level = 6
 	paintable = FALSE
+
+/obj/machinery/door/airlock/vault/rcd_deconstruct_act(mob/user, obj/item/rcd/our_rcd)
+	if(!our_rcd.canRwall)
+		return RCD_NO_ACT
+	. = ..()
+
 
 //////////////////////////////////
 /*
@@ -355,10 +361,7 @@
 	explosion_block = 2
 	normal_integrity = 1000
 	security_level = 6
-
-/obj/machinery/door/airlock/hatch/syndicate/command/emag_act(mob/user)
-	to_chat(user, "<span class='notice'>The electronic systems in this door are far too advanced for your primitive hacking peripherals.</span>")
-	return
+	hackable = FALSE
 
 /obj/machinery/door/airlock/hatch/syndicate/vault
 	name = "syndicate vault hatch"
@@ -381,6 +384,7 @@
 	if(!issilicon(user))
 		if(isElectrified())
 			if(shock(user, 75))
+				add_fingerprint(user)
 				return
 	if(istype(C, /obj/item/detective_scanner))
 		return
@@ -404,9 +408,9 @@
 	if(!I.use_tool(src, user, 0, amount = 0, volume = I.tool_volume))
 		return
 	welded = !welded
-	visible_message("<span class='notice'>[user] [welded ? null : "un"]welds [src]!</span>",\
-					"<span class='notice'>You [welded ? null : "un"]weld [src]!</span>",\
-					"<span class='warning'>You hear welding.</span>")
+	visible_message(span_notice("[user] [welded ? null : "un"]welds [src]!"),\
+					span_notice("You [welded ? null : "un"]weld [src]!"),\
+					span_italics("You hear welding."))
 	update_icon()
 
 /obj/machinery/door/airlock/maintenance_hatch
@@ -433,6 +437,11 @@
 	damage_deflection = 30
 	paintable = FALSE
 
+/obj/machinery/door/airlock/highsecurity/rcd_deconstruct_act(mob/user, obj/item/rcd/our_rcd)
+	if(!our_rcd.canRwall)
+		return RCD_NO_ACT
+	. = ..()
+
 /obj/machinery/door/airlock/highsecurity/red
 	name = "secure armory airlock"
 	hackProof = TRUE
@@ -442,6 +451,7 @@
 	if(!issilicon(user))
 		if(isElectrified())
 			if(shock(user, 75))
+				add_fingerprint(user)
 				return
 	if(istype(C, /obj/item/detective_scanner))
 		return
@@ -458,9 +468,9 @@
 	if(!I.use_tool(src, user, 0, volume = I.tool_volume))
 		return
 	welded = !welded
-	visible_message("<span class='notice'>[user] [welded ? null : "un"]welds [src]!</span>",\
-					"<span class='notice'>You [welded ? null : "un"]weld [src]!</span>",\
-					"<span class='warning'>You hear welding.</span>")
+	visible_message(span_notice("[user] [welded ? null : "un"]welds [src]!"),\
+					span_notice("You [welded ? null : "un"]weld [src]!"),\
+					span_italics("You hear welding."))
 	update_icon()
 
 
@@ -526,6 +536,18 @@
 	/// Inner airlock material (Glass, plasteel)
 	var/stealth_airlock_material = null
 
+/obj/machinery/door/airlock/cult_fake
+	name = "cult airlock"
+	icon = 'icons/obj/doors/airlocks/cult/runed/cult.dmi'
+	overlays_file = 'icons/obj/doors/airlocks/cult/runed/cult-overlays.dmi'
+	assemblytype = /obj/structure/door_assembly/door_assembly_cult_fake
+
+/obj/machinery/door/airlock/cult_fake/Initialize()
+	. = ..()
+	icon = SSticker.cultdat?.airlock_runed_icon_file
+	overlays_file = SSticker.cultdat?.airlock_runed_overlays_file
+	update_icon()
+
 /obj/machinery/door/airlock/cult/Initialize()
 	. = ..()
 	icon = SSticker.cultdat?.airlock_runed_icon_file
@@ -549,7 +571,7 @@
 			var/atom/throwtarget
 			throwtarget = get_edge_target_turf(src, get_dir(src, get_step_away(L, src)))
 			SEND_SOUND(L, pick(sound('sound/hallucinations/turn_around1.ogg', 0, 1, 50), sound('sound/hallucinations/turn_around2.ogg', 0, 1, 50)))
-			L.Weaken(2)
+			L.Weaken(4 SECONDS)
 			L.throw_at(throwtarget, 5, 1,src)
 		return FALSE
 
@@ -581,10 +603,15 @@
 /obj/machinery/door/airlock/cult/ratvar_act()
 	new /obj/machinery/door/airlock/clockwork(get_turf(src))
 	qdel(src)
+
 /obj/machinery/door/airlock/cult/friendly
 	friendly = TRUE
 
 /obj/machinery/door/airlock/cult/glass
+	glass = TRUE
+	opacity = 0
+
+/obj/machinery/door/airlock/cult_fake/glass
 	glass = TRUE
 	opacity = 0
 
@@ -662,7 +689,7 @@
 		var/atom/throwtarget
 		throwtarget = get_edge_target_turf(src, get_dir(src, get_step_away(L, src)))
 		SEND_SOUND(L, pick(sound('sound/hallucinations/turn_around1.ogg', 0, 1, 50), sound('sound/hallucinations/turn_around2.ogg', 0, 1, 50)))
-		L.Weaken(2)
+		L.Weaken(4 SECONDS)
 		L.throw_at(throwtarget, 5, 1,src)
 		return FALSE
 
@@ -793,7 +820,7 @@
 /obj/machinery/door/airlock/syndicate/command
 	name = "evil looking command airlock"
 	icon = 'icons/obj/doors/airlocks/syndicate/command.dmi'
-	assemblytype = /obj/structure/door_assembly/syndicate/door_assembly_syndie_research
+	assemblytype = /obj/structure/door_assembly/syndicate/door_assembly_syndie_com
 	normal_integrity = 500
 
 /obj/machinery/door/airlock/syndicate/command/glass
@@ -823,6 +850,11 @@
 	opacity = 0
 	glass = TRUE
 	normal_integrity = 300
+
+/obj/machinery/door/airlock/syndicate/extmai/glass/attack_hand(mob/user)
+	. = ..()
+	if(user.a_intent == INTENT_HARM && ishuman(user) && user.dna.species.obj_damage)
+		return
 
 /*
 	Misc Airlocks

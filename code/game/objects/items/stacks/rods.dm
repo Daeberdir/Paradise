@@ -42,10 +42,9 @@ GLOBAL_LIST_INIT(rod_recipes, list ( \
 /obj/item/stack/rods/fifty
 	amount = 50
 
-/obj/item/stack/rods/New(loc, amount=null)
-	..()
+/obj/item/stack/rods/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.rod_recipes
-	update_icon()
 
 /obj/item/stack/rods/update_icon()
 	var/amount = get_amount()
@@ -71,13 +70,14 @@ GLOBAL_LIST_INIT(rod_recipes, list ( \
 	var/replace = user.is_in_inactive_hand(src)
 	use(2)
 	if(get_amount() <= 0 && replace)
-		user.unEquip(src, 1)
+		user.drop_item_ground(src, force = TRUE)
 		if(new_item)
 			user.put_in_hands(new_item)
 
 /obj/item/stack/rods/cyborg
 	materials = list()
 	is_cyborg = 1
+	cyborg_construction_stack = /obj/item/stack/rods
 
 /obj/item/stack/rods/cyborg/update_icon()
 	return
@@ -98,6 +98,7 @@ GLOBAL_LIST_INIT(rod_recipes, list ( \
 	throw_range = 7
 	max_amount = 50
 	attack_verb = list("hit", "bludgeoned", "whacked")
+	materials = list(MAT_METAL=800, MAT_PLASMA=200, MAT_TITANIUM=400)
 	hitsound = 'sound/weapons/grenadelaunch.ogg'
 	toolspeed = 1
 	usesound = 'sound/items/deconstruct.ogg'
@@ -109,6 +110,3 @@ GLOBAL_LIST_INIT(rod_recipes, list ( \
 	else
 		icon_state = "f_rods"
 
-/obj/item/stack/fireproof_rods/Initialize(mapload)
-	. = ..()
-	update_icon()

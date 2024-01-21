@@ -21,7 +21,7 @@
 	if(owner_AI && owner_AI.malf_cooldown > world.time)
 		return
 
-/datum/action/innate/ai/Trigger()
+/datum/action/innate/ai/Trigger(left_click = TRUE)
 	. = ..()
 	if(auto_use_uses)
 		adjust_uses(-1)
@@ -93,7 +93,7 @@
 	. = ..()
 	owner_AI.malf_picker = new /datum/module_picker
 
-/datum/action/innate/ai/choose_modules/Trigger()
+/datum/action/innate/ai/choose_modules/Trigger(left_click = TRUE)
 	. = ..()
 	owner_AI.malf_picker.use(owner_AI)
 
@@ -104,7 +104,7 @@
 	button_icon_state = "apcemag"
 	auto_use_uses = FALSE // Here just to prevent the "You have X uses remaining" from popping up.
 
-/datum/action/innate/ai/return_to_core/Trigger()
+/datum/action/innate/ai/return_to_core/Trigger(left_click = TRUE)
 	. = ..()
 	var/obj/machinery/power/apc/apc = owner_AI.loc
 	if(!istype(apc)) // This shouldn't happen but here for safety.
@@ -378,7 +378,7 @@
 	name = "Destroy RCDs"
 	desc = "Detonate all non-cyborg RCDs on the station."
 	button_icon_state = "detonate_rcds"
-	uses = 1
+	uses = 2
 	cooldown_period = 100
 
 /datum/action/innate/ai/destroy_rcds/Activate()

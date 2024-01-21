@@ -805,12 +805,16 @@
 	icon_state = "long_braided"
 
 /datum/sprite_accessory/hair/long_emo
-	name = "Long Emo"
+	name = "Long Emo alt"
 	icon_state = "longemo_alt"
 
-/datum/sprite_accessory/hair/zone
+/datum/sprite_accessory/hair/zone1
 	name = "Zone"
 	icon_state = "zone"
+
+/datum/sprite_accessory/hair/zone2
+	name = "Zone Alt"
+	icon_state = "zone_alt"
 
 /datum/sprite_accessory/hair/judge
 	name = "Judge"
@@ -872,3 +876,42 @@
 	name = "Baum"
 	icon_state = "baum"
 
+/datum/sprite_accessory/hair/wavyshoulder_down
+	name = "Wavyshoulder Down"
+	icon_state = "wavyshoulder_down"
+
+/datum/sprite_accessory/hair/short_spiked
+	name = "Short Spiked"
+	icon_state = "short_spiked"
+
+/datum/sprite_accessory/hair/casual_cut
+	name = "Casual Cut"
+	icon_state = "casual_cut"
+
+/datum/sprite_accessory/hair/side_sweep
+	name = "Side Sweep"
+	icon_state = "side_sweep"
+
+/datum/sprite_accessory/hair/kreoline_whomen
+	name = "Kreoline Whomen"
+	icon_state = "kreoline_whomen"
+
+/datum/sprite_accessory/hair/newyou
+	name = "New You"
+	icon_state = "newyou"
+
+/datum/sprite_accessory/hair/sidecut_r
+	name = "Sidecut Right"
+	icon_state = "rightside"
+
+/datum/sprite_accessory/hair/sidecut_l
+	name = "Sidecut Left"
+	icon_state = "leftside"
+
+/datum/sprite_accessory/hair/longstraighttail
+	name = "Ponytail Straight"
+	icon_state = "longstraightponytail"
+
+/datum/sprite_accessory/hair/secretary_cut
+	name = "Secretary Cut"
+	icon_state = "secretary_cut"

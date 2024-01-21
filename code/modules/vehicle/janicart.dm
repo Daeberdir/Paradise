@@ -36,9 +36,9 @@
 		var/turf/tile = loc
 		if(isturf(tile))
 			tile.clean_blood()
-			for(var/A in tile)
-				if(is_cleanable(A))
-					qdel(A)
+			for(var/obj/effect/check in tile)
+				if(check.is_cleanable())
+					qdel(check)
 
 /obj/vehicle/janicart/examine(mob/user)
 	. = ..()
@@ -50,7 +50,7 @@
 		if(trash_bag)
 			to_chat(user, "<span class='warning'>[src] already has a trashbag hooked!</span>")
 			return
-		if(!user.drop_item())
+		if(!user.drop_from_active_hand())
 			return
 		I.forceMove(src)
 		to_chat(user, "<span class='notice'You hook the trashbag onto [src].</span>")
@@ -80,8 +80,8 @@
 	if(..())
 		return TRUE
 	else if(trash_bag)
-		trash_bag.forceMove(get_turf(user))
-		user.put_in_hands(trash_bag)
+		trash_bag.forceMove_turf()
+		user.put_in_hands(trash_bag, ignore_anim = FALSE)
 		trash_bag = null
 		update_icon()
 

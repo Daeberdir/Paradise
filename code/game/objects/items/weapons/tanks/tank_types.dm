@@ -70,8 +70,7 @@
 			return
 		master = F
 		F.ptank = src
-		user.unEquip(src)
-		loc = F
+		user.drop_transfer_item_to_loc(src, F)
 		F.update_icon()
 	else
 		return ..()
@@ -173,7 +172,7 @@
 	name = "nitrogen tank"
 	desc = "A tank of nitrogen."
 	icon_state = "oxygen_fr"
-	sprite_sheets = list("Vox Armalis" = 'icons/mob/species/armalis/back.dmi') //Do it for Big Bird.
+	sprite_sheets = list("Vox Armalis" = 'icons/mob/clothing/species/armalis/back.dmi') //Do it for Big Bird.
 	distribute_pressure = TANK_DEFAULT_RELEASE_PRESSURE
 
 /obj/item/tank/internals/nitrogen/populate_gas()
@@ -191,7 +190,7 @@
 	name = "vox specialized nitrogen tank"
 	desc = "A high-tech nitrogen tank designed specifically for Vox."
 	icon_state = "emergency_vox"
-	sprite_sheets = list("Vox Armalis" = 'icons/mob/species/armalis/belt.dmi') //Do it for Big Bird.
+	sprite_sheets = list("Vox Armalis" = 'icons/mob/clothing/species/armalis/belt.dmi') //Do it for Big Bird.
 	volume = 35
 
 /obj/item/tank/internals/emergency_oxygen/double/vox/populate_gas()

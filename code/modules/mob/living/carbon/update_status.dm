@@ -5,7 +5,7 @@
 		if(health <= HEALTH_THRESHOLD_DEAD && check_death_method())
 			death()
 			return
-		if(paralysis || sleeping || (check_death_method() && getOxyLoss() > 50) || (status_flags & FAKEDEATH) || health <= HEALTH_THRESHOLD_CRIT && check_death_method())
+		if(IsParalyzed() || IsSleeping() || (check_death_method() && getOxyLoss() > 50) || HAS_TRAIT(src, TRAIT_FAKEDEATH) || health <= HEALTH_THRESHOLD_CRIT && check_death_method())
 			if(stat == CONSCIOUS)
 				KnockOut()
 		else
@@ -22,7 +22,8 @@
 		update_canmove()
 
 /mob/living/carbon/can_hear()
-	. = FALSE
-	var/obj/item/organ/internal/ears/ears = get_int_organ(/obj/item/organ/internal/ears)
-	if(istype(ears) && !ears.deaf)
-		. = TRUE
+	. = ..()
+	var/obj/item/organ/internal/ears/ears = get_organ_slot(INTERNAL_ORGAN_EARS)
+	if(!ears)
+		return FALSE
+

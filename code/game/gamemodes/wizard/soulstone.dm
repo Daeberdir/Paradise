@@ -4,6 +4,7 @@
 	icon = 'icons/obj/wizard.dmi'
 	icon_state = "soulstone"
 	item_state = "electronic"
+	belt_icon = "soul_stone_shard"
 	var/icon_state_full = "soulstone2"
 	desc = "A fragment of the legendary treasure known simply as the 'Soul Stone'. The shard still flickers with a fraction of the full artifact's power."
 	w_class = WEIGHT_CLASS_TINY
@@ -35,7 +36,7 @@
 /obj/item/soulstone/proc/was_used()
 	if(!reusable)
 		spent = TRUE
-		name = "dull [name]"
+		name = "dull [initial(name)]"
 		desc = "A fragment of the legendary treasure known simply as \
 			the 'Soul Stone'. The shard lies still, dull and lifeless; \
 			whatever spark it once held long extinguished."
@@ -66,12 +67,12 @@
 	return ..()
 
 //////////////////////////////Capturing////////////////////////////////////////////////////////
-/obj/item/soulstone/attack(mob/living/carbon/human/M, mob/user)
+/obj/item/soulstone/attack(mob/living/carbon/human/M, mob/living/user)
 	if(M == user)
 		return
 
 	if(!can_use(user))
-		user.Weaken(5)
+		user.Weaken(10 SECONDS)
 		user.emote("scream")
 		to_chat(user, "<span class='userdanger'>Your body is wracked with debilitating pain!</span>")
 		return
@@ -200,12 +201,12 @@
 	else
 		..()
 
-/obj/item/soulstone/attack_self(mob/user)
+/obj/item/soulstone/attack_self(mob/living/user)
 	if(!in_range(src, user))
 		return
 
 	if(!can_use(user))
-		user.Weaken(5)
+		user.Weaken(10 SECONDS)
 		user.emote("scream")
 		to_chat(user, "<span class='userdanger'>Your body is wracked with debilitating pain!</span>")
 		return
@@ -233,7 +234,7 @@
 	name = "empty shell"
 	icon = 'icons/obj/wizard.dmi'
 	icon_state = "construct-cult"
-	desc = "A wicked machine used by those skilled in magical arts. It is inactive"
+	desc = "A wicked machine used by those skilled in magical arts. It is inactive."
 	/// Is someone currently placing a soulstone into the shell
 	var/active = FALSE
 
@@ -246,21 +247,53 @@
 		. += "<span class='cultitalic'>A <b>Wraith</b>, which does high damage and can jaunt through walls, though it is quite fragile.</span>"
 		. += "<span class='cultitalic'>A <b>Juggernaut</b>, which is very hard to kill and can produce temporary walls, but is slow.</span>"
 
-/obj/structure/constructshell/attackby(obj/item/I, mob/user, params)
+/obj/structure/constructshell/attackby(obj/item/I, mob/living/user, params)
 	if(istype(I, /obj/item/soulstone))
 		var/obj/item/soulstone/SS = I
 		if(!SS.can_use(user))
 			to_chat(user, "<span class='danger'>An overwhelming feeling of dread comes over you as you attempt to place the soulstone into the shell.</span>")
-			user.Confused(10)
+			user.Confused(20 SECONDS)
 			return
 		SS.transfer_soul("CONSTRUCT", src, user)
-		SS.was_used()
 	else
 		return ..()
 
-////////////////////////////Proc for moving soul in and out off stone//////////////////////////////////////
+/obj/structure/constructshell/holy
+	name = "empty holy shell"
+	icon_state = "construct-holy"
+	desc = "A holy machine used by those who are pure in soul and mind. It is inactive."
+	var/defiled = FALSE
 
-/obj/item/soulstone/proc/transfer_soul(choice, target, mob/user)
+/obj/structure/constructshell/holy/attackby(obj/item/I, mob/living/user, params)
+	if(istype(I, /obj/item/storage/bible) && !iscultist(user) && user.mind.isholy)
+		if(!defiled)
+			return
+		name = initial(name)
+		icon_state = initial(icon_state)
+		desc = initial(desc)
+		defiled = FALSE
+	if(defiled)
+		return ..()
+	if(istype(I, /obj/item/soulstone))
+		var/obj/item/soulstone/SS = I
+		if(!SS.purified || iscultist(user))
+			to_chat(user, "<span class='danger'>An overwhelming feeling of dread comes over you as you attempt to place the soulstone into the shell.</span>")
+			user.Confused(30 SECONDS)
+			return
+		SS.transfer_soul("CONSTRUCT", src, user)
+		return
+	if(istype(I, /obj/item/melee/cultblade/dagger) && iscultist(user))
+		if(do_after(user, 4 SECONDS, target = src))
+			user.visible_message("<span class='warning'>[user] defile [src] with dark magic!!</span>", "<span class='cult'>You sanctified [src]. Yes-yes. I need more acolytes!</span>")
+			name = "empty shell"
+			icon_state = "construct-cult"
+			desc = "A wicked machine used by those skilled in magical arts. It is inactive."
+			defiled = TRUE
+		return
+	return ..()
+
+////////////////////////////Proc for moving soul in and out off stone//////////////////////////////////////
+/obj/item/soulstone/proc/transfer_soul(choice, target, mob/living/user)
 	switch(choice)
 		if("FORCE")
 			var/mob/living/T = target
@@ -268,7 +301,7 @@
 				init_shade(T, user)
 			else
 				to_chat(user, "<span class='userdanger'>Capture failed!</span> The soul has already fled its mortal frame. You attempt to bring it back...")
-				T.Paralyse(20)
+				T.Paralyse(40 SECONDS)
 				if(!get_cult_ghost(T, user, TRUE))
 					T.dust() //If we can't get a ghost, kill the sacrifice anyway.
 
@@ -292,7 +325,7 @@
 		if("SHADE")
 			var/mob/living/simple_animal/shade/T = target
 			if(!can_use(user))
-				user.Weaken(5)
+				user.Weaken(10 SECONDS)
 				to_chat(user, "<span class='userdanger'>Your body is wracked with debilitating pain!</span>")
 				return
 			if(T.stat == DEAD)
@@ -343,6 +376,7 @@
 					var/mob/living/simple_animal/hostile/construct/C = new picked_class(shell.loc)
 					C.init_construct(shade, src, shell)
 					to_chat(C, C.playstyle_string)
+					was_used()
 			else
 				to_chat(user, "<span class='danger'>Creation failed!</span>: The soul stone is empty! Go kill someone!")
 
@@ -351,7 +385,7 @@
 		return FALSE
 
 	var/mob/living/carbon/human/H = user
-	if(!H.is_in_hands(src)) // Not holding the soulstone
+	if(!H.is_type_in_hands(src)) // Not holding the soulstone
 		return FALSE
 	return TRUE
 
@@ -405,7 +439,7 @@
 	S.cancel_camera()
 	name = "soulstone: [S.name]"
 	icon_state = icon_state_full
-
+	log_game("[S.key] has become [S.name] with [purified ? "holy" : "corrupted"] essence.")
 	if(user)
 		S.faction |= "\ref[user]" //Add the master as a faction, allowing inter-mob cooperation
 		if(iswizard(user))
@@ -425,7 +459,7 @@
 		M.dust()
 	else
 		for(var/obj/item/I in M)
-			M.unEquip(I)
+			M.drop_item_ground(I)
 		M.dust()
 
 /obj/item/soulstone/proc/get_shade_type()

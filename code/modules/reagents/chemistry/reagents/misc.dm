@@ -334,7 +334,7 @@
 /datum/reagent/hair_dye/reaction_mob(mob/living/M, volume)
 	if(ishuman(M))
 		var/mob/living/carbon/human/H = M
-		var/obj/item/organ/external/head/head_organ = H.get_organ("head")
+		var/obj/item/organ/external/head/head_organ = H.get_organ(BODY_ZONE_HEAD)
 		head_organ.facial_colour = rand_hex_color()
 		head_organ.sec_facial_colour = rand_hex_color()
 		head_organ.hair_colour = rand_hex_color()
@@ -355,7 +355,7 @@
 /datum/reagent/hairgrownium/reaction_mob(mob/living/M, volume)
 	if(ishuman(M))
 		var/mob/living/carbon/human/H = M
-		var/obj/item/organ/external/head/head_organ = H.get_organ("head")
+		var/obj/item/organ/external/head/head_organ = H.get_organ(BODY_ZONE_HEAD)
 		head_organ.h_style = random_hair_style(H.gender, head_organ.dna.species.name)
 		head_organ.f_style = random_facial_hair_style(H.gender, head_organ.dna.species.name)
 		H.update_hair()
@@ -374,7 +374,7 @@
 /datum/reagent/super_hairgrownium/reaction_mob(mob/living/M, volume)
 	if(ishuman(M))
 		var/mob/living/carbon/human/H = M
-		var/obj/item/organ/external/head/head_organ = H.get_organ("head")
+		var/obj/item/organ/external/head/head_organ = H.get_organ(BODY_ZONE_HEAD)
 		var/datum/sprite_accessory/tmp_hair_style = GLOB.hair_styles_full_list["Very Long Hair"]
 		var/datum/sprite_accessory/tmp_facial_hair_style = GLOB.facial_hair_styles_list["Very Long Beard"]
 
@@ -390,7 +390,7 @@
 		H.update_fhair()
 		if(!H.wear_mask || H.wear_mask && !istype(H.wear_mask, /obj/item/clothing/mask/fakemoustache) && !(H.wear_mask.resistance_flags & NO_MOUSTACHING))
 			if(H.wear_mask)
-				H.unEquip(H.wear_mask)
+				H.drop_item_ground(H.wear_mask, force = TRUE)
 			var/obj/item/clothing/mask/fakemoustache = new /obj/item/clothing/mask/fakemoustache
 			H.equip_to_slot(fakemoustache, slot_wear_mask)
 			to_chat(H, "<span class='notice'>Hair bursts forth from your every follicle!")
@@ -430,8 +430,7 @@
 				if(C == M)
 					continue
 				if(!C.stat)
-					M.visible_message("<span class='notice'>[M] gives [C] a [pick("hug","warm embrace")].</span>")
-					playsound(get_turf(M), 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
+					C.attack_hand(M)  //now real hugs, not fake
 					break
 	return ..()
 
@@ -459,10 +458,10 @@
 			to_chat(C, "<span class='notice'>Whatever that was, it feels great!</span>")
 		else if(C.mind.assigned_role == "Mime")
 			to_chat(C, "<span class='warning'>You feel nauseous.</span>")
-			C.AdjustDizzy(volume)
+			C.AdjustDizzy(volume STATUS_EFFECT_CONSTANT)
 		else
 			to_chat(C, "<span class='warning'>Something doesn't feel right...</span>")
-			C.AdjustDizzy(volume)
+			C.AdjustDizzy(volume STATUS_EFFECT_CONSTANT)
 	ADD_TRAIT(C, TRAIT_JESTER, id)
 	C.AddComponent(/datum/component/squeak, null, null, null, null, null, TRUE, falloff_exponent = 20)
 	C.AddElement(/datum/element/waddling)
@@ -476,10 +475,10 @@
 	if(M?.mind.assigned_role == "Clown" || M?.mind.assigned_role == SPECIAL_ROLE_HONKSQUAD)
 		update_flags |= M.adjustBruteLoss(-0.75) //Screw those pesky clown beatings!
 	else
-		M.AdjustDizzy(10, 0, 500)
-		M.Druggy(15)
+		M.AdjustDizzy(20 SECONDS, 0, 1000 SECONDS)
+		M.Druggy(30 SECONDS)
 		if(prob(10))
-			M.EyeBlurry(5)
+			M.EyeBlurry(10 SECONDS)
 		if(prob(6))
 			var/list/clown_message = list("You feel light-headed.",
 			"You can't see straight.",

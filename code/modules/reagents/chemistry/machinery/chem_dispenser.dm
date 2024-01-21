@@ -235,12 +235,14 @@
 				R.remove_reagent(id, amount)
 			else if(amount == -1) //Isolate instead
 				R.isolate_reagent(id)
+			else if(amount == -2) //Round to lesser number (a.k.a 14.61 -> 14)
+				R.floor_reagent(id)
 		if("ejectBeaker")
 			if(!beaker)
 				return
 			beaker.forceMove(loc)
 			if(Adjacent(usr) && !issilicon(usr))
-				usr.put_in_hands(beaker)
+				usr.put_in_hands(beaker, ignore_anim = FALSE)
 			beaker = null
 			overlays.Cut()
 		else
@@ -264,11 +266,11 @@
 		if(panel_open)
 			to_chat(user, "<span class='notice'>Close the maintenance panel first.</span>")
 			return
-		if(!user.drop_item())
+		if(!user.drop_transfer_item_to_loc(I, src))
 			to_chat(user, "<span class='warning'>[I] is stuck to you!</span>")
 			return
+		add_fingerprint(user)
 		beaker =  I
-		I.forceMove(src)
 		to_chat(user, "<span class='notice'>You set [I] on the machine.</span>")
 		SStgui.update_uis(src) // update all UIs attached to src
 		if(!icon_beaker)
@@ -334,6 +336,11 @@
 /obj/machinery/chem_dispenser/attack_hand(mob/user)
 	if(stat & BROKEN)
 		return
+
+	if(..())
+		return TRUE
+
+	add_fingerprint(user)
 	ui_interact(user)
 
 /obj/machinery/chem_dispenser/soda
@@ -605,9 +612,8 @@
 			if(C.maxcharge < 100)
 				to_chat(user, "<span class='notice'>[src] requires a higher capacity cell.</span>")
 				return
-			if(!user.unEquip(W))
+			if(!user.drop_transfer_item_to_loc(W, src))
 				return
-			W.loc = src
 			cell = W
 			to_chat(user, "<span class='notice'>You install a cell in [src].</span>")
 			update_icon()

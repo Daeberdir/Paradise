@@ -51,7 +51,7 @@
 		possible_spells[cult_name] = J
 	if(length(spells))
 		possible_spells += "(REMOVE SPELL)"
-	entered_spell_name = input(owner, "Pick a blood spell to prepare...", "Spell Choices") as null|anything in possible_spells
+	entered_spell_name = tgui_input_list(owner, "Pick a blood spell to prepare...", "Spell Choices", possible_spells)
 	if(entered_spell_name == "(REMOVE SPELL)")
 		remove_spell()
 		return
@@ -80,7 +80,7 @@
 	channeling = FALSE
 
 /datum/action/innate/cult/blood_magic/proc/remove_spell(message = "Pick a spell to remove.")
-	var/nullify_spell = input(owner, message, "Current Spells") as null|anything in spells
+	var/nullify_spell = tgui_input_list(owner, message, "Current Spells", spells)
 	if(nullify_spell)
 		qdel(nullify_spell)
 
@@ -164,13 +164,13 @@
 	if(ishuman(owner))
 		var/mob/living/carbon/human/H = owner
 		var/oof = FALSE
-		for(var/obj/item/organ/external/E in H.bodyparts)
+		for(var/obj/item/organ/external/E as anything in H.bodyparts)
 			if(E.is_robotic())
 				oof = TRUE
 				break
 		if(!oof)
-			for(var/obj/item/organ/internal/I in H.internal_organs)
-				if(I.is_robotic())
+			for(var/obj/item/organ/internal/organ as anything in H.internal_organs)
+				if(organ.is_robotic())
 					oof = TRUE
 					break
 		if(oof)
@@ -287,7 +287,7 @@
 		if(!ishuman(target) || iscultist(target))
 			return
 		var/mob/living/carbon/human/H = target
-		H.hallucination = max(H.hallucination, 120)
+		H.Hallucinate(120 SECONDS)
 		attached_action.charges--
 		attached_action.desc = attached_action.base_desc
 		attached_action.desc += "<br><b><u>Has [attached_action.charges] use\s remaining</u></b>."
@@ -438,8 +438,7 @@
 	else
 		to_chat(user, "<span class='cultitalic'>In a brilliant flash of red, [L] falls to the ground!</span>")
 		// These are in life cycles, so double the time that's stated.
-		L.Weaken(2)
-		L.Stun(2)
+		L.Weaken(4 SECONDS)
 		L.adjustStaminaLoss(30)
 		L.apply_status_effect(STATUS_EFFECT_STAMINADOT)
 		L.flash_eyes(1, TRUE)
@@ -448,10 +447,10 @@
 			S.emp_act(EMP_HEAVY)
 		else if(iscarbon(target))
 			var/mob/living/carbon/C = L
-			C.Silence(5)
-			C.Stuttering(8)
-			C.CultSlur(10)
-			C.Jitter(8)
+			C.Silence(10 SECONDS)
+			C.Stuttering(16 SECONDS)
+			C.CultSlur(20 SECONDS)
+			C.Jitter(16 SECONDS)
 	uses--
 	..()
 
@@ -489,7 +488,7 @@
 		return
 
 	var/mob/living/L = target
-	var/input_rune_key = input(user, "Choose a rune to teleport to.", "Rune to Teleport to") as null|anything in potential_runes //we know what key they picked
+	var/input_rune_key = tgui_input_list(user, "Choose a rune to teleport to.", "Rune to Teleport to", potential_runes) //we know what key they picked
 	var/obj/effect/rune/teleport/actual_selected_rune = potential_runes[input_rune_key] //what rune does that key correspond to?
 	if(!src || QDELETED(src) || !user || user.l_hand != src && user.r_hand != src || user.incapacitated() || !actual_selected_rune)
 		return
@@ -524,8 +523,8 @@
 /obj/item/melee/blood_magic/shackles/afterattack(atom/target, mob/living/carbon/user, proximity)
 	if(iscarbon(target) && proximity)
 		var/mob/living/carbon/C = target
-		if(C.canBeHandcuffed() || C.get_arm_ignore())
-			if(C.getStaminaLoss() > 90 || C.health <= HEALTH_THRESHOLD_CRIT || C.sleeping)
+		if(C.canBeHandcuffed())
+			if(C.getStaminaLoss() > 90 || C.health <= HEALTH_THRESHOLD_CRIT || C.IsSleeping())
 				CuffAttack(C, user)
 			else
 				user.visible_message("<span class='cultitalic'>This victim is still resisting!</span>")
@@ -541,9 +540,8 @@
 		"<span class='userdanger'>[user] begins shaping dark magic shackles around your wrists!</span>")
 		if(do_mob(user, C, 10))
 			if(!C.handcuffed)
-				C.handcuffed = new /obj/item/restraints/handcuffs/energy/cult/used(C)
-				C.update_handcuffed()
-				C.Silence(6)
+				C.set_handcuffed(new /obj/item/restraints/handcuffs/energy/cult/used(C))
+				C.Silence(12 SECONDS)
 				to_chat(user, "<span class='notice'>You shackle [C].</span>")
 				add_attack_logs(user, C, "shackled")
 				uses--
@@ -561,7 +559,7 @@
 	trashtype = /obj/item/restraints/handcuffs/energy/used
 	flags = DROPDEL
 
-/obj/item/restraints/handcuffs/energy/cult/used/dropped(mob/user)
+/obj/item/restraints/handcuffs/energy/cult/used/dropped(mob/user, silent = FALSE)
 	user.visible_message("<span class='danger'>[user]'s shackles shatter in a discharge of dark magic!</span>", \
 	"<span class='userdanger'>Your [name] shatter in a discharge of dark magic!</span>")
 	. = ..()
@@ -773,7 +771,7 @@
 				if(H.stat == DEAD)
 					to_chat(user, "<span class='warning'>[H.p_their(TRUE)] blood has stopped flowing, you'll have to find another way to extract it.</span>")
 					return
-				if(H.cultslurring)
+				if(H.AmountCultSlurring())
 					to_chat(user, "<span class='danger'>[H.p_their(TRUE)] blood has been tainted by an even stronger form of blood magic, it's no use to us like this!</span>")
 					return
 				if(H.dna && !(NO_BLOOD in H.dna.species.species_traits) && H.dna.species.exotic_blood == null)
@@ -848,7 +846,7 @@
 
 /obj/item/melee/blood_magic/manipulator/attack_self(mob/living/user)
 	var/list/options = list("Blood Orb (50)", "Blood Recharge (75)", "Blood Spear (150)", "Blood Bolt Barrage (300)")
-	var/choice = input(user, "Choose a greater blood rite...", "Greater Blood Rites") as null|anything in options
+	var/choice = tgui_input_list(user, "Choose a greater blood rite...", "Greater Blood Rites", options)
 	if(!Adjacent(user))
 		to_chat(user, "<span class='cultitalic'>Вы не можете использовать это заклинание без самого заклинания!</span>")
 		return
@@ -878,7 +876,7 @@
 				uses -= BLOOD_BARRAGE_COST
 				qdel(src)
 				user.swap_hand()
-				user.drop_item()
+				user.drop_from_active_hand()
 				if(user.put_in_hands(rite))
 					to_chat(user, "<span class='cult'>Both of your hands glow with power!</span>")
 				else

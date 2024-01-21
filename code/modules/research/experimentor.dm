@@ -113,9 +113,11 @@
 
 /obj/machinery/r_n_d/experimentor/attackby(obj/item/O, mob/user, params)
 	if(shocked)
+		add_fingerprint(user)
 		shock(user,50)
 
 	if(default_deconstruction_screwdriver(user, "h_lathe_maint", "h_lathe", O))
+		add_fingerprint(user)
 		if(linked_console)
 			linked_console.linked_destroy = null
 			linked_console = null
@@ -148,13 +150,13 @@
 		if(temp_tech.len == 0)
 			to_chat(user, "<span class='warning'>You cannot experiment on this item!</span>")
 			return
-		if(!user.drop_item())
+		if(!user.drop_transfer_item_to_loc(O, src))
 			return
 		loaded_item = O
-		O.loc = src
 		to_chat(user, "<span class='notice'>You add the [O.name] to the machine.</span>")
 		flick("h_lathe_load", src)
 
+	add_fingerprint(user)
 	return
 
 /obj/machinery/r_n_d/experimentor/default_deconstruction_crowbar(user, obj/item/O)
@@ -162,6 +164,10 @@
 	..(O)
 
 /obj/machinery/r_n_d/experimentor/attack_hand(mob/user)
+	if(..())
+		return TRUE
+
+	add_fingerprint(user)
 	user.set_machine(src)
 	var/dat = {"<meta charset="UTF-8"><center>"}
 	if(!linked_console)
@@ -255,7 +261,7 @@
 		if(prob(EFFECT_PROB_VERYLOW-badThingCoeff))
 			visible_message("<span class='danger'>[src] malfunctions and destroys [exp_on], lashing its arms out at nearby people!</span>")
 			for(var/mob/living/m in oview(1, src))
-				m.apply_damage(15,BRUTE,pick("head","chest","groin"))
+				m.apply_damage(15,BRUTE,pick(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_PRECISE_GROIN))
 				investigate_log("Experimentor dealt minor brute to [key_name_log(m)].", INVESTIGATE_EXPERIMENTOR)
 			ejectItem(TRUE)
 		if(prob(EFFECT_PROB_LOW-badThingCoeff))
@@ -392,7 +398,7 @@
 			visible_message("<span class='warning'>[src] malfunctions, activating its emergency coolant systems!</span>")
 			throwSmoke(src.loc)
 			for(var/mob/living/m in oview(1, src))
-				m.apply_damage(5,BURN,pick("head","chest","groin"))
+				m.apply_damage(5,BURN,pick(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_PRECISE_GROIN))
 				investigate_log("Experimentor has dealt minor burn damage to [key_name_log(m)]", INVESTIGATE_EXPERIMENTOR)
 			ejectItem()
 	////////////////////////////////////////////////////////////////////////////////////////////////

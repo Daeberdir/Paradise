@@ -26,6 +26,7 @@ GLOBAL_LIST_INIT(icons_to_ignore_at_floor_init, list("damaged1","damaged2","dama
 	icon_state = "dont_use_this_floor"
 	plane = FLOOR_PLANE
 	var/icon_regular_floor = "floor" //used to remember what icon the tile should have by default
+	var/floor_regular_dir = SOUTH  //used to remember what dir the tile should have by default
 	var/icon_plating = "plating"
 	thermal_conductivity = 0.040
 	heat_capacity = 10000
@@ -50,6 +51,7 @@ GLOBAL_LIST_INIT(icons_to_ignore_at_floor_init, list("damaged1","damaged2","dama
 		icon_regular_floor = "floor"
 	else
 		icon_regular_floor = icon_state
+		floor_regular_dir = dir
 
 //turf/simulated/floor/CanPass(atom/movable/mover, turf/target, height=0)
 //	if((istype(mover, /obj/machinery/vehicle) && !(src.burnt)))
@@ -115,7 +117,7 @@ GLOBAL_LIST_INIT(icons_to_ignore_at_floor_init, list("damaged1","damaged2","dama
 /turf/simulated/floor/blob_act(obj/structure/blob/B)
 	return
 
-/turf/simulated/floor/proc/update_icon()
+/turf/simulated/floor/update_icon()
 	update_visuals()
 	overlays -= current_overlay
 	if(current_overlay)
@@ -123,7 +125,7 @@ GLOBAL_LIST_INIT(icons_to_ignore_at_floor_init, list("damaged1","damaged2","dama
 	return 1
 
 /turf/simulated/floor/proc/break_tile_to_plating()
-	var/turf/simulated/floor/plating/T = make_plating()
+	var/turf/simulated/floor/plating/T = make_plating(FALSE)
 	T.break_tile()
 
 /turf/simulated/floor/break_tile()
@@ -140,7 +142,13 @@ GLOBAL_LIST_INIT(icons_to_ignore_at_floor_init, list("damaged1","damaged2","dama
 	burnt = TRUE
 	update_icon()
 
-/turf/simulated/floor/proc/make_plating()
+/turf/simulated/floor/proc/make_plating(make_floor_tile, mob/user)	// Set `make_floor_tile` to FALSE, if `floor_tile` have another drop logic before calling this proc.
+	if(make_floor_tile && floor_tile && !broken && !burnt)
+		var/obj/item/stack/stack_dropped = new floor_tile(src)
+		if(user)
+			var/obj/item/stack/stack_offhand = user.get_inactive_hand()
+			if(istype(stack_dropped) && istype(stack_offhand) && stack_offhand.can_merge(stack_dropped, inhand = TRUE))
+				user.put_in_hands(stack_dropped, ignore_anim = FALSE)
 	return ChangeTurf(/turf/simulated/floor/plating)
 
 /turf/simulated/floor/ChangeTurf(turf/simulated/floor/T, defer_change = FALSE, keep_icon = TRUE, ignore_air = FALSE, copy_existing_baseturf = TRUE)
@@ -152,25 +160,31 @@ GLOBAL_LIST_INIT(icons_to_ignore_at_floor_init, list("damaged1","damaged2","dama
 	var/old_icon = icon_regular_floor
 	var/old_plating = icon_plating
 	var/old_dir = dir
+	var/old_regular_dir = floor_regular_dir
+	var/old_transparent_floor = transparent_floor
 
 	var/turf/simulated/floor/W = ..()
 
 	var/obj/machinery/atmospherics/R
+	var/obj/machinery/power/terminal/term
 
 	if(keep_icon)
 		W.icon_regular_floor = old_icon
 		W.icon_plating = old_plating
 	if(W.keep_dir)
+		W.floor_regular_dir = old_regular_dir
 		W.dir = old_dir
-	if(W.transparent_floor)
+	if(W.transparent_floor != old_transparent_floor)
 		for(R in W)
 			R.update_icon()
+		for(term in W)
+			term.update_icon()
 	for(R in W)
 		R.update_underlays()
 	W.update_icon()
 	return W
 
-/turf/simulated/floor/attackby(obj/item/C as obj, mob/user as mob, params)
+/turf/simulated/floor/attackby(obj/item/C, mob/user, params)
 	if(!C || !user)
 		return TRUE
 
@@ -185,9 +199,9 @@ GLOBAL_LIST_INIT(icons_to_ignore_at_floor_init, list("damaged1","damaged2","dama
 		if(P.pipe_type != -1) // ANY PIPE
 			user.visible_message( \
 				"[user] starts sliding [P] along \the [src].", \
-				"<span class='notice'>You slide [P] along \the [src].</span>", \
-				"You hear the scrape of metal against something.")
-			user.drop_item()
+				span_notice("You slide [P] along \the [src]."), \
+				span_italics("You hear the scrape of metal against something."))
+			user.drop_from_active_hand()
 
 			if(P.is_bent_pipe())  // bent pipe rotation fix see construction.dm
 				P.dir = 5
@@ -233,35 +247,29 @@ GLOBAL_LIST_INIT(icons_to_ignore_at_floor_init, list("damaged1","damaged2","dama
 
 /turf/simulated/floor/proc/remove_tile(mob/user, silent = FALSE, make_tile = TRUE)
 	if(broken || burnt)
-		broken = 0
-		burnt = 0
+		broken = FALSE
+		burnt = FALSE
 		current_overlay = null
+		make_tile = FALSE
 		if(user && !silent)
-			to_chat(user, "<span class='danger'>You remove the broken plating.</span>")
+			to_chat(user, span_danger("You remove the broken plating."))
 	else
 		if(user && !silent)
-			to_chat(user, "<span class='danger'>You remove the floor tile.</span>")
-		if(floor_tile && make_tile)
-			new floor_tile(src)
-	return make_plating()
+			to_chat(user, span_danger("You remove the floor tile."))
+	return make_plating(make_tile, user)
 
 /turf/simulated/floor/singularity_pull(S, current_size)
 	..()
 	if(current_size == STAGE_THREE)
 		if(prob(30))
-			if(floor_tile)
-				new floor_tile(src)
-				make_plating()
+			make_plating(TRUE)
 	else if(current_size == STAGE_FOUR)
 		if(prob(50))
-			if(floor_tile)
-				new floor_tile(src)
-				make_plating()
+			make_plating(TRUE)
 	else if(current_size >= STAGE_FIVE)
 		if(floor_tile)
 			if(prob(70))
-				new floor_tile(src)
-				make_plating()
+				make_plating(TRUE)
 		else if(prob(50))
 			ReplaceWithLattice()
 

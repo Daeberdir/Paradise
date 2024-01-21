@@ -33,8 +33,6 @@
 		return FALSE
 	return B.host.say_understands(other, speaking)
 
-/mob/living/captive_brain/emote(act, m_type = 1, message = null, force)
-	return
 
 /mob/living/captive_brain/resist()
 	var/mob/living/simple_animal/borer/B = loc
@@ -153,14 +151,15 @@
 	if(client.statpanel == "Status")
 		stat("Chemicals", chemicals)
 
-/mob/living/simple_animal/borer/say(var/message)
+
+/mob/living/simple_animal/borer/say(message, verb = "says", sanitize = TRUE, ignore_speech_problems = FALSE, ignore_atmospherics = FALSE, ignore_languages = FALSE)
 	var/list/message_pieces = parse_languages(message)
 	for(var/datum/multilingual_say_piece/S in message_pieces)
 		if(!istype(S.speaking, /datum/language/corticalborer) && loc == host && !talk_inside_host)
-			to_chat(src, "<span class='warning'>You've disabled audible speech while inside a host! Re-enable it under the borer tab, or stick to borer communications.</span>")
+			to_chat(src, span_warning("You've disabled audible speech while inside a host! Re-enable it under the borer tab, or stick to borer communications."))
 			return
+	return ..()
 
-	. = ..()
 
 /mob/living/simple_animal/borer/verb/Communicate()
 	set category = "Borer"
@@ -319,13 +318,13 @@
 
 	var/list/choices = list()
 	for(var/mob/living/carbon/human/H in view(1,src))
-		var/obj/item/organ/external/head/head = H.get_organ("head")
+		var/obj/item/organ/external/head/head = H.get_organ(BODY_ZONE_HEAD)
 		if(head.is_robotic())
 			continue
 		if(H.stat != DEAD && Adjacent(H) && !H.has_brain_worms())
 			choices += H
 
-	var/mob/living/carbon/human/M = input(src,"Who do you wish to infest?") in null|choices
+	var/mob/living/carbon/human/M = tgui_input_list(src,"Who do you wish to infest?", "Infest", choices)
 
 	if(!M || !src)
 		return
@@ -514,7 +513,7 @@
 
 	attempting_to_dominate = TRUE
 
-	var/mob/living/carbon/M = input(src,"Who do you wish to dominate?") in null|choices
+	var/mob/living/carbon/M = tgui_input_list(src,"Who do you wish to dominate?", "Dominate", choices)
 
 	if(!M)
 		attempting_to_dominate = FALSE
@@ -539,7 +538,7 @@
 
 	to_chat(src, "<span class='warning'>You focus your psychic lance on [M] and freeze [M.p_their()] limbs with a wave of terrible dread.</span>")
 	to_chat(M, "<span class='warning'>You feel a creeping, horrible sense of dread come over you, freezing your limbs and setting your heart racing.</span>")
-	M.Weaken(3)
+	M.Weaken(6 SECONDS)
 
 	used_dominate = world.time
 	attempting_to_dominate = FALSE
@@ -766,7 +765,7 @@
 		return
 
 	if(B.chemicals >= 100)
-		to_chat(src, "<span class='danger'>Your host twitches and quivers as you rapdly excrete several larvae from your sluglike body.</span>")
+		to_chat(src, "<span class='danger'>Your host twitches and quivers as you rapidly excrete several larvae from your sluglike body.</span>")
 		visible_message("<span class='danger'>[src] heaves violently, expelling a rush of vomit and a wriggling, sluglike creature!</span>")
 		B.chemicals -= 100
 		var/turf/T = get_turf(src)
@@ -844,10 +843,12 @@
 		M.transfer_to(src)
 		candidate.mob = src
 		ckey = candidate.ckey
-		to_chat(src, "<span class='notice'>You are a cortical borer!</span>")
-		to_chat(src, "You are a brain slug that worms its way into the head of its victim. Use stealth, persuasion and your powers of mind control to keep you, your host and your eventual spawn safe and warm.")
-		to_chat(src, "Sugar nullifies your abilities, avoid it at all costs!")
-		to_chat(src, "You can speak to your fellow borers by prefixing your messages with ':bo'. Check out your Borer tab to see your abilities.")
+		var/list/messages = list()
+		messages.Add("<span class='notice'>You are a cortical borer!</span>")
+		messages.Add("You are a brain slug that worms its way into the head of its victim. Use stealth, persuasion and your powers of mind control to keep you, your host and your eventual spawn safe and warm.")
+		messages.Add("Sugar nullifies your abilities, avoid it at all costs!")
+		messages.Add("You can speak to your fellow borers by prefixing your messages with ':bo'. Check out your Borer tab to see your abilities.")
+		to_chat(src, chat_box_purple(messages.Join("<br>")))
 
 /proc/create_borer_mind(key)
 	var/datum/mind/M = new /datum/mind(key)

@@ -93,7 +93,7 @@ To draw a rune, use a ritual dagger.
 		return
 	if(istype(I, /obj/item/nullrod))
 		if(iscultist(user))//cultist..what are doing..cultist..staph...
-			user.drop_item()
+			user.drop_from_active_hand()
 			user.visible_message("<span class='warning'>[I] suddenly glows with a white light, forcing [user] to drop it in pain!</span>", \
 			"<span class='danger'>[I] suddenly glows with a white light that sears your hand, forcing you to drop it!</span>") // TODO: Make this actually burn your hand
 			return
@@ -130,6 +130,8 @@ To draw a rune, use a ritual dagger.
 	visible_message("<span class='danger'>[src] suddenly appears!</span>")
 	alpha = initial(alpha)
 
+/obj/effect/rune/is_cleanable()
+	return TRUE
 
 /*
 There are a few different procs each rune runs through when a cultist activates it.
@@ -177,7 +179,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 			return
 		if(invocation)
 			if(!L.IsVocal())
-				L.emote("gestures ominously.")
+				L.custom_emote(EMOTE_VISIBLE, message = pick("рису%(ет,ют)% в воздухе тайные символы.","зловеще жестикулиру%(ет,ют)%.","молча произнос%(ит,ят)% слова призыва.","клад%(ёт,ут)% руки на руну, активируя ее."))
 			else
 				L.say(invocation)
 			L.changeNext_move(CLICK_CD_MELEE)//THIS IS WHY WE CAN'T HAVE NICE THINGS
@@ -290,7 +292,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 
 	rune_in_use = TRUE
 	var/mob/living/L = pick(offer_targets)
-	if(!config.can_cult_convert && !is_sacrifice_target(L.mind))
+	if(!CONFIG_GET(number/can_cult_convert) && !is_sacrifice_target(L.mind))
 		fail_invoke()
 		for(var/I in invokers)
 			to_chat(I, "<span class='warning'>You can not convert new cultists!</span>")
@@ -343,17 +345,17 @@ structure_check() searches for nearby cultist structures required for the invoca
 				else
 					H.visible_message("<span class='warning'>[convertee]'s wounds heal and close!</span>",
 					"<span class='cultitalic'>Your wounds have been healed. Now spread the blood to others.</span>")
-					for(var/obj/item/organ/external/E in H.bodyparts)
-						E.mend_fracture()
-						E.internal_bleeding = FALSE
-					for(var/datum/disease/critical/crit in H.viruses) // cure all crit conditions
+					for(var/obj/item/organ/external/bodypart as anything in H.bodyparts)
+						bodypart.mend_fracture()
+						bodypart.stop_internal_bleeding()
+					for(var/datum/disease/critical/crit in H.diseases) // cure all crit conditions
 						crit.cure()
 
 			H.uncuff()
-			H.Silence(3) //Prevent "HALP MAINT CULT" before you realise you're converted
+			H.Silence(6 SECONDS) //Prevent "HALP MAINT CULT" before you realise you're converted
 
 			var/obj/item/melee/cultblade/dagger/D = new(get_turf(src))
-			if(H.equip_to_slot_if_possible(D, slot_in_backpack, FALSE, TRUE))
+			if(H.equip_to_slot_if_possible(D, slot_in_backpack, disable_warning = TRUE))
 				to_chat(H, "<span class='cultlarge'>You have a dagger in your backpack. Use it to do [SSticker.cultdat.entity_title1]'s bidding. </span>")
 			else
 				to_chat(H, "<span class='cultlarge'>There is a dagger on the floor. Use it to do [SSticker.cultdat.entity_title1]'s bidding.</span>")
@@ -453,7 +455,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 		fail_invoke()
 		return
 
-	var/input_rune_key = input(user, "Choose a rune to teleport to.", "Rune to Teleport to") as null|anything in potential_runes //we know what key they picked
+	var/input_rune_key = tgui_input_list(user, "Choose a rune to teleport to.", "Rune to Teleport to", potential_runes) //we know what key they picked
 	var/obj/effect/rune/teleport/actual_selected_rune = potential_runes[input_rune_key] //what rune does that key correspond to?
 	if(!src || !Adjacent(user) || QDELETED(src) || user.incapacitated() || !actual_selected_rune)
 		fail_invoke()
@@ -573,7 +575,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 		fail_invoke()
 		return
 	if(length(potential_revive_mobs) > 1)
-		mob_to_revive = input(user, "Choose a cultist to revive.", "Cultist to Revive") as null|anything in potential_revive_mobs
+		mob_to_revive = tgui_input_list(user, "Choose a cultist to revive", "Cultist to Revive", potential_revive_mobs)
 	else // If there's only one, no need for a menu
 		mob_to_revive = potential_revive_mobs[1]
 	if(!validness_checks(mob_to_revive, user))
@@ -684,7 +686,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 	for(var/datum/mind/M in SSticker.mode.cult)
 		if(!(M.current in invokers) && M.current && M.current.stat != DEAD)
 			cultists[M.current.real_name] = M.current
-	var/input = input(user, "Who do you wish to call to [src]?", "Acolytes") as null|anything in cultists
+	var/input = tgui_input_list(user, "Who do you wish to call to [src]?", "Acolytes", cultists)
 	var/mob/living/cultist_to_summon = cultists[input]
 	if(!src || QDELETED(src) || !Adjacent(user) || user.incapacitated())
 		return
@@ -905,7 +907,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 		new_human.visible_message("<span class='warning'>[new_human] suddenly dissolves into bones and ashes.</span>",
 								  "<span class='cultlarge'>Your link to the world fades. Your form breaks apart.</span>")
 		for(var/obj/item/I in new_human.get_all_slots())
-			new_human.unEquip(I)
+			new_human.drop_item_ground(I)
 		SSticker.mode.remove_cultist(new_human.mind, FALSE)
 		new_human.dust()
 
@@ -930,7 +932,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 		if(user.key)
 			user.visible_message("<span class='warning'>[user] slowly relaxes, the glow around [user.p_them()] dimming.</span>",
 								"<span class='danger'>You are re-united with your physical form. [src] releases its hold over you.</span>")
-			user.Weaken(3)
+			user.Weaken(6 SECONDS)
 			break
 		if(user.health <= 10)
 			to_chat(ghost, "<span class='cultitalic'>Your body can no longer sustain the connection!</span>")

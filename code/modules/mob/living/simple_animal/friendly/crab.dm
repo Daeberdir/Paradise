@@ -10,7 +10,6 @@
 	emote_see = list("clacks")
 	death_sound = 'sound/creatures/crack_death2.ogg'
 	speak_chance = 1
-	blood_nutrients = 30
 	turns_per_move = 5
 	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat = 1)
 	response_help  = "pets"
@@ -19,7 +18,8 @@
 	stop_automated_movement = 1
 	friendly = "pinches"
 	ventcrawler = 2
-	can_hide = 1
+	can_hide = TRUE
+	pass_door_while_hidden = TRUE
 	can_collar = 1
 	gold_core_spawnable = FRIENDLY_SPAWN
 	tts_seed = "Riki"

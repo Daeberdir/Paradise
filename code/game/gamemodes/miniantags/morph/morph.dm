@@ -45,6 +45,7 @@
 							You can restore yourself to your original form while morphed by shift-clicking yourself.<br> \
 							Finally, you can attack any item or dead creature to consume it - creatures will restore 1/3 of your max health.</b>"
 
+	/// If the morph can reproduce or not
 	var/can_reproduce = FALSE
 	/// If the morph is disguised or not
 	var/morphed = FALSE
@@ -53,13 +54,13 @@
 	/// How much damage a successful ambush attack does
 	var/ambush_damage = 25
 	/// How much weaken a successful ambush attack applies
-	var/ambush_weaken = 3
+	var/ambush_weaken = 6 SECONDS
 	/// The spell the morph uses to morph
-	var/obj/effect/proc_holder/spell/targeted/click/mimic/morph/mimic_spell
+	var/obj/effect/proc_holder/spell/mimic/morph/mimic_spell
 	/// The ambush action used by the morph
-	var/obj/effect/proc_holder/spell/targeted/morph_spell/ambush/ambush_spell
+	var/obj/effect/proc_holder/spell/morph_spell/ambush/ambush_spell
 	/// The spell the morph uses to pass through airlocks
-	var/obj/effect/proc_holder/spell/targeted/click/morph_spell/pass_airlock/pass_airlock_spell
+	var/obj/effect/proc_holder/spell/morph_spell/pass_airlock/pass_airlock_spell
 
 	/// How much the morph has gathered in terms of food. Used to reproduce and such
 	var/gathered_food = 20 // Start with a bit to use abilities
@@ -79,7 +80,7 @@
 	AddSpell(mimic_spell)
 	ambush_spell = new
 	AddSpell(ambush_spell)
-	AddSpell(new /obj/effect/proc_holder/spell/targeted/click/morph_spell/open_vent)
+	AddSpell(new /obj/effect/proc_holder/spell/morph_spell/open_vent)
 	pass_airlock_spell = new
 	AddSpell(pass_airlock_spell)
 	GLOB.morphs_alive_list += src
@@ -94,10 +95,10 @@
 /mob/living/simple_animal/hostile/morph/proc/enable_reproduce(boolean)
 	if(boolean)
 		can_reproduce = TRUE
-		AddSpell(new /obj/effect/proc_holder/spell/targeted/morph_spell/reproduce)
+		AddSpell(new /obj/effect/proc_holder/spell/morph_spell/reproduce)
 	else
 		can_reproduce = FALSE
-		RemoveSpell(/obj/effect/proc_holder/spell/targeted/morph_spell/reproduce)
+		RemoveSpell(/obj/effect/proc_holder/spell/morph_spell/reproduce)
 
 /mob/living/simple_animal/hostile/morph/Stat(Name, Value)
 	..()
@@ -112,8 +113,12 @@
 
 /mob/living/simple_animal/hostile/morph/wizard/New()
 	. = ..()
-	AddSpell(new /obj/effect/proc_holder/spell/targeted/smoke)
-	AddSpell(new /obj/effect/proc_holder/spell/targeted/forcewall)
+	var/obj/effect/proc_holder/spell/smoke/smoke = new
+	var/obj/effect/proc_holder/spell/forcewall/forcewall = new
+	smoke.human_req = FALSE
+	forcewall.human_req = FALSE
+	AddSpell(smoke)
+	AddSpell(forcewall)
 
 
 /mob/living/simple_animal/hostile/morph/proc/try_eat(atom/movable/item)
@@ -239,7 +244,7 @@
 		return TRUE
 	else if (!morphed)
 		to_chat(attacker, "<span class='warning'>Touching [src] with your hands hurts you!</span>")
-		var/obj/item/organ/external/affecting = attacker.get_organ("[attacker.hand ? "l" : "r" ]_hand")
+		var/obj/item/organ/external/affecting = attacker.get_organ(attacker.hand ? BODY_ZONE_PRECISE_L_HAND : BODY_ZONE_PRECISE_R_HAND)
 		affecting.receive_damage(20)
 		add_food(5)
 
@@ -273,7 +278,7 @@
 		var/food_value = calc_food_gained(item)
 		if(food_value + gathered_food > 0)
 			to_chat(user, "<span class='warning'>[src] just ate your [item]!</span>")
-			user.unEquip(item)
+			user.drop_item_ground(item)
 			eat(item)
 			return ..()
 
@@ -359,14 +364,16 @@
 	mind.assigned_role = SPECIAL_ROLE_MORPH
 	mind.special_role = SPECIAL_ROLE_MORPH
 	SSticker.mode.traitors |= mind
-	to_chat(src, "<b><font size=3 color='red'>You are a morph.</font><br></b>")
-	to_chat(src, "<span class='sinister'>You hunger for living beings and desire to procreate. Achieve this goal by ambushing unsuspecting pray using your abilities.</span>")
-	to_chat(src, "<span class='specialnotice'>As an abomination created primarily with changeling cells you may take the form of anything nearby by using your <span class='specialnoticebold'>Mimic ability</span>.</span>")
-	to_chat(src, "<span class='specialnotice'>The transformation will not go unnoticed for bystanding observers.</span>")
-	to_chat(src, "<span class='specialnoticebold'>While morphed</span><span class='specialnotice'>, you move slower and do less damage. In addition, anyone within three tiles will note an uncanny wrongness if examining you.</span>")
-	to_chat(src, "<span class='specialnotice'>From this form you can however <span class='specialnoticebold'>Prepare an Ambush</span> using your ability.</span>")
-	to_chat(src, "<span class='specialnotice'>This will allow you to deal a lot of damage the first hit. And if they touch you then even more.</span>")
-	to_chat(src, "<span class='specialnotice'>Finally, you can attack any item or dead creature to consume it - creatures will restore 1/3 of your max health and will add to your stored food while eating items will reduce your stored food</span>.")
+	var/list/messages = list()
+	messages.Add("<b><font size=3 color='red'>You are a morph.</font><br></b>")
+	messages.Add("<span class='sinister'>You hunger for living beings and desire to procreate. Achieve this goal by ambushing unsuspecting pray using your abilities.</span>")
+	messages.Add("<span class='specialnotice'>As an abomination created primarily with changeling cells you may take the form of anything nearby by using your <span class='specialnoticebold'>Mimic ability.</span></span>")
+	messages.Add("<span class='specialnotice'>The transformation will not go unnoticed for bystanding observers.</span>")
+	messages.Add("<span class='specialnoticebold'>While morphed</span><span class='specialnotice'>, you move slower and do less damage. In addition, anyone within three tiles will note an uncanny wrongness if examining you.</span>")
+	messages.Add("<span class='specialnotice'>From this form you can however <span class='specialnoticebold'>Prepare an Ambush</span> using your ability.</span>")
+	messages.Add("<span class='specialnotice'>This will allow you to deal a lot of damage the first hit. And if they touch you then even more.</span>")
+	messages.Add("<span class='specialnotice'>Finally, you can attack any item or dead creature to consume it - creatures will restore 1/3 of your max health and will add to your stored food while eating items will reduce your stored food.</span>")
+	messages.Add("<span class='motd'>С полной информацией вы можете ознакомиться на вики: <a href=\"https://wiki.ss220.space/index.php/Morph\">Морф</a></span>")
 
 	SEND_SOUND(src, sound('sound/magic/mutate.ogg'))
 	if(give_default_objectives)
@@ -374,13 +381,17 @@
 		eat.owner = mind
 		eat.explanation_text = "Eat as many living beings as possible to still the hunger within you."
 		eat.completed = TRUE
+		eat.needs_target = FALSE
 		mind.objectives += eat
 		var/datum/objective/procreate = new /datum/objective
 		procreate.owner = mind
 		procreate.explanation_text = "Split yourself in as many other [name]'s as possible!"
 		procreate.completed = TRUE
+		procreate.needs_target = FALSE
 		mind.objectives += procreate
-		mind.announce_objectives()
+		messages.Add(mind.prepare_announce_objectives(FALSE))
+
+	to_chat(src, chat_box_red(messages.Join("<br>")))
 
 #undef MORPHED_SPEED
 #undef ITEM_EAT_COST

@@ -37,6 +37,7 @@
 	obj_damage = 0
 	environment_smash = ENVIRONMENT_SMASH_NONE
 	holder_type = /obj/item/holder/snake
+	can_collar = TRUE
 
 
 /mob/living/simple_animal/hostile/retaliate/poison/snake/ListTargets(atom/the_target)
@@ -105,18 +106,6 @@
 	visible_message("[src] [pick("dances around", "chases [p_their()] tail")].", "[pick("You dance around", "You chase your tail")].")
 	spin(20, 1)
 
-/mob/living/simple_animal/hostile/retaliate/poison/snake/rouge/emote(act, m_type = 1, message = null, force)
-	if(incapacitated())
-		return
-
-	act = lowertext(act)
-	if(!force && act == "hiss" && handle_emote_CD())
-		return
-
-	switch(act)
-		if("hiss")
-			message = "<B>[src]</B> [pick(src.speak_emote)]!"
-	..()
 
 /mob/living/simple_animal/hostile/retaliate/poison/snake/rouge/attack_hand(mob/living/carbon/human/M)
 	. = ..()
@@ -153,9 +142,9 @@
 		return
 	if(change > 0)
 		new /obj/effect/temp_visual/heart(loc)
-		custom_emote(1, "hisses happily!")
+		custom_emote(EMOTE_AUDIBLE, "шип%(ит,ят)% счастливо!")
 	else
-		custom_emote(1, "hisses angrily!")
+		custom_emote(EMOTE_AUDIBLE, "шип%(ит,ят)% гневно!")
 
 /mob/living/simple_animal/hostile/retaliate/poison/snake/rouge/Initialize(mapload)
 	. = ..()
@@ -196,7 +185,7 @@
 	var/armorval = inventory_head?.armor.getRating(type)
 	if(!def_zone)
 		armorval *= 0.5
-	else if(def_zone != "head")
+	else if(def_zone != BODY_ZONE_HEAD)
 		armorval = 0
 	return armorval
 
@@ -215,7 +204,8 @@
 					if(inventory_head.flags & NODROP)
 						to_chat(usr, "<span class='warning'>\The [inventory_head] is stuck too hard to [src] for you to remove!</span>")
 						return
-					usr.put_in_hands(inventory_head)
+					drop_item_ground(inventory_head)
+					usr.put_in_hands(inventory_head, ignore_anim = FALSE)
 					inventory_head = null
 					update_snek_fluff()
 					regenerate_icons()
@@ -225,8 +215,8 @@
 			if("collar")
 				if(pcollar)
 					var/the_collar = pcollar
-					unEquip(pcollar)
-					usr.put_in_hands(the_collar)
+					drop_item_ground(pcollar)
+					usr.put_in_hands(the_collar, ignore_anim = FALSE)
 					pcollar = null
 					update_snek_fluff()
 					regenerate_icons()
@@ -266,7 +256,7 @@
 			return
 		return
 
-	if(user && !user.unEquip(item_to_add))
+	if(user && !user.drop_item_ground(item_to_add))
 		to_chat(user, "<span class='warning'>\The [item_to_add] is stuck to your hand, you cannot put it on [src]'s head!</span>")
 		return 0
 

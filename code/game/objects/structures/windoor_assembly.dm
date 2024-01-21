@@ -51,7 +51,10 @@
 	move_update_air(T)
 
 /obj/structure/windoor_assembly/update_icon()
-	icon_state = "[facing]_[secure ? "secure_" : ""]windoor_assembly[state]"
+	var/temp_state = state
+	if(temp_state == "03")
+		temp_state = "02"
+	icon_state = "[facing]_[secure ? "secure_" : ""]windoor_assembly[temp_state]"
 
 /obj/structure/windoor_assembly/CanPass(atom/movable/mover, turf/target, height=0)
 	if(istype(mover) && mover.checkpass(PASSGLASS))
@@ -86,6 +89,7 @@
 
 /obj/structure/windoor_assembly/attack_hand(mob/user)
 	if(user.a_intent == INTENT_HARM && ishuman(user) && user.dna.species.obj_damage)
+		add_fingerprint(user)
 		user.changeNext_move(CLICK_CD_MELEE)
 		attack_generic(user, user.dna.species.obj_damage)
 		return
@@ -93,7 +97,6 @@
 
 /obj/structure/windoor_assembly/attackby(obj/item/W, mob/user, params)
 	//I really should have spread this out across more states but thin little windoors are hard to sprite.
-	add_fingerprint(user)
 	switch(state)
 		if("01")
 			//Adding plasteel makes the assembly a secure windoor assembly. Step 2 (optional) complete.
@@ -106,6 +109,7 @@
 				if(do_after(user, 40 * P.toolspeed * gettoolspeedmod(user), target = src))
 					if(!src || secure || P.get_amount() < 2)
 						return
+					add_fingerprint(user)
 					playsound(loc, P.usesound, 100, 1)
 					P.use(2)
 					to_chat(user, "<span class='notice'>You reinforce [src].</span>")
@@ -118,6 +122,7 @@
 				if(do_after(user, 40 * W.toolspeed * gettoolspeedmod(user), target = src))
 					if(!src || !anchored || state != "01")
 						return
+					add_fingerprint(user)
 					var/obj/item/stack/cable_coil/CC = W
 					CC.use(1)
 					to_chat(user, "<span class='notice'>You wire [src].</span>")
@@ -138,24 +143,29 @@
 				if(do_after(user, 40 * W.toolspeed * gettoolspeedmod(user), target = src))
 					if(!src || electronics)
 						return
-					user.drop_item()
-					W.forceMove(src)
+					add_fingerprint(user)
+					user.drop_transfer_item_to_loc(W, src)
 					to_chat(user, "<span class='notice'>You install [W].</span>")
 					electronics = W
+					state = "03"
 					name = "[(src.secure) ? "secure" : ""] near finished windoor assembly"
 			else if(istype(W, /obj/item/pen))
 				var/t = rename_interactive(user, W)
 				if(!isnull(t))
+					add_fingerprint(user)
 					created_name = t
 				return
 			else
 				return ..()
+		if("03")
+			return ..()
 
+	add_fingerprint(user)
 	//Update to reflect changes(if applicable)
 	update_icon()
 
 /obj/structure/windoor_assembly/crowbar_act(mob/user, obj/item/I)	//Crowbar to complete the assembly, Step 7 complete.
-	if(state != "02")
+	if(state != "03")
 		return
 	. = TRUE
 	if(!electronics)
@@ -205,20 +215,20 @@
 		windoor.close()
 
 /obj/structure/windoor_assembly/screwdriver_act(mob/user, obj/item/I)
-	if(state != "02" || electronics)
+	if(state != "03" || !electronics)
 		return
 	. = TRUE
 	if(!I.tool_use_check(user, 0))
 		return
 	user.visible_message("<span class='notice'>[user] begins removing the circuit board from [src]...</span>", "<span class='notice'>You begin removing the circuit board from [src]...</span>")
-	if(!I.use_tool(src, user, 40, volume = I.tool_volume) || electronics)
+	if(!I.use_tool(src, user, 40, volume = I.tool_volume) || state != "03" || !electronics)
 		return
 	to_chat(user, "<span class='notice'>You remove [electronics].</span>")
 	name = "[(src.secure) ? "secure" : ""] wired windoor assembly"
-	var/obj/item/airlock_electronics/ae
-	ae = electronics
+	state = "02"
+	electronics.forceMove(loc)
 	electronics = null
-	ae.forceMove(loc)
+	update_icon()
 
 /obj/structure/windoor_assembly/wirecutter_act(mob/user, obj/item/I)
 	if(state != "02")

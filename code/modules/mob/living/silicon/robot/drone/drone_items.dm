@@ -57,12 +57,12 @@
 	if(!gripped_item && proximity && target && ishuman(target))
 		H = target
 		if(H.lying)
-			H.AdjustSleeping(-5)
-			if(H.sleeping == 0)
+			H.AdjustSleeping(-10 SECONDS)
+			if(!H.IsSleeping())
 				H.StopResting()
-			H.AdjustParalysis(-3)
-			H.AdjustStunned(-3)
-			H.AdjustWeakened(-3)
+			H.AdjustParalysis(-6 SECONDS)
+			H.AdjustStunned(-6 SECONDS)
+			H.AdjustWeakened(-6 SECONDS)
 			playsound(user.loc, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
 			user.visible_message( \
 				"<span class='notice'>[user] shakes [H] trying to wake [H.p_them()] up!</span>",\
@@ -84,12 +84,12 @@
 	if(!gripped_item && proximity && target && ishuman(target))
 		var/mob/living/carbon/human/H = target
 		if(H.lying)
-			H.AdjustSleeping(-5)
-			if(H.sleeping == 0)
+			H.AdjustSleeping(-10 SECONDS)
+			if(!H.IsSleeping())
 				H.StopResting()
-			H.AdjustParalysis(-3)
-			H.AdjustStunned(-3)
-			H.AdjustWeakened(-3)
+			H.AdjustParalysis(-6 SECONDS)
+			H.AdjustStunned(-6 SECONDS)
+			H.AdjustWeakened(-6 SECONDS)
 			playsound(user.loc, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
 			user.visible_message( \
 				"<span class='notice'>[user] shakes [H] trying to wake [H.p_them()] up!</span>",\
@@ -162,7 +162,7 @@
 /obj/item/gripper/attack(mob/living/carbon/M, mob/living/carbon/user)
 	return
 
-/// Grippers are snowflakey so this is needed to to prevent forceMoving grippers after `if(!user.drop_item())` checks done in certain attackby's.
+/// Grippers are snowflakey so this is needed to to prevent forceMoving grippers after `if(!user.drop_from_active_hand())` checks done in certain attackby's.
 /obj/item/gripper/forceMove(atom/destination)
 	return
 
@@ -211,7 +211,7 @@
 				A.cell.forceMove(src)
 				A.cell = null
 
-				A.charging = 0
+				A.charging = APC_NOT_CHARGING
 				A.update_icon()
 
 				user.visible_message("<span class='warning'>[user] removes the power cell from [A]!</span>", "You remove the power cell.")

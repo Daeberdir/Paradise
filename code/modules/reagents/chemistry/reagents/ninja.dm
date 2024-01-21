@@ -48,7 +48,7 @@
 				our_mob.emote("giggle")
 			// Anti-Drunk
 			our_mob.SetSlur(0)
-			our_mob.AdjustDrunk(-4)
+			our_mob.AdjustDrunk(-8 SECONDS)
 			our_mob.reagents.remove_all_type(/datum/reagent/consumable/ethanol, 8, 0, 1)
 			//Basic damage types
 			update_flags |= our_mob.adjustBruteLoss(-5, FALSE)
@@ -56,52 +56,48 @@
 			update_flags |= our_mob.adjustOxyLoss(-5, FALSE)
 			update_flags |= our_mob.adjustToxLoss(-5, FALSE)
 			//Eyes and ears
-			update_flags |= our_mob.AdjustEyeBlurry(-1, FALSE)
-			update_flags |= our_mob.AdjustEarDamage(-1)
+			our_mob.AdjustEyeBlurry(-2 SECONDS)
+			our_mob.AdjustDeaf(-2 SECONDS)
 			//Clone and brain
 			update_flags |= our_mob.adjustBrainLoss(-5, FALSE)
 			update_flags |= our_mob.adjustCloneLoss(-5, FALSE)
 			//Other helpfull things
-			update_flags |= our_mob.AdjustLoseBreath(-5, bound_lower = 5)
-			update_flags |= our_mob.AdjustParalysis(-1, FALSE)
-			update_flags |= our_mob.AdjustStunned(-1, FALSE)
-			update_flags |= our_mob.AdjustWeakened(-1, FALSE)
+			our_mob.AdjustLoseBreath(-10 SECONDS, bound_lower = 10 SECONDS)
+			our_mob.AdjustParalysis(-2 SECONDS)
+			our_mob.AdjustWeakened(-2 SECONDS)
 		if(20 to 40)
 			//Human only effects
 			if(ishuman(our_mob))
 				var/mob/living/carbon/human/mob_human = our_mob
 				if(prob(10))
 					to_chat(mob_human, span_notice("You feel a powerfull gush inside self, when your body slowly heals..."))
-					mob_human.Jitter(20)
+					mob_human.Jitter(40 SECONDS)
 				// Regrow limbs
 				if(current_cycle == 30)
 					to_chat(mob_human, span_notice("Your body refreshes..."))
-					mob_human.check_and_regenerate_organs(mob_human)
+					mob_human.check_and_regenerate_organs()
 				// Embedded objects
-				if(mob_human.has_embedded_objects())
-					mob_human.remove_all_embedded_objects()
+				mob_human.remove_all_embedded_objects()
 				// Organs
-				for(var/obj/item/organ/internal/internal_organ in mob_human.internal_organs)
+				for(var/obj/item/organ/internal/internal_organ as anything in mob_human.internal_organs)
 					if(prob(20))
 						internal_organ.rejuvenate()
 						internal_organ.receive_damage(-5, FALSE)
 				// Bones
-				for(var/obj/item/organ/external/external_organ in mob_human.bodyparts)
+				for(var/obj/item/organ/external/external_organ as anything in mob_human.bodyparts)
 					if(prob(20))
 						external_organ.rejuvenate()
-						external_organ.mend_fracture()
-						external_organ.internal_bleeding = FALSE
 				//Eyes and Ears internal damage
 				var/obj/item/organ/internal/eyes/our_eyes = mob_human.get_int_organ(/obj/item/organ/internal/eyes)
 				if(istype(our_eyes))
 					our_eyes.heal_internal_damage(5, robo_repair = TRUE)
 				var/obj/item/organ/internal/ears/our_ears = mob_human.get_int_organ(/obj/item/organ/internal/ears)
 				if(istype(our_ears))
-					our_ears.AdjustEarDamage(-5)
+					our_ears.heal_internal_damage(-5)
 					if(our_ears.damage < 25 && prob(30))
-						our_ears.deaf = 0
+						mob_human.SetDeaf(0)
 				//ALL viruses
-				for(var/thing in mob_human.viruses)
+				for(var/thing in mob_human.diseases)
 					var/datum/disease/our_disease = thing
 					our_disease.cure(0)
 				//Genes(resets them like mutadone)
@@ -163,18 +159,18 @@
 			mob_human.emote("moan")
 			mob_human.adjustBruteLoss(0.5, FALSE)
 		if(prob(20))
-			mob_human.SetSlowed(2)
-			mob_human.Confused(10)
-			mob_human.EyeBlurry(2)
+			mob_human.Slowed(4 SECONDS)
+			mob_human.Confused(20 SECONDS)
+			mob_human.EyeBlurry(4 SECONDS)
 		if(prob(10) && last_random_turf && istype(mob_human.loc, /turf) && !rend)
 			mob_human.visible_message(span_info("[mob_human] vanished!"), span_warning("You phased somewhere familiar..."))
 			new /obj/effect/temp_visual/gravpush(get_turf(mob_human))
 			playsound(get_turf(mob_human), 'sound/magic/timeparadox2.ogg', 100, 1, -1)
 			mob_human.forceMove(last_random_turf)
 		if(prob(2))
-			mob_human.Drowsy(10)
+			mob_human.Drowsy(20 SECONDS)
 		if(prob(1))
-			mob_human.EyeBlind(10)
+			mob_human.EyeBlind(20 SECONDS)
 			our_mob.adjustBrainLoss(5, FALSE)
 	return ..() | update_flags
 

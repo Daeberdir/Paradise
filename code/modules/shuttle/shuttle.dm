@@ -4,7 +4,7 @@
 
 //NORTH default dir
 /obj/docking_port
-	invisibility = 101
+	invisibility = INVISIBILITY_ABSTRACT
 	icon = 'icons/obj/device.dmi'
 	//icon = 'icons/dirsquare.dmi'
 	icon_state = "pinonfar"
@@ -541,7 +541,7 @@
 	dir = S1.dir
 
 	// Update mining and labor shuttle ash storm audio
-	if(id in list("mining", "laborcamp"))
+	if(id in list("mining", "laborcamp") && !CONFIG_GET(flag/disable_lavaland))
 		var/mining_zlevel = level_name_to_num(MINING)
 		var/datum/weather/ash_storm/W = SSweather.get_weather(mining_zlevel, /area/lavaland/surface/outdoors)
 		if(W)
@@ -634,7 +634,7 @@
 									a hyperspace ripple[L.anchored ? "":" and is thrown clear"]!</span>",
 									"<span class='userdanger'>You feel an immense \
 									crushing pressure as the space around you ripples.</span>")
-							L.Paralyse(10)
+							L.Paralyse(20 SECONDS)
 							L.ex_act(2)
 
 			// Move unanchored atoms
@@ -893,7 +893,8 @@
 		add_attack_logs(user, src, "emagged")
 		src.req_access = list()
 		emagged = 1
-		to_chat(user, "<span class='notice'>You fried the consoles ID checking system.</span>")
+		if(user)
+			to_chat(user, "<span class='notice'>You fried the consoles ID checking system.</span>")
 
 //for restricting when the computer can be used, needed for some console subtypes.
 /obj/machinery/computer/shuttle/proc/can_call_shuttle(mob/user, action)
@@ -932,7 +933,7 @@
 	desc = "Used to control the Transport Shuttle."
 	circuit = /obj/item/circuitboard/ruins_transport_shuttle
 	shuttleId = "ruins_transport_shuttle"
-	possible_destinations = "ussp_dock;dj_post;sindiecake_dock"
+	possible_destinations = "ussp_dock;dj_post;sindiecake_dock;ussp_gorky17"
 
 
 /obj/machinery/computer/shuttle/ruins_civil_shuttle // made another shuttle, this one will fly between spacebar and twin nexus hotel. just another way to get to it.

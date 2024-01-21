@@ -8,6 +8,7 @@
 	anchored = 1
 	max_integrity = 200
 	integrity_failure = 100
+	flags_2 = CHECK_RICOCHET_2
 	var/list/ui_users = list()
 
 /obj/structure/mirror/Initialize(mapload, newdir = SOUTH, building = FALSE)
@@ -40,6 +41,7 @@
 			AC.name = "SalonPro Nano-Mirror"
 			AC.flags = APPEARANCE_ALL_BODY
 			ui_users[user] = AC
+		add_fingerprint(user)
 		AC.ui_interact(user)
 
 /obj/structure/mirror/obj_break(damage_flag, mapload)
@@ -80,6 +82,26 @@
 		if(BURN)
 			playsound(src, 'sound/effects/hit_on_shattered_glass.ogg', 70, TRUE)
 
+/obj/structure/mirror/handle_ricochet(obj/item/projectile/P)
+	if(!anchored)
+		return FALSE
+
+	if(broken)
+		if(prob(90))
+			return FALSE
+	else if(prob(70))
+		return FALSE
+
+	var/turf/p_turf = get_turf(P)
+	var/face_direction = get_dir(get_turf(src), p_turf)
+	var/face_angle = dir2angle(face_direction)
+	var/incidence_s = GET_ANGLE_OF_INCIDENCE(face_angle, (P.Angle + 180))
+	if(abs(incidence_s) > 90 && abs(incidence_s) < 270)
+		return FALSE
+	var/new_angle_s = SIMPLIFY_DEGREES(face_angle + incidence_s)
+	P.set_angle(new_angle_s)
+	visible_message("<span class='warning'>[P] reflects off [src]!</span>")
+	return TRUE
 
 /obj/item/mounted/mirror
 	name = "mirror"
@@ -89,7 +111,7 @@
 
 /obj/item/mounted/mirror/do_build(turf/on_wall, mob/user)
 	var/obj/structure/mirror/M = new /obj/structure/mirror(get_turf(user), get_dir(on_wall, user), 1)
-	transfer_prints_to(M, TRUE)
+	transfer_fingerprints_to(M)
 	qdel(src)
 
 /obj/structure/mirror/magic
@@ -101,7 +123,9 @@
 		return
 
 	var/mob/living/carbon/human/H = user
-	var/choice = input(user, "Something to change?", "Magical Grooming") as null|anything in list("Name", "Body", "Voice")
+	var/choice = tgui_input_list(user, "Something to change?", "Magical Grooming", list("Name", "Body", "Voice"))
+
+	add_fingerprint(user)
 
 	switch(choice)
 		if("Name")
@@ -121,7 +145,7 @@
 
 		if("Body")
 			var/list/race_list = list("Human", "Tajaran", "Skrell", "Unathi", "Diona", "Vulpkanin", "Nian")
-			if(config.usealienwhitelist)
+			if(CONFIG_GET(flag/usealienwhitelist))
 				for(var/Spec in GLOB.whitelisted_species)
 					if(is_alien_whitelisted(H, Spec))
 						race_list += Spec
@@ -138,7 +162,7 @@
 			AC.ui_interact(user)
 
 		if("Voice")
-			var/voice_choice = input(user, "Perhaps...", "Voice effects") as null|anything in list("Comic Sans", "Wingdings", "Swedish", "Староимперский", "Mute")
+			var/voice_choice = tgui_input_list(user, "Perhaps...", "Voice effects", list("Comic Sans", "Wingdings", "Swedish", "Староимперский", "Mute"))
 			var/voice_mutation
 			switch(voice_choice)
 				if("Comic Sans")
@@ -150,7 +174,10 @@
 				if("Староимперский")
 					voice_mutation = GLOB.auld_imperial_block
 				if("Mute")
-					voice_mutation = GLOB.muteblock
+					if(HAS_TRAIT_FROM(user, TRAIT_MUTE, "mirror"))
+						REMOVE_TRAIT(user, TRAIT_MUTE, "mirror")
+					else
+						ADD_TRAIT(user, TRAIT_MUTE, "mirror")
 			if(voice_mutation)
 				if(H.dna.GetSEState(voice_mutation))
 					H.dna.SetSEState(voice_mutation, FALSE)

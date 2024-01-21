@@ -134,6 +134,37 @@
 /datum/reagent/proc/on_merge(data)
 	return
 
+// Called in on_merge() proc if reagent can carry diseases
+/datum/reagent/proc/merge_diseases_data(list/mix_data)
+	if(!(id in GLOB.diseases_carrier_reagents))
+		return
+
+	if(data && mix_data)
+		if(data["diseases"] || mix_data["diseases"])
+
+			var/list/mix1 = data["diseases"]
+			var/list/mix2 = mix_data["diseases"]
+
+			var/list/to_mix = list()
+
+			for(var/datum/disease/virus/advance/AD in mix1)
+				to_mix += AD
+			for(var/datum/disease/virus/advance/AD in mix2)
+				to_mix += AD
+
+			var/datum/disease/virus/advance/AD = Advance_Mix(to_mix)
+			var/list/preserve = list()
+
+			if(istype(AD))
+				preserve += AD
+
+			for(var/datum/disease/D in data["diseases"] + mix_data["diseases"])
+				if(!istype(D, /datum/disease/virus/advance))
+					preserve += D.Copy()
+			data["diseases"] = preserve
+
+	return
+
 /datum/reagent/proc/on_update(atom/A)
 	return
 
@@ -168,7 +199,7 @@
 	else
 		if(prob(8))
 			M.emote("shiver")
-			M.Jitter(60)
+			M.Jitter(120 SECONDS)
 		if(prob(8))
 			M.emote("sneeze")
 		if(prob(4))
@@ -182,10 +213,10 @@
 	else
 		if(prob(8))
 			M.emote("twitch_s")
-			M.Jitter(80)
+			M.Jitter(160 SECONDS)
 		if(prob(8))
 			M.emote("shiver")
-			M.Jitter(60)
+			M.Jitter(120 SECONDS)
 		if(prob(4))
 			to_chat(M, "<span class='warning'>Your head hurts.</span>")
 		if(prob(4))
@@ -198,11 +229,11 @@
 			to_chat(M, "<span class='notice'>You could really go for some [name] right now.</span>")
 		if(prob(4))
 			M.emote("twitch")
-			M.Jitter(80)
+			M.Jitter(160 SECONDS)
 	else
 		if(prob(8))
 			M.emote("twitch")
-			M.Jitter(80)
+			M.Jitter(160 SECONDS)
 		if(prob(4))
 			to_chat(M, "<span class='warning'>You have a pounding headache.</span>")
 		if(prob(4))
@@ -218,16 +249,15 @@
 			to_chat(M, "<span class='notice'>You can't stop thinking about [name]...</span>")
 		if(prob(4))
 			M.emote(pick("twitch", "twitch_s", "shiver"))
-			M.Jitter(80)
+			M.Jitter(160 SECONDS)
 	else
 		if(prob(6))
 			to_chat(M, "<span class='warning'>Your stomach lurches painfully!</span>")
 			M.visible_message("<span class='warning'>[M] gags and retches!</span>")
-			update_flags |= M.Stun(rand(2,4), FALSE)
-			update_flags |= M.Weaken(rand(2,4), FALSE)
+			M.Weaken(rand(4 SECONDS, 8 SECONDS))
 		if(prob(8))
 			M.emote(pick("twitch", "twitch_s", "shiver"))
-			M.Jitter(80)
+			M.Jitter(160 SECONDS)
 		if(prob(4))
 			to_chat(M, "<span class='warning'>Your head is killing you!</span>")
 		if(prob(5))
@@ -236,25 +266,27 @@
 			to_chat(M, "<span class='warning'>You would DIE for some [name] right now!</span>")
 	return update_flags
 
+
 /datum/reagent/proc/fakedeath(mob/living/M)
-	if(M.status_flags & FAKEDEATH)
+	if(HAS_TRAIT(M, TRAIT_FAKEDEATH))
 		return
+
 	if(!(M.status_flags & CANPARALYSE))
 		return
-	if(M.mind && M.mind.changeling && M.mind.changeling.regenerating) //no messing with changeling's fake death
-		return
+
 	M.emote("deathgasp")
-	M.status_flags |= FAKEDEATH
+	ADD_TRAIT(M, TRAIT_FAKEDEATH, id)
 	M.updatehealth("fakedeath reagent")
 
+
 /datum/reagent/proc/fakerevive(mob/living/M)
-	if(!(M.status_flags & FAKEDEATH))
+	if(!HAS_TRAIT_FROM(M, TRAIT_FAKEDEATH, id))
 		return
-	if(M.mind && M.mind.changeling && M.mind.changeling.regenerating)
-		return
+
 	if(M.resting)
 		M.StopResting()
-	M.status_flags &= ~(FAKEDEATH)
+
+	REMOVE_TRAIT(M, TRAIT_FAKEDEATH, id)
 	if(M.healthdoll)
 		M.healthdoll.cached_healthdoll_overlays.Cut()
 	M.updatehealth("fakedeath reagent end")

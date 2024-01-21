@@ -1,6 +1,7 @@
 /datum/martial_art/wrestling
 	name = "Wrestling"
 	has_explaination_verb = TRUE
+	has_dirslash = FALSE
 
 //	combo refence since wrestling uses a different format to sleeping carp and plasma fist.
 //	Clinch "G"
@@ -28,7 +29,7 @@
 	var/armor_block = D.run_armor_check(null, "melee")
 	D.apply_damage(30, BRUTE, null, armor_block)
 	objective_damage(A, D, 30, BRUTE)
-	D.apply_effect(6, WEAKEN, armor_block)
+	D.apply_effect(12 SECONDS, WEAKEN, armor_block)
 	add_attack_logs(A, D, "Melee attacked with [src] (SUPLEX)")
 
 	A.SpinAnimation(10,1)
@@ -36,7 +37,7 @@
 	D.SpinAnimation(10,1)
 	spawn(3)
 		armor_block = A.run_armor_check(null, "melee")
-		A.apply_effect(4, WEAKEN, armor_block)
+		A.apply_effect(8 SECONDS, WEAKEN, armor_block)
 	return
 
 /datum/martial_art/wrestling/disarm_act(var/mob/living/carbon/human/A, var/mob/living/carbon/human/D)

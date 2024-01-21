@@ -26,6 +26,7 @@
 	integrity_failure = 30
 	smooth = SMOOTH_TRUE
 	canSmoothWith = list(/obj/structure/table, /obj/structure/table/reinforced)
+	creates_cover = TRUE
 	var/frame = /obj/structure/table_frame
 	var/framestack = /obj/item/stack/rods
 	var/buildstack = /obj/item/stack/sheet/metal
@@ -95,7 +96,7 @@
 /obj/structure/table/attack_hand(mob/living/user)
 	..()
 	if(climber)
-		climber.Weaken(2)
+		climber.Weaken(4 SECONDS)
 		climber.visible_message("<span class='warning'>[climber.name] has been knocked off the table", "You've been knocked off the table", "You hear [climber.name] get knocked off the table</span>")
 	else if(Adjacent(user) && user.pulling && user.pulling.pass_flags & PASSTABLE)
 		user.Move_Pulled(src)
@@ -129,22 +130,32 @@
 		return 1
 	if(mover.throwing)
 		return 1
-	if(locate(/obj/structure/table) in get_turf(mover))
-		return 1
 	if(flipped)
 		if(get_dir(loc, target) == dir)
 			return !density
 		else
 			return 1
+	var/obj/structure/table/S = locate(/obj/structure/table) in get_turf(mover)
+	if(S?.flipped == 0)
+		return 1
 	return 0
 
-/obj/structure/table/CanAStarPass(ID, dir, caller)
+
+/obj/structure/table/CanPathfindPass(obj/item/card/id/ID, dir, caller, no_id = FALSE)
 	. = !density
 	if(ismovable(caller))
 		var/atom/movable/mover = caller
 		. = . || mover.checkpass(PASSTABLE)
 
-//checks if projectile 'P' from turf 'from' can hit whatever is behind the table. Returns 1 if it can, 0 if bullet stops.
+
+/**
+ * Determines whether a projectile crossing our turf should be stopped.
+ * Return FALSE to stop the projectile.
+ *
+ * Arguments:
+ * * P - The projectile trying to cross.
+ * * from - Where the projectile is located.
+ */
 /obj/structure/table/proc/check_cover(obj/item/projectile/P, turf/from)
 	var/turf/cover = flipped ? get_turf(src) : get_step(loc, get_dir(from, loc))
 	if(get_dist(P.starting, loc) <= 1) //Tables won't help you if people are THIS close
@@ -187,9 +198,10 @@
 		return
 	if(isrobot(user))
 		return
-	if(!user.drop_item())
+	if(!user.drop_from_active_hand())
 		return
 	if(O.loc != src.loc)
+		add_fingerprint(user)
 		step(O, get_dir(O, src))
 	return
 
@@ -211,7 +223,7 @@
 			to_chat(user, "<span class='warning'>You cannot do this there is \a [blocking_object] in the way!</span>")
 			return FALSE
 		G.affecting.forceMove(get_turf(src))
-		G.affecting.Weaken(2)
+		G.affecting.Weaken(4 SECONDS)
 		item_placed(G.affecting)
 		G.affecting.visible_message("<span class='danger'>[G.assailant] pushes [G.affecting] onto [src].</span>", \
 									"<span class='userdanger'>[G.assailant] pushes [G.affecting] onto [src].</span>")
@@ -222,6 +234,7 @@
 
 /obj/structure/table/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/grab))
+		add_fingerprint(user)
 		tablepush(I, user)
 		return
 
@@ -229,8 +242,8 @@
 		return
 
 	if(user.a_intent != INTENT_HARM && !(I.flags & ABSTRACT))
-		if(user.drop_item())
-			I.Move(loc)
+		if(user.transfer_item_to_loc(I, src.loc))
+			add_fingerprint(user)
 			var/list/click_params = params2list(params)
 			//Center the icon where the user clicked.
 			if(!click_params || !click_params["icon-x"] || !click_params["icon-y"])
@@ -306,6 +319,7 @@
 		to_chat(usr, "<span class='notice'>It won't budge.</span>")
 		return
 
+	add_fingerprint(usr)
 	usr.visible_message("<span class='warning'>[usr] flips \the [src]!</span>")
 
 	if(climbable)
@@ -355,6 +369,10 @@
 			T.flip(direction)
 	update_icon()
 
+	creates_cover = FALSE
+	if(isturf(loc))
+		REMOVE_TRAIT(loc, TRAIT_TURF_COVERED, UNIQUE_TRAIT_SOURCE(src))
+
 	return 1
 
 /obj/structure/table/proc/unflip()
@@ -379,7 +397,12 @@
 		if(locate(/obj/structure/table,get_step(src,D)))
 			var/obj/structure/table/T = locate(/obj/structure/table,get_step(src,D))
 			T.unflip()
+	dir = initial(dir)
 	update_icon()
+
+	creates_cover = TRUE
+	if(isturf(loc))
+		ADD_TRAIT(loc, TRAIT_TURF_COVERED, UNIQUE_TRAIT_SOURCE(src))
 
 	return 1
 
@@ -446,7 +469,7 @@
 		debris -= AM
 		if(istype(AM, /obj/item/shard))
 			AM.throw_impact(L)
-	L.Weaken(5)
+	L.Weaken(10 SECONDS)
 	qdel(src)
 
 /obj/structure/table/glass/deconstruct(disassembled = TRUE, wrench_disassembly = 0)
@@ -631,15 +654,25 @@
 	buildstackamount = 1
 	canSmoothWith = list(/obj/structure/table/reinforced/brass)
 
+/obj/structure/table/reinforced/brass/fake
+	desc = "A solid, slightly beveled and totally not magic brass table."
+	frame = /obj/structure/table_frame/brass/fake
+	framestack = /obj/item/stack/sheet/brass_fake
+	buildstack = /obj/item/stack/sheet/brass_fake
+	canSmoothWith = list(/obj/structure/table/reinforced/brass/fake)
+
 /obj/structure/table/reinforced/brass/narsie_act()
 	take_damage(rand(15, 45), BRUTE)
 	if(src) //do we still exist?
 		var/previouscolor = color
-		color = "#960000"
+		color = COLOR_CULT_RED
 		animate(src, color = previouscolor, time = 8)
 
 /obj/structure/table/reinforced/brass/ratvar_act()
 	obj_integrity = max_integrity
+
+/obj/structure/table/reinforced/brass/fake/ratvar_act()
+	return
 
 /obj/structure/table/tray
 	name = "surgical tray"
@@ -737,21 +770,22 @@
 	else
 		return 0
 
-/obj/structure/rack/CanAStarPass(ID, dir, caller)
+
+/obj/structure/rack/CanPathfindPass(obj/item/card/id/ID, dir, caller, no_id = FALSE)
 	. = !density
 	if(ismovable(caller))
 		var/atom/movable/mover = caller
 		. = . || mover.checkpass(PASSTABLE)
 
-/obj/structure/rack/MouseDrop_T(obj/O, mob/user)
-	if((!( istype(O, /obj/item) ) || user.get_active_hand() != O))
+
+/obj/structure/rack/MouseDrop_T(obj/item/O, mob/user)
+	if((!(istype(O)) || user.get_active_hand() != O))
 		return
 	if(isrobot(user))
 		return
-	if(!user.drop_item())
-		return
 	if(O.loc != src.loc)
-		step(O, get_dir(O, src))
+		if(user.transfer_item_to_loc(O, src.loc))
+			add_fingerprint(user)
 
 /obj/structure/rack/attackby(obj/item/W, mob/user, params)
 	if(isrobot(user))
@@ -759,9 +793,8 @@
 	if(user.a_intent == INTENT_HARM)
 		return ..()
 	if(!(W.flags & ABSTRACT))
-		if(user.drop_item())
-			W.Move(loc)
-	return
+		if(user.transfer_item_to_loc(W, src.loc))
+			add_fingerprint(user)
 
 /obj/structure/rack/wrench_act(mob/user, obj/item/I)
 	. = TRUE
@@ -775,6 +808,7 @@
 /obj/structure/rack/attack_hand(mob/living/user)
 	if(user.IsWeakened() || user.resting || user.lying)
 		return
+	add_fingerprint(user)
 	user.changeNext_move(CLICK_CD_MELEE)
 	user.do_attack_animation(src, ATTACK_EFFECT_KICK)
 	user.visible_message("<span class='warning'>[user] kicks [src].</span>", \
@@ -811,16 +845,18 @@
 /obj/structure/rack/gunrack/MouseDrop_T(obj/O, mob/user)
 	if(isrobot(user))
 		return
-	if(!user.drop_item())
+	if(!user.drop_from_active_hand())
 		return
-	if((!( istype(O, /obj/item/gun) ) || user.get_active_hand() != O))
+	if(!(istype(O, /obj/item/gun)))
 		to_chat(user, "<span class='warning'>This item doesn't fit!</span>")
 		return
 	if(O.loc != src.loc)
-		if(istype(O, /obj/item/gun))
-			var/obj/item/gun/our_gun = O
-			step(O, get_dir(O, src))
-			our_gun.place_on_rack()
+		add_fingerprint(user)
+		var/obj/item/gun/our_gun = O
+		our_gun.reset_direction()
+		our_gun.place_on_rack()
+		our_gun.do_drop_animation(src)
+		our_gun.Move(loc)
 
 /obj/structure/rack/gunrack/attackby(obj/item/W, mob/user, params)
 	if(!ishuman(user))
@@ -830,9 +866,11 @@
 	if(!(istype(W, /obj/item/gun)))
 		to_chat(user, "<span class='warning'>This item doesn't fit!</span>")
 		return
-	if(!(W.flags & ABSTRACT) && user.drop_item())
+	if(!(W.flags & ABSTRACT) && user.drop_from_active_hand())
+		add_fingerprint(user)
 		var/obj/item/gun/our_gun = W
 		our_gun.place_on_rack()
+		our_gun.do_drop_animation(src)
 		our_gun.Move(loc)
 		var/list/click_params = params2list(params)
 		//Center the icon where the user clicked.
@@ -892,7 +930,7 @@
 	building = TRUE
 	to_chat(user, "<span class='notice'>You start constructing a gun rack...</span>")
 	if(do_after(user, 50, target = user, progress=TRUE))
-		if(!user.drop_item(src))
+		if(!user.drop_from_active_hand())
 			return
 		var/obj/structure/rack/gunrack/GR = new (user.loc)
 		user.visible_message("<span class='notice'>[user] assembles \a [GR].\
@@ -938,7 +976,7 @@
 	building = TRUE
 	to_chat(user, "<span class='notice'>You start constructing a rack...</span>")
 	if(do_after(user, 50, target = user, progress=TRUE))
-		if(!user.drop_item(src))
+		if(!user.drop_from_active_hand())
 			return
 		var/obj/structure/rack/R = new /obj/structure/rack(user.loc)
 		user.visible_message("<span class='notice'>[user] assembles \a [R].\

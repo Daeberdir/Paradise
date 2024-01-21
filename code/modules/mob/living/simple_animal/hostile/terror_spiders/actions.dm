@@ -162,6 +162,7 @@
 	anchored = 1 // prevents people dragging it
 	density = 0 // prevents it blocking all movement
 	max_integrity = 20 // two welders, or one laser shot (15 for the normal spider webs)
+	creates_cover = TRUE
 	icon_state = "stickyweb1"
 	var/creator_ckey = null
 
@@ -181,9 +182,8 @@
 			return 1
 		if(prob(80))
 			to_chat(mover, "<span class='danger'>You get stuck in [src] for a moment.</span>")
-			M.Stun(1) // 2 seconds.
-			M.Weaken(1) // 2 seconds.
-			M.slowed = 5
+			M.Weaken(2 SECONDS) // 2 seconds, wow
+			M.Slowed(10 SECONDS)
 			if(iscarbon(mover))
 				var/mob/living/carbon/C = mover
 				web_special_ability(C)

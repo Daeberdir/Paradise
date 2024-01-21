@@ -104,6 +104,8 @@ GLOBAL_LIST_INIT(abductor_recipes, list ( \
 	new/datum/stack_recipe("alien airlock assembly", /obj/structure/door_assembly/door_assembly_abductor, 4, time = 20, one_per_turf = 1, on_floor = 1), \
 	null, \
 	new/datum/stack_recipe("alien floor tile", /obj/item/stack/tile/mineral/abductor, 1, 4, 20), \
+	new/datum/stack_recipe("alien chair", /obj/structure/chair/comfy/abductor,  2, one_per_turf = 1, on_floor = 1), \
+	new/datum/stack_recipe("alien computer frame", /obj/structure/computerframe/abductor,  4, time = 25, one_per_turf = 1, on_floor = 1)
 	))
 
 GLOBAL_LIST_INIT(adamantine_recipes, list(
@@ -120,7 +122,7 @@ GLOBAL_LIST_INIT(snow_recipes, list(
 	throwforce = 5
 	throw_speed = 3
 
-/obj/item/stack/sheet/mineral/New()
+/obj/item/stack/sheet/mineral/New(loc, new_amount, merge = TRUE)
 	..()
 	pixel_x = rand(0,4)-4
 	pixel_y = rand(0,4)-4
@@ -135,8 +137,8 @@ GLOBAL_LIST_INIT(snow_recipes, list(
 	sheettype = "sandstone"
 	materials = list(MAT_GLASS=MINERAL_MATERIAL_AMOUNT)
 
-/obj/item/stack/sheet/mineral/sandstone/New()
-	..()
+/obj/item/stack/sheet/mineral/sandstone/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.sandstone_recipes
 
 /*
@@ -154,9 +156,9 @@ GLOBAL_LIST_INIT(sandbag_recipes, list ( \
 	new/datum/stack_recipe("sandbags", /obj/structure/barricade/sandbags, 1, time = 25, one_per_turf = 1, on_floor = 1), \
 	))
 
-/obj/item/stack/sheet/mineral/sandbags/New()
+/obj/item/stack/sheet/mineral/sandbags/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.sandbag_recipes
-	..()
 
 /obj/item/emptysandbag
 	name = "empty sandbag"
@@ -172,7 +174,7 @@ GLOBAL_LIST_INIT(sandbag_recipes, list ( \
 		var/obj/item/stack/sheet/mineral/sandbags/S = new /obj/item/stack/sheet/mineral/sandbags(drop_location())
 		qdel(src)
 		if(Adjacent(user) && !issilicon(user))
-			user.put_in_hands(S)
+			user.put_in_hands(S, ignore_anim = FALSE)
 		G.use(1)
 	else
 		return ..()
@@ -188,8 +190,8 @@ GLOBAL_LIST_INIT(sandbag_recipes, list ( \
 	materials = list(MAT_DIAMOND=MINERAL_MATERIAL_AMOUNT)
 	point_value = 25
 
-/obj/item/stack/sheet/mineral/diamond/New()
-	..()
+/obj/item/stack/sheet/mineral/diamond/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.diamond_recipes
 
 /obj/item/stack/sheet/mineral/diamond/fifty
@@ -206,8 +208,8 @@ GLOBAL_LIST_INIT(sandbag_recipes, list ( \
 	materials = list(MAT_URANIUM=MINERAL_MATERIAL_AMOUNT)
 	point_value = 20
 
-/obj/item/stack/sheet/mineral/uranium/New()
-	..()
+/obj/item/stack/sheet/mineral/uranium/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.uranium_recipes
 
 /obj/item/stack/sheet/mineral/plasma
@@ -223,8 +225,8 @@ GLOBAL_LIST_INIT(sandbag_recipes, list ( \
 	max_integrity = 100
 	point_value = 20
 
-/obj/item/stack/sheet/mineral/plasma/New()
-	..()
+/obj/item/stack/sheet/mineral/plasma/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.plasma_recipes
 
 /obj/item/stack/sheet/mineral/plasma/fifty
@@ -262,8 +264,8 @@ GLOBAL_LIST_INIT(sandbag_recipes, list ( \
 	materials = list(MAT_GOLD=MINERAL_MATERIAL_AMOUNT)
 	point_value = 20
 
-/obj/item/stack/sheet/mineral/gold/New()
-	..()
+/obj/item/stack/sheet/mineral/gold/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.gold_recipes
 
 /obj/item/stack/sheet/mineral/silver
@@ -277,8 +279,8 @@ GLOBAL_LIST_INIT(sandbag_recipes, list ( \
 	materials = list(MAT_SILVER=MINERAL_MATERIAL_AMOUNT)
 	point_value = 20
 
-/obj/item/stack/sheet/mineral/silver/New()
-	..()
+/obj/item/stack/sheet/mineral/silver/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.silver_recipes
 
 /obj/item/stack/sheet/mineral/bananium
@@ -294,8 +296,8 @@ GLOBAL_LIST_INIT(sandbag_recipes, list ( \
 /obj/item/stack/sheet/mineral/bananium/fifty
 	amount = 50
 
-/obj/item/stack/sheet/mineral/bananium/New(loc, amount=null)
-	..()
+/obj/item/stack/sheet/mineral/bananium/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.bananium_recipes
 
 /obj/item/stack/sheet/mineral/tranquillite
@@ -312,8 +314,8 @@ GLOBAL_LIST_INIT(sandbag_recipes, list ( \
 /obj/item/stack/sheet/mineral/tranquillite/fifty
 	amount = 50
 
-/obj/item/stack/sheet/mineral/tranquillite/New(loc, amount=null)
-	..()
+/obj/item/stack/sheet/mineral/tranquillite/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.tranquillite_recipes
 
 /*
@@ -339,9 +341,9 @@ GLOBAL_LIST_INIT(titanium_recipes, list(
 	new/datum/stack_recipe("surgical tray", /obj/structure/table/tray, 2, one_per_turf = 1, on_floor = 1),
 	))
 
-/obj/item/stack/sheet/mineral/titanium/New(loc, amount=null)
+/obj/item/stack/sheet/mineral/titanium/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.titanium_recipes
-	..()
 
 /obj/item/stack/sheet/mineral/titanium/fifty
 	amount = 50
@@ -399,9 +401,9 @@ GLOBAL_LIST_INIT(plastitanium_recipes, list(
 	))
 	))
 
-/obj/item/stack/sheet/mineral/plastitanium/New(loc, amount=null)
+/obj/item/stack/sheet/mineral/plastitanium/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.plastitanium_recipes
-	..()
 
 /obj/item/stack/sheet/mineral/enruranium
 	name = "enriched uranium"
@@ -422,13 +424,14 @@ GLOBAL_LIST_INIT(plastitanium_recipes, list(
 	throw_speed = 1
 	origin_tech = "materials=6;abductor=1"
 	sheettype = "abductor"
+	materials = list(MAT_METAL = 4000, MAT_PLASMA = 4000)
 
 /obj/item/stack/sheet/mineral/abductor/fifty
 	amount = 50
 
-/obj/item/stack/sheet/mineral/abductor/New(loc, amount=null)
+/obj/item/stack/sheet/mineral/abductor/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.abductor_recipes
-	..()
 
 /obj/item/stack/sheet/mineral/adamantine
 	name = "adamantine"
@@ -440,9 +443,22 @@ GLOBAL_LIST_INIT(plastitanium_recipes, list(
 	merge_type = /obj/item/stack/sheet/mineral/adamantine
 	wall_allowed = FALSE
 
-/obj/item/stack/sheet/mineral/adamantine/New(loc, amount = null)
+/obj/item/stack/sheet/mineral/adamantine/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.adamantine_recipes
-	..()
+
+/*
+ * Mythril
+ */
+/obj/item/stack/sheet/mineral/mythril
+	name = "mythril"
+	desc = "A rare mineral used in construction of chitin armor."
+	icon_state = "sheet-mythril"
+	item_state = "sheet-mythril"
+	singular_name = "mythril sheet"
+	origin_tech = "materials=7"
+	merge_type = /obj/item/stack/sheet/mineral/mythril
+	wall_allowed = FALSE
 
 /*
  * Snow
@@ -456,6 +472,6 @@ GLOBAL_LIST_INIT(plastitanium_recipes, list(
 	throwforce = 2
 	merge_type = /obj/item/stack/sheet/mineral/snow
 
-/obj/item/stack/sheet/mineral/snow/New(loc, amount = null)
+/obj/item/stack/sheet/mineral/snow/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
 	recipes = GLOB.snow_recipes
-	..()

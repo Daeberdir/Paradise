@@ -143,6 +143,14 @@
 	if(statpanel("Status"))
 		stat("Resources:",resources)
 
+
+/mob/living/simple_animal/hostile/swarmer/handle_ventcrawl(atom/clicked_on)
+	. = ..()
+
+	if(. && light_range)
+		ToggleLight()
+
+
 /mob/living/simple_animal/hostile/swarmer/emp_act()
 	if(health > 1)
 		adjustHealth(health-1)
@@ -543,9 +551,8 @@
 	// them to keep them away from us a little longer
 
 	var/mob/living/carbon/human/H = target
-	if(ishuman(target) && (!H.handcuffed))
-		var/obj/item/restraints/handcuffs/energy/used/Z = new /obj/item/restraints/handcuffs/energy/used(src)
-		Z.apply_cuffs(target, src)
+	if(istype(H) && (!H.handcuffed))
+		H.set_handcuffed(new /obj/item/restraints/handcuffs/energy/used(H))
 
 	do_sparks(4, 0, target)
 	playsound(src,'sound/effects/sparks4.ogg', 50, TRUE)
@@ -646,7 +653,7 @@
 			playsound(loc,'sound/effects/snap.ogg',50, 1, -1)
 			L.electrocute_act(0, src, 1, TRUE, TRUE)
 			if(isrobot(L) || ismachineperson(L))
-				L.Weaken(5)
+				L.Weaken(10 SECONDS)
 			qdel(src)
 	..()
 

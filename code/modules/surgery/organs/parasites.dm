@@ -32,7 +32,7 @@
 				owner.visible_message("<span class='danger'>[owner] bursts open! Holy fuck!</span>")
 				owner.gib()
 
-/obj/item/organ/internal/body_egg/spider_eggs/remove(var/mob/living/carbon/M, var/special = 0)
+/obj/item/organ/internal/body_egg/spider_eggs/remove(mob/living/carbon/M, special = ORGAN_MANIPULATION_DEFAULT)
 	..()
 	M.reagents.del_reagent("spidereggs") //purge all remaining spider eggs reagent if caught, in time.
 	if(!QDELETED(src))
@@ -65,7 +65,6 @@
 	cycle_num += 1
 	egg_progress += 1
 	egg_progress += calc_variable_progress()
-	owner.AdjustHallucinate(20)
 
 	// Detect & stop people attempting to bring a gateway white spider infection back to the main station.
 	if(!awaymission_checked)
@@ -111,14 +110,14 @@
 	S.immediate_ventcrawl = TRUE
 	eggs_hatched++
 	owner.adjustBruteLoss(80)
-	owner.Paralyse(10)
-	owner.SetConfused(20)
+	owner.Paralyse(20 SECONDS)
+	owner.SetConfused(40 SECONDS)
 	to_chat(owner, "<span class='warning'>A strange prickling sensation moves across your skin... then suddenly the whole world seems to spin around you!</span>")
 
 	if(infection_completed && !QDELETED(src))
 		qdel(src)
 
-/obj/item/organ/internal/body_egg/terror_eggs/remove(var/mob/living/carbon/M, var/special = 0)
+/obj/item/organ/internal/body_egg/terror_eggs/remove(mob/living/carbon/M, special = ORGAN_MANIPULATION_DEFAULT)
 	..()
 	if(!QDELETED(src))
 		qdel(src) // prevent people re-implanting them into others

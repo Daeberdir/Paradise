@@ -70,7 +70,7 @@
 	update_icon()
 
 /obj/item/pen/multi/proc/select_colour(mob/user as mob)
-	var/newcolour = input(user, "Which colour would you like to use?", name, colour) as null|anything in colour_choices
+	var/newcolour = tgui_input_list(user, "Which colour would you like to use?", name, colour_choices, colour)
 	if(newcolour)
 		colour = newcolour
 		playsound(loc, 'sound/effects/pop.ogg', 50, 1)
@@ -117,7 +117,7 @@
 	if(!istype(M))
 		return
 
-	if(!M.can_inject(user, TRUE))
+	if(!M.can_inject(user, TRUE, ignore_pierceimmune = TRUE))
 		return
 	var/transfered = 0
 	if(reagents.total_volume && M.reagents)
@@ -156,7 +156,7 @@
 		backstab_cooldown = (world.time + 10 SECONDS)
 		force += backstab_damage
 		extra_force_applied = TRUE
-		M.Weaken(1)
+		M.Weaken(2 SECONDS)
 		M.adjustStaminaLoss(40)
 		add_attack_logs(user, M, "Backstabbed with [src]", ATKLOG_ALL)
 		M.visible_message("<span class='warning'>[user] stabs [M] in the back!</span>", "<span class='userdanger'>[user] stabs you in the back! The energy blade makes you collapse in pain!</span>")

@@ -55,6 +55,7 @@
 
 /obj/structure/door_assembly/attack_hand(mob/user)
 	if(user.a_intent == INTENT_HARM && ishuman(user) && user.dna.species.obj_damage)
+		add_fingerprint(user)
 		user.changeNext_move(CLICK_CD_MELEE)
 		attack_generic(user, user.dna.species.obj_damage)
 		return
@@ -66,6 +67,7 @@
 		// but the `t` returned from the proc is just "Foobar" without the prefix.
 		var/t = rename_interactive(user, W)
 		if(!isnull(t))
+			add_fingerprint(user)
 			created_name = t
 		return
 
@@ -78,6 +80,7 @@
 		if(do_after(user, 40 * coil.toolspeed * gettoolspeedmod(user), target = src))
 			if(coil.get_amount() < 1 || state != AIRLOCK_ASSEMBLY_NEEDS_WIRES)
 				return
+			add_fingerprint(user)
 			coil.use(1)
 			state = AIRLOCK_ASSEMBLY_NEEDS_ELECTRONICS
 			to_chat(user, "<span class='notice'>You wire the airlock assembly.</span>")
@@ -89,8 +92,8 @@
 		if(do_after(user, 40 * W.toolspeed * gettoolspeedmod(user), target = src))
 			if(state != AIRLOCK_ASSEMBLY_NEEDS_ELECTRONICS)
 				return
-			user.drop_item()
-			W.forceMove(src)
+			add_fingerprint(user)
+			user.drop_transfer_item_to_loc(W, src)
 			to_chat(user, "<span class='notice'>You install the airlock electronics.</span>")
 			state = AIRLOCK_ASSEMBLY_NEEDS_SCREWDRIVER
 			name = "near finished airlock assembly"
@@ -108,6 +111,7 @@
 							if(do_after(user, 40 * S.toolspeed * gettoolspeedmod(user), target = src))
 								if(S.get_amount() < 1 || glass)
 									return
+								add_fingerprint(user)
 								if(S.type == /obj/item/stack/sheet/rglass)
 									to_chat(user, "<span class='notice'>You install reinforced glass windows into the airlock assembly.</span>")
 									heat_proof_finished = TRUE //reinforced glass makes the airlock heat-proof
@@ -116,7 +120,7 @@
 								S.use(1)
 								glass = TRUE
 					if(!mineral)
-						if(istype(S, /obj/item/stack/sheet/mineral) && S.sheettype)
+						if(S.sheettype && (istype(S, /obj/item/stack/sheet/mineral) || istype(S, /obj/item/stack/sheet/wood)))
 							var/M = S.sheettype
 							if(S.get_amount() >= 2)
 								playsound(loc, S.usesound, 100, 1)
@@ -124,6 +128,7 @@
 								if(do_after(user, 40 * S.toolspeed * gettoolspeedmod(user), target = src))
 									if(S.get_amount() < 2 || mineral)
 										return
+									add_fingerprint(user)
 									to_chat(user, "<span class='notice'>You install [M] plating into the airlock assembly.</span>")
 									S.use(2)
 									var/mineralassembly = text2path("/obj/structure/door_assembly/door_assembly_[M]")
@@ -271,7 +276,8 @@
 		overlays += get_airlock_overlay("glass_construction", overlays_file)
 	overlays += get_airlock_overlay("panel_c[state+1]", overlays_file)
 
-/obj/structure/door_assembly/proc/update_name()
+/obj/structure/door_assembly/update_name()
+	. = ..()
 	name = ""
 	switch(state)
 		if(AIRLOCK_ASSEMBLY_NEEDS_WIRES)
@@ -313,6 +319,10 @@
 			else
 				new /obj/item/shard(T)
 		if(mineral)
-			var/obj/item/stack/sheet/mineral/mineral_path = text2path("/obj/item/stack/sheet/mineral/[mineral]")
+			var/mineral_path
+			if(mineral == "wood")
+				mineral_path = /obj/item/stack/sheet/wood
+			else
+				mineral_path = text2path("/obj/item/stack/sheet/mineral/[mineral]")
 			new mineral_path(T, 2)
 	qdel(src)

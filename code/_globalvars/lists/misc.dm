@@ -21,6 +21,9 @@ GLOBAL_LIST_INIT(html_colors, list("Alice Blue","Antique White","Aqua","Aquamari
 
 GLOBAL_LIST_INIT(day_names, list("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
 GLOBAL_LIST_INIT(month_names, list("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))
+// keep si_suffixes balanced and with a pivot in the middle!
+GLOBAL_LIST_INIT(si_suffixes, list("y", "z", "a", "f", "p", "n", "u", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"))
+
 
 GLOBAL_LIST_INIT(restricted_camera_networks, list(
 	"CentComm",
@@ -32,7 +35,8 @@ GLOBAL_LIST_INIT(restricted_camera_networks, list(
 	"UO71",
 	"Xeno",
 	"Hotel",
-	"USSP_LAB"
+	"USSP_LAB",
+	"USSP_gorky17"
 	)) //Those networks can only be accessed by preexisting terminals. AIs and new terminals can't use them.
 
 GLOBAL_LIST_INIT(ruin_landmarks, list())
@@ -61,3 +65,11 @@ GLOBAL_LIST_INIT(cooking_reagents, list(RECIPE_MICROWAVE = list(), RECIPE_OVEN =
 GLOBAL_LIST_EMPTY(geoip_ckey_updated)
 
 GLOBAL_LIST_INIT(all_taipan_jobs, list(TAIPAN_SCIENTIST,TAIPAN_MEDIC,TAIPAN_BOTANIST,TAIPAN_CARGO,TAIPAN_CHEF,TAIPAN_ENGINEER,TAIPAN_COMMS,TAIPAN_RD,CYBORG))
+
+/// List of looping sounds
+GLOBAL_LIST_EMPTY(looping_sounds)
+
+
+/// List of ckeys that have seen a blurb of a given key.
+GLOBAL_LIST_EMPTY(blurb_witnesses)
+

@@ -318,7 +318,7 @@
 				synmobdrop = /obj/item/tank/internals/emergency_oxygen/engi/syndi)
 		if(15 to 20) // 10%
 			pick(synmobdrop = /obj/item/target/syndicate,
-				synmobdrop = /obj/item/toy/cards/deck/syndicate,
+				synmobdrop = /obj/item/deck/cards/syndicate,
 				synmobdrop = /obj/item/kitchen/knife/combat/survival)
 		if(20 to 24) // 8%
 			pick(synmobdrop = /obj/item/clothing/glasses/night,
@@ -425,7 +425,7 @@
 	name = "light immolation beam"
 	damage = 8
 	icon_state = "scatterlaser"
-	eyeblur = 1
+	eyeblur = 2 SECONDS
 
 /mob/living/simple_animal/hostile/malf_drone/spacebattle/drop_loot()
 	do_sparks(3, 1, src)
@@ -442,15 +442,13 @@
 		step_to(O, get_turf(pick(view(7, src))))
 
 	//rods
-	var/obj/item/stack/K = new /obj/item/stack/rods(T)
+	var/obj/item/stack/K = new /obj/item/stack/rods(T, rand(1,5))
 	step_to(K, get_turf(pick(view(7, src))))
-	K.amount = rand(1,5)
 	K.update_icon()
 
 	//plastitanuim
-	K = new /obj/item/stack/sheet/mineral/plastitanium(T)
+	K = new /obj/item/stack/sheet/mineral/plastitanium(T, rand(1,5))
 	step_to(K, get_turf(pick(view(7, src))))
-	K.amount = rand(1,5)
 	K.update_icon()
 
 	//dummy circuit board
@@ -592,7 +590,7 @@
 			suit_store = /obj/item/gun/projectile/shotgun/riot/buckshot
 			backpack_contents = list(
 				/obj/item/storage/box/survival = 1,
-				/obj/item/storage/box/buck = 1
+				/obj/item/ammo_box/shotgun/buck = 1
 				)
 	return ..()
 
@@ -679,7 +677,7 @@
 		/obj/item/reagent_containers/food/pill/patch/silver_sulf/small = 1,
 		/obj/item/reagent_containers/food/pill/patch/styptic/small = 1,
 		/obj/item/stock_parts/cell/high = 1,
-		/obj/item/storage/box/buck = 1
+		/obj/item/ammo_box/shotgun/buck = 1
 		)
 	return ..()
 
@@ -692,7 +690,7 @@
 	suit = /obj/item/clothing/suit/storage/labcoat/science
 
 /obj/item/clothing/suit/space/hardsuit/syndi/damaged
-	name = "damged blood-red hardsuit"
+	name = "damaged blood-red hardsuit"
 	desc = "Damaged advanced hardsuit designed for work in special operations. There are a many patches visible on the suit. Its mode switcher system looks damaged and forced in travel mode. Property of Gorlex Marauders."
 	armor = list("melee" = 30, "bullet" = 40, "laser" = 20, "energy" = 20, "bomb" = 30, "bio" = 100, "rad" = 50, "fire" = 50, "acid" = 90)
 	w_class = WEIGHT_CLASS_NORMAL

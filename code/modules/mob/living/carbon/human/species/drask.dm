@@ -8,12 +8,12 @@
 
 	speech_sounds = list('sound/voice/drasktalk.ogg')
 	speech_chance = 20
-	male_scream_sound = 'sound/voice/drasktalk2.ogg'
-	female_scream_sound = 'sound/voice/drasktalk2.ogg'
-	male_cough_sounds = 'sound/voice/draskcough.ogg'
-	female_cough_sounds = 'sound/voice/draskcough.ogg'
-	male_sneeze_sound = 'sound/voice/drasksneeze.ogg'
-	female_sneeze_sound = 'sound/voice/drasksneeze.ogg'
+	male_scream_sound = list('sound/voice/drasktalk2.ogg')
+	female_scream_sound = list('sound/voice/drasktalk2.ogg')
+	male_cough_sounds = list('sound/voice/draskcough.ogg')
+	female_cough_sounds = list('sound/voice/draskcough.ogg')
+	male_sneeze_sound = list('sound/voice/drasksneeze.ogg')
+	female_sneeze_sound = list('sound/voice/drasksneeze.ogg')
 
 	burn_mod = 1.5
 	oxy_mod = 2
@@ -38,7 +38,7 @@
 		"втягивает теплый воздух!",
 		"задерживает дыхание!")
 
-	species_traits = list(LIPS, IS_WHITELISTED)
+	species_traits = list(LIPS, IS_WHITELISTED, EXOTIC_COLOR)
 	clothing_flags = HAS_UNDERWEAR | HAS_UNDERSHIRT
 	bodyflags = HAS_SKIN_TONE | HAS_BODY_MARKINGS
 	has_gender = FALSE
@@ -61,12 +61,13 @@
 	butt_sprite = "drask"
 
 	has_organ = list(
-		"heart" =      				/obj/item/organ/internal/heart/drask,
-		"lungs" =     				/obj/item/organ/internal/lungs/drask,
-		"metabolic strainer" =      /obj/item/organ/internal/liver/drask,
-		"eyes" =     				/obj/item/organ/internal/eyes/drask, //5 darksight.
-		"brain" =  					/obj/item/organ/internal/brain/drask
-		)
+		INTERNAL_ORGAN_HEART = /obj/item/organ/internal/heart/drask,
+		INTERNAL_ORGAN_LUNGS = /obj/item/organ/internal/lungs/drask,
+		INTERNAL_ORGAN_LIVER = /obj/item/organ/internal/liver/drask,
+		INTERNAL_ORGAN_EYES = /obj/item/organ/internal/eyes/drask, //5 darksight.
+		INTERNAL_ORGAN_EARS = /obj/item/organ/internal/ears,
+		INTERNAL_ORGAN_BRAIN = /obj/item/organ/internal/brain/drask,
+	)
 
 	disliked_food = SUGAR | GROSS
 	liked_food = DAIRY
@@ -93,9 +94,9 @@
 		H.adjustToxLoss(-0.5)
 		H.adjustBruteLoss(-2)
 		H.adjustFireLoss(-4)
-		var/obj/item/organ/external/head/head = H.get_organ("head")
-		if(head)
-			head.disfigured = FALSE
+		var/obj/item/organ/external/head/head = H.get_organ(BODY_ZONE_HEAD)
+		head?.undisfigure()
+
 
 /datum/species/drask/handle_reagents(mob/living/carbon/human/H, datum/reagent/R)
 	if(R.id == "iron")

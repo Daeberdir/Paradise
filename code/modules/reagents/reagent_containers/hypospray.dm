@@ -8,6 +8,7 @@
 	icon = 'icons/obj/hypo.dmi'
 	item_state = "hypo"
 	icon_state = "hypo"
+	belt_icon = "hypospray"
 	amount_per_transfer_from_this = 5
 	volume = 30
 	possible_transfer_amounts = list(1,2,3,4,5,10,15,20,25,30)
@@ -64,18 +65,46 @@
 			else
 				visible_message("<span class='warning'>[src] identifies and removes a harmful substance.</span>")
 
+
 /obj/item/reagent_containers/hypospray/emag_act(mob/user)
 	if(safety_hypo && !emagged)
 		add_attack_logs(user, src, "emagged")
 		emagged = TRUE
 		ignore_flags = TRUE
-		to_chat(user, "<span class='warning'>You short out the safeties on [src].</span>")
+		if(user)
+			to_chat(user, "<span class='warning'>You short out the safeties on [src].</span>")
 
 /obj/item/reagent_containers/hypospray/safety
 	name = "medical hypospray"
 	desc = "A general use medical hypospray for quick injection of chemicals. There is a safety button by the trigger."
 	icon_state = "medivend_hypo"
+	belt_icon = "medical_hypospray"
 	safety_hypo = TRUE
+	var/has_paint
+	var/colour
+
+/obj/item/reagent_containers/hypospray/safety/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/toy/crayon/spraycan))
+		var/obj/item/toy/crayon/spraycan/spraycan = I
+		if(spraycan.capped)
+			to_chat(user, "<span class='warning'>Take the cap off first!</span>")
+			return
+		if(spraycan.uses < 2)
+			to_chat(user, "<span class ='warning'>There is not enough paint in the can!")
+			return
+		colour = spraycan.colour
+		has_paint = TRUE
+		icon_state = "whitehypo"
+		src.remove_filter("hypospray_handle")
+		var/icon/hypo_mask = icon('icons/obj/hypo.dmi',"colour_hypo" )
+		src.add_filter("hypospray_handle",1,layering_filter(icon = hypo_mask, color = colour))
+	if(istype(I, /obj/item/soap) && has_paint)
+		to_chat(user, span_notice("You wash off the paint layer from hypospray"))
+		has_paint = FALSE
+		src.remove_filter("hypospray_handle")
+		icon_state = "medivend_hypo"
+	..()
+
 
 /obj/item/reagent_containers/hypospray/safety/ert
 	name = "medical hypospray (Omnizine)"
@@ -161,6 +190,7 @@
 	desc = "A rapid and safe way to stabilize patients in critical condition for personnel without advanced medical knowledge."
 	icon_state = "autoinjector"
 	item_state = "autoinjector"
+	belt_icon = "autoinjector"
 	amount_per_transfer_from_this = 10
 	possible_transfer_amounts = null
 	volume = 10
@@ -281,13 +311,14 @@
 	name = "survival medipen"
 	desc = "A medipen for surviving in the harshest of environments, heals and protects from environmental hazards. <br><span class='boldwarning'>WARNING: Do not inject more than one pen in quick succession.</span>"
 	icon_state = "stimpen"
+	belt_icon = "survival_medipen"
 	volume = 42
 	amount_per_transfer_from_this = 42
 	list_reagents = list("salbutamol" = 10, "teporone" = 15, "epinephrine" = 10, "lavaland_extract" = 2, "weak_omnizine" = 5) //Short burst of healing, followed by minor healing from the saline
 
 /obj/item/reagent_containers/hypospray/autoinjector/nanocalcium
-	name = "nanocalcium autoinjector"
-	desc = "After a short period of time the nanites will slow the body's systems and assist with bone repair. Nanomachines son."
+	name = "protoype nanite autoinjector"
+	desc = "After a short period of time the nanites will slow the body's systems and assist with body repair. Nanomachines son."
 	icon_state = "bonepen"
 	amount_per_transfer_from_this = 30
 	volume = 30
@@ -310,3 +341,19 @@
 /obj/item/reagent_containers/hypospray/autoinjector/selfmade/attack(mob/living/M, mob/user)
 	..()
 	container_type = DRAINABLE
+
+/obj/item/reagent_containers/hypospray/autoinjector/salbutamol
+	name = "Salbutamol autoinjector"
+	desc = "A medipen used for basic oxygen damage treatment"
+	icon_state = "ablueinjector"
+	amount_per_transfer_from_this = 20
+	volume = 20
+	list_reagents = list("salbutamol" = 20)
+
+/obj/item/reagent_containers/hypospray/autoinjector/charcoal
+	name = "Charcoal autoinjector"
+	desc = "A medipen used for basic toxin damage treatment"
+	icon_state = "greeninjector"
+	amount_per_transfer_from_this = 20
+	volume = 20
+	list_reagents = list("charcoal" = 20)

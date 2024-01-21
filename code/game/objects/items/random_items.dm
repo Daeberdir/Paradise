@@ -32,8 +32,7 @@
 /obj/item/stack/sheet/animalhide/random/New()
 	..()
 	var/htype = pick(/obj/item/stack/sheet/animalhide/cat,/obj/item/stack/sheet/animalhide/corgi,/obj/item/stack/sheet/animalhide/human,/obj/item/stack/sheet/animalhide/lizard,/obj/item/stack/sheet/animalhide/monkey)
-	var/obj/item/stack/S = new htype(loc)
-	S.amount = amount
+	new htype(loc, amount)
 	qdel(src)
 
 // -------------------------------------
@@ -237,19 +236,19 @@
 /obj/structure/closet/secure_closet/random_drinks
 	name = "unlabelled booze closet"
 	req_access = list(ACCESS_BAR)
-	icon_state = "cabinetdetective_locked"
-	icon_closed = "cabinetdetective"
-	icon_locked = "cabinetdetective_locked"
-	icon_opened = "cabinetdetective_open"
-	icon_broken = "cabinetdetective_broken"
-	icon_off = "cabinetdetective_broken"
+	icon_state = "cabinetdetective"
+	overlay_locked = "c_locked"
+	overlay_locker = "c_locker"
+	overlay_unlocked = "c_unlocked"
+	open_sound = 'sound/machines/wooden_closet_open.ogg'
+	close_sound = 'sound/machines/wooden_closet_close.ogg'
+
 
 /obj/structure/closet/secure_closet/random_drinks/populate_contents()
 	for(var/i in 1 to 5)
 		new/obj/item/reagent_containers/food/drinks/bottle/random_drink(src)
 	while(prob(25))
 		new/obj/item/reagent_containers/food/drinks/bottle/random_reagent(src)
-
 
 // -------------------------------------
 //          Do not order this.
@@ -268,6 +267,7 @@
 								/mob/living/simple_animal/hostile/creature,/mob/living/simple_animal/hostile/pirate/ranged,
 								/mob/living/simple_animal/hostile/hivebot,/mob/living/simple_animal/hostile/viscerator,/mob/living/simple_animal/hostile/pirate)
 
+		add_fingerprint(user)
 		visible_message("<span class='warning'>Something falls out of the [src]!</span>")
 		var/obj/item/grenade/clusterbuster/C = new(src.loc)
 		C.prime()
@@ -295,6 +295,7 @@
 
 /obj/structure/largecrate/schrodinger/attackby(obj/item/W as obj, mob/user as mob, params)
 	if(istype(W, /obj/item/crowbar))
+		add_fingerprint(user)
 		sleep(2)
 		var/mob/living/simple_animal/pet/cat/Cat = new(loc)
 		Cat.name = "Schrodinger's Cat"

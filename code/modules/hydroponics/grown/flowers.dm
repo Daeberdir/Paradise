@@ -232,7 +232,7 @@
 		force -= rand(1, (force / 3) + 1)
 	else
 		to_chat(usr, "<span class='warning'>All the petals have fallen off the [name] from violent whacking!</span>")
-		usr.unEquip(src)
+		usr.temporarily_remove_item_from_inventory(src)
 		qdel(src)
 
 /obj/item/grown/novaflower/pickup(mob/living/carbon/human/user)
@@ -240,3 +240,32 @@
 	if(!user.gloves)
 		to_chat(user, "<span class='danger'>The [name] burns your bare hand!</span>")
 		user.adjustFireLoss(rand(1, 5))
+//Shavel
+/obj/item/seeds/shavel
+	name = "pack of shavel seeds"
+	desc = "These seeds grow into shavel."
+	icon_state = "seed-shavel"
+	species = "shavel"
+	plantname = "Shavel Plants"
+	product = /obj/item/reagent_containers/food/snacks/grown/shavel
+	lifespan = 60
+	endurance = 65
+	potency = 15
+	maturation = 6
+	production = 2
+	yield = 7
+	growthstages = 3
+	genes = list(/datum/plant_gene/trait/repeated_harvest)
+	growing_icon = 'icons/obj/hydroponics/growing.dmi'
+	icon_grow = "shavel-grow"
+	icon_dead = "shavel-dead"
+	icon_harvest = "shavel-harvest"
+	reagents_add = list("plantmatter" = 0.04, "vitamin" = 0.15)
+/obj/item/reagent_containers/food/snacks/grown/shavel
+	seed = /obj/item/seeds/shavel
+	name = "shavel"
+	desc = "A shavel leaf."
+	origin_tech = "biotech=2"
+	icon_state = "shavel"
+	tastes = list("sour weed" = 1)
+	filling_color = "#177025"

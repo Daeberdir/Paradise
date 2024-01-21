@@ -30,6 +30,7 @@
 	/turf/simulated/wall/indestructible/reinforced,
 	/obj/structure/falsewall,
 	/obj/structure/falsewall/brass,
+	/obj/structure/falsewall/brass/fake,
 	/obj/structure/falsewall/clockwork,
 	/obj/structure/falsewall/reinforced,  // WHY DO WE SMOOTH WITH FALSE R-WALLS WHEN WE DON'T SMOOTH WITH REAL R-WALLS. //because we do smooth with real r-walls now
 	/turf/simulated/wall/rust,
@@ -69,6 +70,7 @@
 		toggle(user)
 
 /obj/structure/falsewall/attack_hand(mob/user)
+	. = ..()
 	toggle(user)
 
 /obj/structure/falsewall/proc/toggle(mob/user)
@@ -77,6 +79,7 @@
 
 	opening = 1
 	if(density)
+		add_fingerprint(user)
 		do_the_flick()
 		sleep(4)
 		density = 0
@@ -87,6 +90,7 @@
 		for(var/mob/living/obstacle in srcturf) //Stop people from using this as a shield
 			opening = 0
 			return
+		add_fingerprint(user)
 		do_the_flick()
 		density = 1
 		sleep(4)
@@ -137,7 +141,7 @@
 	else
 		to_chat(user, "<span class='warning'>You can't reach, close it first!</span>")
 
-	if(istype(W, /obj/item/gun/energy/plasmacutter) || istype(W, /obj/item/pickaxe/drill/diamonddrill) || istype(W, /obj/item/pickaxe/drill/jackhammer) || istype(W, /obj/item/melee/energy/blade))
+	if(istype(W, /obj/item/gun/energy/plasmacutter) || istype(W, /obj/item/pickaxe/drill/diamonddrill) || istype(W, /obj/item/pickaxe/drill/jackhammer) || istype(W, /obj/item/melee/energy/blade) || istype(W, /obj/item/twohanded/required/pyro_claws))
 		dismantle(user, TRUE)
 
 /obj/structure/falsewall/welder_act(mob/user, obj/item/I)
@@ -223,26 +227,15 @@
 	var/last_event = 0
 	canSmoothWith = list(/obj/structure/falsewall/uranium, /turf/simulated/wall/mineral/uranium)
 
-/obj/structure/falsewall/uranium/attackby(obj/item/W as obj, mob/user as mob, params)
-	radiate()
-	..()
+/obj/structure/falsewall/uranium/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/radioactivity, \
+				rad_per_interaction = 12, \
+				rad_interaction_radius = 3, \
+				rad_interaction_cooldown = 1.5 SECONDS \
+	)
 
-/obj/structure/falsewall/uranium/attack_hand(mob/user as mob)
-	radiate()
-	..()
 
-/obj/structure/falsewall/uranium/proc/radiate()
-	if(!active)
-		if(world.time > last_event+15)
-			active = 1
-			for(var/mob/living/L in range(3,src))
-				L.apply_effect(12,IRRADIATE,0)
-			for(var/turf/simulated/wall/mineral/uranium/T in range(3,src))
-				T.radiate()
-			last_event = world.time
-			active = null
-			return
-	return
 /*
  * Other misc falsewall types
  */
@@ -287,6 +280,7 @@
 
 /obj/structure/falsewall/plasma/attackby(obj/item/W, mob/user, params)
 	if(is_hot(W) > 300)
+		add_fingerprint(user)
 		add_attack_logs(user, src, "Ignited using [W]", ATKLOG_FEW)
 		investigate_log("was <span class='warning'>ignited</span> by [key_name_log(user)]",INVESTIGATE_ATMOS)
 		burnbabyburn()
@@ -360,6 +354,16 @@
 	walltype = /turf/simulated/wall/mineral/abductor
 	canSmoothWith = list(/obj/structure/falsewall/abductor, /turf/simulated/wall/mineral/abductor)
 
+/obj/structure/falsewall/gingerbread
+	name = "gingerbread wall"
+	desc = "Don't even try to bite it!"
+	icon = 'icons/turf/walls/gingerbread_wall.dmi'
+	icon_state = "gingerbread"
+	mineral = /obj/item/stack/sheet/gingerbread
+	mineral_amount = 5
+	walltype = /turf/simulated/wall/mineral/gingerbread
+	canSmoothWith = list(/turf/simulated/wall/indestructible/gingerbread, /obj/structure/falsewall/gingerbread, /turf/simulated/wall/mineral/gingerbread)
+
 /obj/structure/falsewall/titanium
 	desc = "A light-weight titanium wall used in shuttles."
 	icon = 'icons/turf/walls/shuttle/shuttle_wall.dmi'
@@ -367,7 +371,7 @@
 	mineral = /obj/item/stack/sheet/mineral/titanium
 	walltype = /turf/simulated/wall/mineral/titanium
 	smooth = SMOOTH_MORE
-	canSmoothWith = list(/turf/simulated/wall/mineral/titanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/full/shuttle, /obj/structure/shuttle/engine/heater)
+	canSmoothWith = list(/turf/simulated/wall/mineral/titanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/full/shuttle, /obj/structure/shuttle/engine/heater, /turf/simulated/wall/shuttle, /obj/structure/falsewall/titanium)
 
 /obj/structure/falsewall/plastitanium
 	desc = "An evil wall of plasma and titanium."
@@ -390,6 +394,18 @@
 	walltype = /turf/simulated/wall/clockwork
 	mineral = /obj/item/stack/sheet/brass
 
+/obj/structure/falsewall/brass/fake
+	name = "clockwork wall"
+	desc = "A huge chunk of warm metal. The clanging of machinery emanates from within. You feel a wind."
+	icon = 'icons/turf/walls/clockwork_wall.dmi'
+	icon_state = "clockwork_wall"
+	resistance_flags = FIRE_PROOF | ACID_PROOF
+	mineral_amount = 1
+	canSmoothWith = list(/obj/effect/clockwork/overlay/wall, /obj/structure/falsewall/brass/fake)
+	girder_type = /obj/structure/clockwork/wall_gear/fake/displaced
+	walltype = /turf/simulated/wall/clockwork/fake
+	mineral = /obj/item/stack/sheet/brass_fake
+
 /obj/structure/falsewall/brass/Initialize(mapload)
 	. = ..()
 	var/turf/T = get_turf(src)
@@ -402,6 +418,9 @@
 		to_chat(user, "<span class='notice'>You push the wall but nothing happens!</span>")
 		playsound(src, 'sound/weapons/genhit.ogg', 25, 1) //sneaky
 		return FALSE
+	return ..()
+
+/obj/structure/falsewall/clockwork/fake/attack_hand(mob/user)
 	return ..()
 
 /obj/structure/falsewall/clockwork/welder_act(mob/user, obj/item/I)

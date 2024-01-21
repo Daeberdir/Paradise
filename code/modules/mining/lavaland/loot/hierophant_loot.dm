@@ -39,11 +39,11 @@
 	user.visible_message("<span class='hierophant_warning'>[user] fades out, leaving [user.p_their()] belongings behind!</span>")
 	for(var/obj/item/I in user)
 		if(I != src)
-			user.unEquip(I)
+			user.drop_item_ground(I)
 	for(var/turf/T in RANGE_TURFS(1, user))
 		var/obj/effect/temp_visual/hierophant/blast/B = new(T, user, TRUE)
 		B.damage = 0
-	user.unEquip(src) //Drop us last, so it goes on top of their stuff
+	user.drop_item_ground(src) //Drop us last, so it goes on top of their stuff
 	qdel(user)
 	return OBLITERATION
 
@@ -53,7 +53,7 @@
 	if(world.time < timer)
 		return
 
-	if(!is_mining_level(user.z))//Will only spawn a few sparks if not on mining z level
+	if(!is_mining_level(user.z) || istype(get_area(user), /area/ruin/space/bubblegum_arena))//Will only spawn a few sparks if not on mining z level
 		timer = world.time + cooldown_time
 		user.visible_message("<span class='danger'>[user]'s hierophant club malfunctions!</span>")
 		do_sparks(5, FALSE, user)

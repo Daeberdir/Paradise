@@ -183,7 +183,7 @@
 	modules += new /obj/item/crowbar/cyborg(src)
 	modules += new /obj/item/gps/cyborg(src)
 	// sec
-	modules += new /obj/item/restraints/handcuffs/cable/zipties/cyborg(src)
+	modules += new /obj/item/restraints/handcuffs/cable/zipties(src)
 	modules += new /obj/item/melee/classic_baton/telescopic(src) // for minimal possablity to execute sec part of the module and also for tests
 	// janitorial
 	modules += new /obj/item/soap/nanotrasen(src)
@@ -231,6 +231,7 @@
 		"Standard" = "Standard-Medi",
 		"Basic" = "Robot-MED",
 		"Surgeon" = "surgeon",
+		"Chiefbot" = "chiefbot",
 		"Advanced Droid" = "droid-medical",
 		"Needles" = "Robot-SRG",
 		"Noble-MED" = "Noble-MED",
@@ -268,10 +269,9 @@
 	modules += new /obj/item/gps/cyborg(src)
 	modules += new /obj/item/rlf(src)
 
-	emag = new /obj/item/reagent_containers/spray(src)
+	emag = new /obj/item/reagent_containers/borghypo/emagged(src) // emagged med. cyborg gets a special hypospray.
+// can pierce through thick skin and hardsuits.
 
-	emag.reagents.add_reagent("sacid", 250)
-	emag.name = "Sulfuric acid spray"
 
 	fix_modules()
 	handle_storages()
@@ -295,6 +295,7 @@
 		"Basic" = "Robot-ENG",
 		"Antique" = "Robot-ENG2",
 		"Landmate" = "landmate",
+		"Сhiefmate" = "chiefmate",
 		"Standard" = "Standard-Engi",
 		"Noble-ENG" = "Noble-ENG",
 		"Cricket" = "Cricket-ENGI"
@@ -327,7 +328,7 @@
 	modules += new /obj/item/stack/rods/cyborg(src)
 	modules += new /obj/item/stack/tile/plasteel/cyborg(src)
 	modules += new /obj/item/gps/cyborg(src)
-	emag = new /obj/item/borg/stun(src)
+	emag = new /obj/item/gun/energy/emittercannon(src)
 
 	fix_modules()
 	handle_storages()
@@ -356,7 +357,7 @@
 
 /obj/item/robot_module/security/New()
 	..()
-	modules += new /obj/item/restraints/handcuffs/cable/zipties/cyborg(src)
+	modules += new /obj/item/restraints/handcuffs/cable/zipties(src)
 	modules += new /obj/item/melee/baton/loaded(src)
 	modules += new /obj/item/gun/energy/disabler/cyborg(src)
 	modules += new /obj/item/holosign_creator/security(src)
@@ -367,6 +368,10 @@
 	emag = new /obj/item/gun/energy/laser/cyborg(src)
 
 	fix_modules()
+
+/obj/item/robot_module/security/update_cells(unlink_cell = FALSE)
+	var/obj/item/melee/baton/baton = locate() in modules
+	baton?.link_new_cell(unlink_cell)
 
 /obj/item/robot_module/janitor
 	name = "Janitor"
@@ -508,6 +513,7 @@
 /obj/item/robot_module/miner/New()
 	..()
 	modules += new /obj/item/storage/bag/ore/cyborg(src)
+	modules += new /obj/item/storage/bag/gem/cyborg(src)
 	modules += new /obj/item/pickaxe/drill/cyborg(src)
 	modules += new /obj/item/shovel(src)
 	modules += new /obj/item/weldingtool/mini(src)
@@ -671,7 +677,7 @@
 
 	modules += new /obj/item/gun/energy/immolator/multi/cyborg(src) // See comments on /robot_module/combat below
 	modules += new /obj/item/melee/baton/loaded(src) // secondary weapon, for things immune to burn, immune to ranged weapons, or for arresting low-grade threats
-	modules += new /obj/item/restraints/handcuffs/cable/zipties/cyborg(src)
+	modules += new /obj/item/restraints/handcuffs/cable/zipties(src)
 	modules += new /obj/item/pickaxe/drill/jackhammer(src) // for breaking walls to execute flanking moves
 	modules += new /obj/item/borg/destroyer/mobility(src)
 	modules += new /obj/item/crowbar/cyborg(src)
@@ -698,7 +704,7 @@
 	// Organic gamma sec ERT carries alternate weapons, including a box of flashbangs, and can load up on a huge number of guns from science. Borg cannot do either.
 	// Overall, gamma borg has higher skill floor but lower skill ceiling.
 	modules += new /obj/item/melee/baton/loaded(src) // secondary weapon, for things immune to burn, immune to ranged weapons, or for arresting low-grade threats
-	modules += new /obj/item/restraints/handcuffs/cable/zipties/cyborg(src)
+	modules += new /obj/item/restraints/handcuffs/cable/zipties(src)
 	modules += new /obj/item/pickaxe/drill/jackhammer(src) // for breaking walls to execute flanking moves
 	modules += new /obj/item/extinguisher/mini(src)
 	modules += new /obj/item/crowbar/cyborg(src)
@@ -767,6 +773,7 @@
 	modules += new /obj/item/stack/tile/plasteel/cyborg(src)
 	modules += new /obj/item/stack/sheet/metal/cyborg(src)
 	modules += new /obj/item/stack/sheet/glass/cyborg(src)
+	modules += new /obj/item/floor_painter(src)
 	modules += new /obj/item/stack/cable_coil/cyborg(src)
 	modules += new /obj/item/analyzer(src)
 	modules += new /obj/item/extinguisher(src)
@@ -883,7 +890,7 @@
 	modules += new /obj/item/stack/sheet/rglass/cyborg(src)
 	modules += new /obj/item/stack/rods/cyborg(src)
 	// Наручники
-	modules += new /obj/item/restraints/handcuffs/cable/zipties/cyborg(src)
+	modules += new /obj/item/restraints/handcuffs/cable/zipties(src)
 	// Мед. инструменты
 	modules += new /obj/item/scalpel/laser/laser1(src)
 	modules += new /obj/item/hemostat(src)
@@ -898,7 +905,7 @@
 	modules += new /obj/item/twohanded/shockpaddles/borg(src)
 	modules += new /obj/item/handheld_defibrillator(src)
 	modules += new /obj/item/roller_holder(src)
-	modules += new /obj/item/reagent_containers/borghypo/upgraded(src)
+	modules += new /obj/item/reagent_containers/borghypo/upgraded/super(src)
 	modules += new /obj/item/stack/medical/bruise_pack/advanced/cyborg(src)
 	modules += new /obj/item/stack/medical/ointment/advanced/cyborg(src)
 
@@ -988,3 +995,15 @@
 	max_energy = 160
 	recharge_rate = 2
 	name = "Wood Storage"
+
+
+/**
+ * Called when the robot owner of this module has their power cell replaced.
+ *
+ * Changes the linked power cell for module items to the newly inserted cell, or to `null`.
+ * Arguments:
+ * * unlink_cell - If TRUE, set the item's power cell variable to `null` rather than linking it to a new one.
+ */
+/obj/item/robot_module/proc/update_cells(unlink_cell = FALSE)
+	return
+

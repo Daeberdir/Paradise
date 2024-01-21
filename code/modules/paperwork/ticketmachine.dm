@@ -35,7 +35,8 @@
 	if(emagged)
 		return
 	add_attack_logs(user, src, "emagged")
-	to_chat(user, "<span class='warning'>You overload [src]'s bureaucratic logic circuitry to its MAXIMUM setting.</span>")
+	if(user)
+		to_chat(user, "<span class='warning'>You overload [src]'s bureaucratic logic circuitry to its MAXIMUM setting.</span>")
 	ticket_number = rand(0, max_number)
 	current_number = ticket_number
 	emagged = TRUE
@@ -75,7 +76,7 @@
 
 /obj/machinery/door_control/ticket_machine_button/do_main_action(mob/user as mob)
 	for(var/obj/machinery/ticket_machine/M in GLOB.machines)
-		if(M.id != id || cooldown)
+		if(!(M.id in id) || cooldown)
 			continue
 		cooldown = TRUE
 		M.increment()
@@ -112,8 +113,9 @@
 			return
 		to_chat(user, "<span class='notice'>You start to refill [src]'s ticket holder (doing this will reset its ticket count!).</span>")
 		if(do_after(user, 30, target = src))
+			add_fingerprint(user)
 			to_chat(user, "<span class='notice'>You insert [I] into [src] as it whirs nondescriptly.</span>")
-			user.drop_item()
+			user.drop_transfer_item_to_loc(I, src)
 			qdel(I)
 			ticket_number = 0
 			current_number = 0
@@ -127,6 +129,7 @@
 	else if(I.GetID())
 		var/obj/item/card/id/heldID = I.GetID()
 		if(ACCESS_HOP in heldID.access)
+			add_fingerprint(user)
 			dispense_enabled = !dispense_enabled
 			to_chat(user, "<span class='notice'>You [dispense_enabled ? "enable" : "disable"] [src], it will [dispense_enabled ? "now" : "no longer"] dispense tickets!</span>")
 			handle_maptext()
@@ -162,14 +165,14 @@
 	theirticket.ticket_number = ticket_number
 	theirticket.source = src
 	theirticket.owner = user.UID()
-	user.put_in_hands(theirticket)
+	user.put_in_hands(theirticket, ignore_anim = FALSE)
 	ticket_holders += user.UID()
 	tickets += theirticket
 	if(emagged) //Emag the machine to destroy the HOP's life.
 		ready = FALSE
 		addtimer(CALLBACK(src, PROC_REF(reset_cooldown)), cooldown)//Small cooldown to prevent piles of flaming tickets
 		theirticket.fire_act()
-		user.drop_item()
+		user.drop_from_active_hand()
 		user.adjust_fire_stacks(1)
 		user.IgniteMob()
 
@@ -206,7 +209,7 @@
 		if((CLUMSY in user.mutations) && prob(10))
 			user.visible_message("<span class='warning'>[user] accidentally ignites [user.p_them()]self!</span>", \
 								"<span class='userdanger'>You miss the paper and accidentally light yourself on fire!</span>")
-			user.drop_item()
+			user.drop_from_active_hand()
 			user.adjust_fire_stacks(1)
 			user.IgniteMob()
 			return

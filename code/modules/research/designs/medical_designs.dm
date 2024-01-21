@@ -333,6 +333,16 @@
 	build_path = /obj/item/organ/internal/cyberimp/arm/toolset
 	category = list("Medical")
 
+/datum/design/mantisblade
+	name = "ShellGuard Mantis Blade"
+	desc = "A blade designed to be hidden just beneath the skin. The brain is directly linked to this bad boy, allowing it to spring into action."
+	id = "ci-mantisblade"
+	req_tech = list("materials" = 7, "combat" = 7, "biotech" = 7, "programming" = 6)
+	build_type = PROTOLATHE
+	materials = list(MAT_METAL = 10000, MAT_TITANIUM = 6000, MAT_DIAMOND = 6000)
+	build_path = /obj/item/storage/lockbox/research/mantis
+	category = list("Medical")
+
 /datum/design/cyberimp_atmostoolset
 	name = "Atmos Arm Implant"
 	desc = "A stripped-down version of engineering cyborg toolset, designed to be installed on subject's arm. Contains all neccessary tools for atmos-techs."
@@ -489,7 +499,7 @@
 
 /datum/design/cyberimp_nutriment
 	name = "Nutriment pump implant"
-	desc = "This implant with synthesize and pump into your bloodstream a small amount of nutriment when you are starving."
+	desc = "This implant will synthesize a small amount of nutriment and pumps it directly into your bloodstream when you are starving."
 	id = "ci-nutriment"
 	req_tech = list("materials" = 3, "powerstorage" = 4, "biotech" = 3)
 	build_type = PROTOLATHE | MECHFAB
@@ -500,7 +510,7 @@
 
 /datum/design/cyberimp_nutriment_plus
 	name = "Nutriment pump implant PLUS"
-	desc = "This implant with synthesize and pump into your bloodstream a small amount of nutriment when you are hungry."
+	desc = "This implant will synthesize a small amount of nutriment and pumps it directly into your bloodstream when you are hungry."
 	id = "ci-nutrimentplus"
 	req_tech = list("materials" = 5, "powerstorage" = 4, "biotech" = 4)
 	build_type = PROTOLATHE | MECHFAB
@@ -571,7 +581,7 @@
 	req_tech = list("materials" = 2, "biotech" = 3, "magnets" = 3, "programming" = 2)
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 500, MAT_GLASS = 500)
-	build_path = /obj/item/implantcase/track
+	build_path = /obj/item/implantcase/tracking
 	category = list("Medical")
 
 /datum/design/implant_mindshield

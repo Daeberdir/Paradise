@@ -83,25 +83,24 @@
 	return take_damage(damage_amount, damage_type, damage_flag, sound_effect, get_dir(src, user), armor_penetration)
 
 /obj/attack_alien(mob/living/carbon/alien/humanoid/user)
-	if(attack_generic(user, 60, BRUTE, "melee", 0))
+	if(attack_generic(user, user.obj_damage, BRUTE, "melee", 0, user.armour_penetration))
 		playsound(loc, 'sound/weapons/slash.ogg', 100, TRUE)
+
 
 /obj/attack_animal(mob/living/simple_animal/M)
 	if((M.a_intent == INTENT_HELP && M.ckey) || (!M.melee_damage_upper && !M.obj_damage))
-		if(M.handle_emote_CD())
-			return
-		M.custom_emote(1, "[M.friendly] [src].")
-		return 0
+		M.custom_emote(EMOTE_VISIBLE, "[M.friendly] [src].")
+		return FALSE
+
+	var/play_soundeffect = !M.environment_smash
+	var/turf/source_turf = get_turf(src)  // play from the turf in case the object gets deleted mid attack
+	if(M.obj_damage)
+		. = attack_generic(M, M.obj_damage, M.melee_damage_type, MELEE, play_soundeffect, M.armour_penetration)
 	else
-		var/play_soundeffect = 1
-		if(M.environment_smash)
-			play_soundeffect = 0
-		if(M.obj_damage)
-			. = attack_generic(M, M.obj_damage, M.melee_damage_type, "melee", play_soundeffect, M.armour_penetration)
-		else
-			. = attack_generic(M, rand(M.melee_damage_lower,M.melee_damage_upper), M.melee_damage_type, "melee", play_soundeffect, M.armour_penetration)
-		if(. && !play_soundeffect)
-			playsound(src, 'sound/effects/meteorimpact.ogg', 100, TRUE)
+		. = attack_generic(M, rand(M.melee_damage_lower,M.melee_damage_upper), M.melee_damage_type, MELEE, play_soundeffect, M.armour_penetration)
+	if(. && !play_soundeffect)
+		playsound(QDELETED(src) ? source_turf : src, 'sound/effects/meteorimpact.ogg', 100, TRUE)
+
 
 /obj/force_pushed(atom/movable/pusher, force = MOVE_FORCE_DEFAULT, direction)
 	return TRUE
@@ -187,6 +186,8 @@ GLOBAL_DATUM_INIT(acid_overlay, /mutable_appearance, mutable_appearance('icons/e
 		if((T.intact && level == 1) || T.transparent_floor) //fire can't damage things hidden below the floor.
 			return
 	..()
+	if(QDELETED(src)) // no taking damage after deletion
+		return
 	if(exposed_temperature && !(resistance_flags & FIRE_PROOF))
 		take_damage(clamp(0.02 * exposed_temperature, 0, 20), BURN, "fire", 0)
 	if(!(resistance_flags & ON_FIRE) && (resistance_flags & FLAMMABLE) && !(resistance_flags & FIRE_PROOF))

@@ -50,9 +50,11 @@
 
 	to_chat(user, "<span class='notice'>You adjust \the [src] [up ? "up" : "down"].</span>")
 
-	if(iscarbon(user))
-		var/mob/living/carbon/C = user
-		C.head_update(src, forced = 1)
+	if(ishuman(user))
+		var/mob/living/carbon/human/H = user
+		H.update_head(src, forced = TRUE)
+		if(H.wear_mask == src)
+			H.wear_mask_update(src, FALSE)
 	for(var/X in actions)
 		var/datum/action/A = X
 		A.UpdateButtonIcon()
@@ -80,48 +82,17 @@
 			return TRUE
 	return FALSE
 
-//BS12: Species-restricted clothing check.
-/obj/item/clothing/mob_can_equip(M as mob, slot)
 
-	//if we can't equip the item anyway, don't bother with species_restricted (also cuts down on spam)
-	if(!..())
-		return 0
+/obj/item/clothing/mob_can_equip(mob/M, slot, disable_warning = FALSE, bypass_equip_delay_self = FALSE, bypass_obscured = FALSE)
+	. = ..()
+	if(!.)
+		return FALSE
 
-	// Skip species restriction checks on non-equipment slots
-	if(slot in list(slot_r_hand, slot_l_hand, slot_in_backpack, slot_l_store, slot_r_store))
-		return 1
-
-	if(species_restricted && istype(M,/mob/living/carbon/human))
-
-		var/wearable = null
-		var/exclusive = null
-		var/mob/living/carbon/human/H = M
-
-		if("exclude" in species_restricted)
-			exclusive = 1
-
-		if(H.dna.species)
-			if(exclusive)
-				if(!(H.dna.species.name in species_restricted))
-					wearable = 1
-			else
-				if(H.dna.species.name in species_restricted)
-					wearable = 1
-
-			if(wearable && ("lesser form" in species_restricted) && issmall(H))
-				wearable = 0
-
-			if(!wearable)
-				to_chat(M, "<span class='warning'>You cannot wear [src].</span>")
-				return 0
-	if(faction_restricted && istype(M,/mob/living/carbon/human))
-		var/mob/living/carbon/human/H = M
-
-		if(H.faction)
-			if(H.faction in faction_restricted)
-				to_chat(M, "<span class='warning'>You cannot wear [src].</span>")
-				return 0
-	return 1
+	// For clothing that are faction restricted
+	if(faction_restricted && !M.is_general_slot(slot) && faction_check(faction_restricted, M.faction))
+		if(!disable_warning)
+			to_chat(M, span_warning("[src] не могут использовать такие как Вы."))
+		return FALSE
 
 
 /obj/item/clothing/proc/refit_for_species(var/target_species)
@@ -158,65 +129,14 @@
 	resistance_flags = NONE
 
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/ears.dmi',
-		"Vox Armalis" = 'icons/mob/species/armalis/ears.dmi',
-		"Monkey" = 'icons/mob/species/monkey/ears.dmi',
-		"Farwa" = 'icons/mob/species/monkey/ears.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/ears.dmi',
-		"Neara" = 'icons/mob/species/monkey/ears.dmi',
-		"Stok" = 'icons/mob/species/monkey/ears.dmi'
+		"Vox" = 'icons/mob/clothing/species/vox/ears.dmi',
+		"Vox Armalis" = 'icons/mob/clothing/species/armalis/ears.dmi',
+		"Monkey" = 'icons/mob/clothing/species/monkey/ears.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/ears.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/ears.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/ears.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/ears.dmi'
 		) //We read you loud and skree-er.
-
-/obj/item/clothing/ears/attack_hand(mob/user)
-	if(!user)
-		return
-
-	if(loc != user || !ishuman(user))
-		..()
-		return
-
-	var/mob/living/carbon/human/H = user
-	if(H.l_ear != src && H.r_ear != src)
-		..()
-		return
-
-	if(!usr.canUnEquip(src))
-		return
-
-	var/obj/item/clothing/ears/O
-	if(slot_flags & SLOT_TWOEARS )
-		O = (H.l_ear == src ? H.r_ear : H.l_ear)
-		user.unEquip(O)
-		if(!istype(src, /obj/item/clothing/ears/offear))
-			qdel(O)
-			O = src
-	else
-		O = src
-
-	user.unEquip(src)
-
-	if(O)
-		user.put_in_hands(O)
-		O.add_fingerprint(user)
-
-	if(istype(src, /obj/item/clothing/ears/offear))
-		qdel(src)
-
-
-/obj/item/clothing/ears/offear
-	name = "Other ear"
-	w_class = WEIGHT_CLASS_HUGE
-	icon = 'icons/mob/screen_gen.dmi'
-	icon_state = "block"
-	slot_flags = SLOT_EARS | SLOT_TWOEARS
-
-/obj/item/clothing/ears/offear/New(var/obj/O)
-	. = ..()
-	name = O.name
-	desc = O.desc
-	icon = O.icon
-	icon_state = O.icon_state
-	dir = O.dir
 
 
 //Glasses
@@ -227,27 +147,28 @@
 	flags_cover = GLASSESCOVERSEYES
 	slot_flags = SLOT_EYES
 	materials = list(MAT_GLASS = 250)
+	equip_sound = 'sound/items/handling/generic_equip4.ogg'
 	var/vision_flags = 0
 	var/see_in_dark = 0 //Base human is 2
 	var/invis_view = SEE_INVISIBLE_LIVING
 	var/invis_override = 0
 	var/lighting_alpha
 
-	var/emagged = 0
+	var/emagged = FALSE
 	var/list/color_view = null//overrides client.color while worn
-	var/prescription = 0
-	var/prescription_upgradable = 0
+	var/prescription = FALSE
+	var/prescription_upgradable = FALSE
 	var/over_mask = FALSE //Whether or not the eyewear is rendered above the mask. Purely cosmetic.
 	strip_delay = 20			//	   but seperated to allow items to protect but not impair vision, like space helmets
 	put_on_delay = 25
 	resistance_flags = NONE
 
 	sprite_sheets = list(
-		"Monkey" = 'icons/mob/species/monkey/eyes.dmi',
-		"Farwa" = 'icons/mob/species/monkey/eyes.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/eyes.dmi',
-		"Neara" = 'icons/mob/species/monkey/eyes.dmi',
-		"Stok" = 'icons/mob/species/monkey/eyes.dmi'
+		"Monkey" = 'icons/mob/clothing/species/monkey/eyes.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/eyes.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/eyes.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/eyes.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/eyes.dmi'
 		)
 /*
 SEE_SELF  // can see self, no matter what
@@ -273,7 +194,7 @@ BLIND     // can't see anything
 
 	var/action_fluff = "You adjust \the [src]"
 	if(user.glasses == src)
-		if(!user.canUnEquip(src))
+		if(!user.can_unEquip(src))
 			to_chat(usr, "[src] is stuck to you!")
 			return
 		if(attack_hand(user)) //Remove the glasses for this action. Prevents logic-defying instances where glasses phase through your mask as it ascends/descends to another plane of existence.
@@ -295,12 +216,13 @@ BLIND     // can't see anything
 	var/transfer_prints = FALSE
 	var/pickpocket = 0 //Master pickpocket?
 	var/clipped = 0
+	var/extra_knock_chance = 0 //extra chance to knock down target when disarming
 	strip_delay = 20
 	put_on_delay = 40
 
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/gloves.dmi',
-		"Drask" = 'icons/mob/species/drask/gloves.dmi'
+		"Vox" = 'icons/mob/clothing/species/vox/gloves.dmi',
+		"Drask" = 'icons/mob/clothing/species/drask/gloves.dmi'
 		)
 
 // Called just before an attack_hand(), in mob/UnarmedAttack()
@@ -338,7 +260,9 @@ BLIND     // can't see anything
 		return
 
 	var/list/modes = list("Off", "Binary sensors", "Vitals tracker", "Tracking beacon")
-	var/switchMode = input("Select a sensor mode:", "Suit Sensor Mode", modes[sensor_mode + 1]) in modes
+	var/switchMode = tgui_input_list(user, "Select a sensor mode:", "Suit Sensor Mode", modes, modes[sensor_mode+1])
+	if(!switchMode)
+		return
 	if(get_dist(user, src) > 1)
 		to_chat(user, "You have moved too far away.")
 		return
@@ -412,11 +336,11 @@ BLIND     // can't see anything
 	var/can_toggle = null
 
 	sprite_sheets = list(
-		"Monkey" = 'icons/mob/species/monkey/head.dmi',
-		"Farwa" = 'icons/mob/species/monkey/head.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/head.dmi',
-		"Neara" = 'icons/mob/species/monkey/head.dmi',
-		"Stok" = 'icons/mob/species/monkey/head.dmi'
+		"Monkey" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/head.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/head.dmi'
 		)
 
 ///obj/item/clothing/head/equipped(var/mob/living/carbon/human/lesser/monkey/user, var/slot) //Смещаем шапки у обезьян
@@ -436,11 +360,11 @@ BLIND     // can't see anything
 	put_on_delay = 40
 
 	sprite_sheets = list(
-		"Monkey" = 'icons/mob/species/monkey/mask.dmi',
-		"Farwa" = 'icons/mob/species/monkey/mask.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/mask.dmi',
-		"Neara" = 'icons/mob/species/monkey/mask.dmi',
-		"Stok" = 'icons/mob/species/monkey/mask.dmi'
+		"Monkey" = 'icons/mob/clothing/species/monkey/mask.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/mask.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/mask.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/mask.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/mask.dmi'
 		)
 
 //Proc that moves gas/breath masks out of the way
@@ -466,9 +390,9 @@ BLIND     // can't see anything
 				flags_cover |= MASKCOVERSMOUTH
 		if(H.head == src && flags_inv == HIDENAME) //Means that only things like bandanas and balaclavas will be affected since they obscure the identity of the wearer.
 			if(H.l_hand && H.r_hand) //If both hands are occupied, drop the object on the ground.
-				user.unEquip(src)
+				user.drop_item_ground(src)
 			else //Otherwise, put it in an available hand, the active one preferentially.
-				user.unEquip(src)
+				user.drop_item_ground(src)
 				user.put_in_hands(src)
 	else
 		icon_state += "_up"
@@ -478,7 +402,7 @@ BLIND     // can't see anything
 		mask_adjusted = 1
 		if(adjusted_flags)
 			slot_flags = adjusted_flags
-		if(ishuman(user) && H.internal && !H.get_organ_slot("breathing_tube") && user.wear_mask == src) /*If the user was wearing the mask providing internals on their face at the time it was adjusted, turn off internals.
+		if(ishuman(user) && H.internal && !H.get_organ_slot(INTERNAL_ORGAN_BREATHING_TUBE) && user.wear_mask == src) /*If the user was wearing the mask providing internals on their face at the time it was adjusted, turn off internals.
 																Otherwise, they adjusted it while it was in their hands or some such so we won't be needing to turn off internals.*/
 			H.internal = null
 			H.update_action_buttons_icon()
@@ -491,9 +415,9 @@ BLIND     // can't see anything
 			flags &= ~AIRTIGHT
 		if(user.wear_mask == src && initial(flags_inv) == HIDENAME) //Means that you won't have to take off and put back on simple things like breath masks which, realistically, can just be pulled down off your face.
 			if(H.l_hand && H.r_hand) //If both hands are occupied, drop the object on the ground.
-				user.unEquip(src)
+				user.drop_item_ground(src)
 			else //Otherwise, put it in an available hand, the active one preferentially.
-				user.unEquip(src)
+				user.drop_item_ground(src)
 				user.put_in_hands(src)
 	H.wear_mask_update(src, toggle_off = mask_adjusted)
 	usr.update_inv_wear_mask()
@@ -501,6 +425,10 @@ BLIND     // can't see anything
 	for(var/X in actions)
 		var/datum/action/A = X
 		A.UpdateButtonIcon()
+
+// Changes the speech verb when wearing a mask if a value is returned
+/obj/item/clothing/mask/proc/change_speech_verb()
+    return
 
 //Shoes
 /obj/item/clothing/shoes
@@ -513,6 +441,8 @@ BLIND     // can't see anything
 	var/cut_open = 0
 	body_parts_covered = FEET
 	slot_flags = SLOT_FEET
+	pickup_sound = 'sound/items/handling/shoes_pickup.ogg'
+	drop_sound = 'sound/items/handling/shoes_drop.ogg'
 
 	var/silence_steps = 0
 	var/blood_state = BLOOD_STATE_NOT_BLOODY
@@ -522,14 +452,17 @@ BLIND     // can't see anything
 	slowdown = SHOES_SLOWDOWN
 
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/shoes.dmi',
-		"Unathi" = 'icons/mob/species/unathi/shoes.dmi',
-		"Drask" = 'icons/mob/species/drask/shoes.dmi',
-		"Monkey" = 'icons/mob/species/monkey/shoes.dmi',
-		"Farwa" = 'icons/mob/species/monkey/shoes.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/shoes.dmi',
-		"Neara" = 'icons/mob/species/monkey/shoes.dmi',
-		"Stok" = 'icons/mob/species/monkey/shoes.dmi'
+		"Vox" = 'icons/mob/clothing/species/vox/shoes.dmi',
+		"Unathi" = 'icons/mob/clothing/species/unathi/shoes.dmi',
+		"Ash Walker" = 'icons/mob/clothing/species/unathi/shoes.dmi',
+		"Ash Walker Shaman" = 'icons/mob/clothing/species/unathi/shoes.dmi',
+		"Draconid" = 'icons/mob/clothing/species/unathi/shoes.dmi',
+		"Drask" = 'icons/mob/clothing/species/drask/shoes.dmi',
+		"Monkey" = 'icons/mob/clothing/species/monkey/shoes.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/shoes.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/shoes.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/shoes.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/shoes.dmi'
 		)
 
 /obj/item/clothing/shoes/attackby(obj/item/I, mob/user, params)
@@ -554,6 +487,10 @@ BLIND     // can't see anything
 				name = "mangled [name]"
 				desc = "[desc] They have had their toes opened up."
 				update_icon()
+				if(ishuman(user))
+					var/mob/living/carbon/human/H = user
+					if(H.shoes == src)
+						user.update_inv_shoes()
 			else
 				to_chat(user, "<span class='notice'>[src] have already had [p_their()] toes cut open!</span>")
 		return
@@ -570,6 +507,8 @@ BLIND     // can't see anything
 	var/fire_resist = T0C+100
 	allowed = list(/obj/item/tank/internals/emergency_oxygen)
 	armor = list("melee" = 0, "bullet" = 0, "laser" = 0,"energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 0, "acid" = 0)
+	drop_sound = 'sound/items/handling/cloth_drop.ogg'
+	pickup_sound = 'sound/items/handling/cloth_pickup.ogg'
 	slot_flags = SLOT_OCLOTHING
 	var/blood_overlay_type = "suit"
 	var/suittoggled = FALSE
@@ -581,11 +520,12 @@ BLIND     // can't see anything
 	integrity_failure = 160
 
 	sprite_sheets = list(
-		"Monkey" = 'icons/mob/species/monkey/suit.dmi',
-		"Farwa" = 'icons/mob/species/monkey/suit.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/suit.dmi',
-		"Neara" = 'icons/mob/species/monkey/suit.dmi'
-		//"Stok" = 'icons/mob/species/monkey/suit.dmi'
+		"Monkey" = 'icons/mob/clothing/species/monkey/suit.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/suit.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/suit.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/suit.dmi',
+		"Plasmaman" = 'icons/mob/clothing/species/plasmaman/suit.dmi'
+		//"Stok" = 'icons/mob/clothing/species/monkey/suit.dmi'
 		)
 
 //Proc that opens and closes jackets.
@@ -617,16 +557,16 @@ BLIND     // can't see anything
 						var/datum/action/A = X
 						A.UpdateButtonIcon()
 			else
-				if(user.canUnEquip(src)) //Checks to see if the item can be unequipped. If so, lets shred. Otherwise, struggle and fail.
+				if(user.can_unEquip(src)) //Checks to see if the item can be unequipped. If so, lets shred. Otherwise, struggle and fail.
 					if(contents) //If the suit's got any storage capability...
 						for(var/obj/item/O in contents) //AVOIDING ITEM LOSS. Check through everything that's stored in the jacket and see if one of the items is a pocket.
 							if(istype(O, /obj/item/storage/internal)) //If it's a pocket...
 								if(O.contents) //Check to see if the pocket's got anything in it.
 									for(var/obj/item/I in O.contents) //Dump the pocket out onto the floor below the user.
-										user.unEquip(I,1)
+										user.drop_item_ground(I, force = TRUE)
 
 					user.visible_message("<span class='warning'>[user] bellows, [pick("shredding", "ripping open", "tearing off")] [user.p_their()] jacket in a fit of rage!</span>","<span class='warning'>You accidentally [pick("shred", "rend", "tear apart")] [src] with your [pick("excessive", "extreme", "insane", "monstrous", "ridiculous", "unreal", "stupendous")] [pick("power", "strength")]!</span>")
-					user.unEquip(src)
+					user.temporarily_remove_item_from_inventory(src)
 					qdel(src) //Now that the pockets have been emptied, we can safely destroy the jacket.
 					user.say(pick(";RAAAAAAAARGH!", ";HNNNNNNNNNGGGGGGH!", ";GWAAAAAAAARRRHHH!", "NNNNNNNNGGGGGGGGHH!", ";AAAAAAARRRGH!"))
 				else
@@ -642,15 +582,18 @@ BLIND     // can't see anything
 /obj/item/clothing/suit/proc/can_store_weighted(obj/item/I, item_weight = WEIGHT_CLASS_BULKY)
 	return I.w_class <= item_weight
 
-/obj/item/clothing/suit/equipped(var/mob/living/carbon/human/user, var/slot) //Handle tail-hiding on a by-species basis.
-	..()
+/obj/item/clothing/suit/equipped(mob/living/carbon/human/user, slot, initial) //Handle tail-hiding on a by-species basis.
+	. = ..()
+
 	if(ishuman(user) && hide_tail_by_species && slot == slot_wear_suit)
 		if(user.dna.species.name in hide_tail_by_species)
 			if(!(flags_inv & HIDETAIL)) //Hide the tail if the user's species is in the hide_tail_by_species list and the tail isn't already hidden.
 				flags_inv |= HIDETAIL
+				user.update_tail_layer()
 		else
 			if(!(initial(flags_inv) & HIDETAIL) && (flags_inv & HIDETAIL)) //Otherwise, remove the HIDETAIL flag if it wasn't already in the flags_inv to start with.
 				flags_inv &= ~HIDETAIL
+				user.update_tail_layer()
 
 /obj/item/clothing/suit/ui_action_click(mob/user) //This is what happens when you click the HUD action button to adjust your suit.
 	if(!ignore_suitadjust)
@@ -711,6 +654,64 @@ BLIND     // can't see anything
 	hide_tail_by_species = null
 	species_restricted = list("exclude", "Wryn", "lesser form")
 	faction_restricted = list("ashwalker")
+	var/obj/item/tank/jetpack/suit/jetpack = null
+
+
+/obj/item/clothing/suit/space/New()
+	if(jetpack && ispath(jetpack))
+		jetpack = new jetpack(src)
+	..()
+
+
+/obj/item/clothing/suit/space/screwdriver_act(mob/user, obj/item/I)
+	. = TRUE
+	if(!I.use_tool(src, user, 0, volume = I.tool_volume))
+		return
+	if(!jetpack)
+		to_chat(user, span_warning("[src] has no jetpack installed."))
+		return
+	if(src == user.get_item_by_slot(slot_wear_suit))
+		to_chat(user, span_warning("You cannot remove the jetpack from [src] while wearing it."))
+		return
+	jetpack.turn_off(user)
+	jetpack.forceMove(drop_location())
+	jetpack = null
+	to_chat(user, span_notice("You successfully remove the jetpack from [src]."))
+
+
+/obj/item/clothing/suit/space/equipped(mob/user, slot, initial)
+	. = ..()
+
+	if(jetpack)
+		if(slot == slot_wear_suit)
+			for(var/X in jetpack.actions)
+				var/datum/action/A = X
+				A.Grant(user)
+
+
+/obj/item/clothing/suit/space/dropped(mob/user, silent = FALSE)
+	..()
+	if(jetpack)
+		for(var/X in jetpack.actions)
+			var/datum/action/A = X
+			A.Remove(user)
+
+
+/obj/item/clothing/suit/space/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/tank/jetpack/suit))
+		if(jetpack)
+			to_chat(user, span_warning("[src] already has a jetpack installed."))
+			return
+		if(src == user.get_item_by_slot(slot_wear_suit)) //Make sure the player is not wearing the suit before applying the upgrade.
+			to_chat(user, span_warning("You cannot install the upgrade to [src] while wearing it."))
+			return
+
+		if(user.drop_transfer_item_to_loc(I, src))
+			jetpack = I
+			to_chat(user, span_notice("You successfully install the jetpack into [src]."))
+			return
+	return ..()
+
 
 // Under clothing
 /obj/item/clothing/under
@@ -720,30 +721,38 @@ BLIND     // can't see anything
 	permeability_coefficient = 0.90
 	slot_flags = SLOT_ICLOTHING
 	armor = list("melee" = 0, "bullet" = 0, "laser" = 0,"energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 0, "acid" = 0)
+	equip_sound = 'sound/items/equip/jumpsuit_equip.ogg'
+	drop_sound = 'sound/items/handling/cloth_drop.ogg'
+	pickup_sound =  'sound/items/handling/cloth_pickup.ogg'
 
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/uniform.dmi',
-		"Unathi" = 'icons/mob/species/unathi/uniform.dmi',
-		"Drask" = 'icons/mob/species/drask/uniform.dmi',
-		"Grey" = 'icons/mob/species/grey/uniform.dmi',
-		"Monkey" = 'icons/mob/species/monkey/uniform.dmi',
-		"Farwa" = 'icons/mob/species/monkey/uniform.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/uniform.dmi',
-		"Neara" = 'icons/mob/species/monkey/uniform.dmi'
-		//"Stok" = 'icons/mob/species/monkey/uniform.dmi' - стоки слишком жирные для маленькой одежды
+		"Vox" = 'icons/mob/clothing/species/vox/uniform.dmi',
+		"Unathi" = 'icons/mob/clothing/species/unathi/uniform.dmi',
+		"Ash Walker" = 'icons/mob/clothing/species/unathi/uniform.dmi',
+		"Ash Walker Shaman" = 'icons/mob/clothing/species/unathi/uniform.dmi',
+		"Draconid" = 'icons/mob/clothing/species/unathi/uniform.dmi',
+		"Drask" = 'icons/mob/clothing/species/drask/uniform.dmi',
+		"Grey" = 'icons/mob/clothing/species/grey/uniform.dmi',
+		"Monkey" = 'icons/mob/clothing/species/monkey/uniform.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/uniform.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/uniform.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/uniform.dmi'
+		//"Stok" = 'icons/mob/clothing/species/monkey/uniform.dmi' - стоки слишком жирные для маленькой одежды
 		)
 
 	var/has_sensor = TRUE//For the crew computer 2 = unable to change mode
 	var/sensor_mode = SENSOR_OFF
-	var/random_sensor = TRUE
 		/*
-		1 = Report living/dead
-		2 = Report detailed damages
-		3 = Report location
+		SENSOR_OFF		= Report nothing
+		SENSOR_LIVING	= Report living/dead
+		SENSOR_VITALS	= Report detailed damages
+		SENSOR_COORDS	= Report location
 		*/
+	var/random_sensor = TRUE
+	var/displays_id = TRUE
+	var/over_shoes = FALSE
+	var/rolled_down = FALSE
 	var/list/accessories = list()
-	var/displays_id = 1
-	var/rolled_down = 0
 	var/basecolor
 
 /obj/item/clothing/under/rank/New()
@@ -756,7 +765,7 @@ BLIND     // can't see anything
 	return ..()
 
 
-/obj/item/clothing/under/dropped(mob/user, silent)
+/obj/item/clothing/under/dropped(mob/user, silent = FALSE)
 	..()
 	if(!ishuman(user))
 		return
@@ -766,7 +775,8 @@ BLIND     // can't see anything
 			A.attached_unequip()
 
 /obj/item/clothing/under/equipped(mob/user, slot, initial)
-	..()
+	. = ..()
+
 	if(!ishuman(user))
 		return
 	if(slot == slot_w_uniform)
@@ -793,8 +803,8 @@ BLIND     // can't see anything
 				return FALSE
 
 /obj/item/clothing/under/attackby(obj/item/I, mob/user, params)
-	if(istype(I, /obj/item/clothing/accessory))
-		attach_accessory(I, user, TRUE)
+	if(istype(I, /obj/item/clothing/accessory) && attach_accessory(I, user, TRUE))
+		return TRUE
 
 	if(accessories.len)
 		for(var/obj/item/clothing/accessory/A in accessories)
@@ -805,7 +815,7 @@ BLIND     // can't see anything
 
 /obj/item/clothing/under/proc/attach_accessory(obj/item/clothing/accessory/A, mob/user, unequip = FALSE)
 	if(can_attach_accessory(A))
-		if(unequip && !user.unEquip(A)) // Make absolutely sure this accessory is removed from hands
+		if(unequip && !user.drop_item_ground(A, ignore_pixel_shift = TRUE)) // Make absolutely sure this accessory is removed from hands
 			return FALSE
 
 		accessories += A
@@ -823,15 +833,16 @@ BLIND     // can't see anything
 
 /obj/item/clothing/under/examine(mob/user)
 	. = ..()
-	switch(sensor_mode)
-		if(0)
-			. += "<span class='notice'>Its sensors appear to be disabled.</span>"
-		if(1)
-			. += "<span class='notice'>Its binary life sensors appear to be enabled.</span>"
-		if(2)
-			. += "<span class='notice'>Its vital tracker appears to be enabled.</span>"
-		if(3)
-			. += "<span class='notice'>Its vital tracker and tracking beacon appear to be enabled.</span>"
+	if(has_sensor)
+		switch(sensor_mode)
+			if(0)
+				. += "<span class='notice'>Its sensors appear to be disabled.</span>"
+			if(1)
+				. += "<span class='notice'>Its binary life sensors appear to be enabled.</span>"
+			if(2)
+				. += "<span class='notice'>Its vital tracker appears to be enabled.</span>"
+			if(3)
+				. += "<span class='notice'>Its vital tracker and tracking beacon appear to be enabled.</span>"
 	if(accessories.len)
 		for(var/obj/item/clothing/accessory/A in accessories)
 			. += "<span class='notice'>\A [A] is attached to it.</span>"
@@ -846,7 +857,7 @@ BLIND     // can't see anything
 	if(!usr.incapacitated())
 		if(copytext(item_color,-2) != "_d")
 			basecolor = item_color
-		if((basecolor + "_d_s") in icon_states('icons/mob/uniform.dmi'))
+		if((basecolor + "_d_s") in icon_states('icons/mob/clothing/uniform.dmi'))
 			item_color = item_color == "[basecolor]" ? "[basecolor]_d" : "[basecolor]"
 			usr.update_inv_w_uniform()
 		else
@@ -917,11 +928,12 @@ BLIND     // can't see anything
 	slot_flags = SLOT_NECK
 
 	sprite_sheets = list(
-		"Monkey" = 'icons/mob/species/monkey/neck.dmi',
-		"Farwa" = 'icons/mob/species/monkey/neck.dmi',
-		"Wolpin" = 'icons/mob/species/monkey/neck.dmi',
-		"Neara" = 'icons/mob/species/monkey/neck.dmi',
-		"Stok" = 'icons/mob/species/monkey/neck.dmi'
+		"Monkey" = 'icons/mob/clothing/species/monkey/neck.dmi',
+		"Farwa" = 'icons/mob/clothing/species/monkey/neck.dmi',
+		"Wolpin" = 'icons/mob/clothing/species/monkey/neck.dmi',
+		"Neara" = 'icons/mob/clothing/species/monkey/neck.dmi',
+		"Stok" = 'icons/mob/clothing/species/monkey/neck.dmi',
+		"Plasmaman" = 'icons/mob/clothing/species/plasmaman/neck.dmi'
 		)
 
 /obj/item/clothing/hit_reaction(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0, attack_type = MELEE_ATTACK)

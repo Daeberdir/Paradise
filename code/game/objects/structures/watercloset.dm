@@ -25,6 +25,7 @@
 
 /obj/structure/toilet/attack_hand(mob/living/user)
 	if(swirlie)
+		add_fingerprint(user)
 		user.changeNext_move(CLICK_CD_MELEE)
 		playsound(src.loc, "swing_hit", 25, 1)
 		swirlie.visible_message("<span class='danger'>[user] slams the toilet seat onto [swirlie]'s head!</span>", "<span class='userdanger'>[user] slams the toilet seat onto [swirlie]'s head!</span>", "<span class='italics'>You hear reverberating porcelain.</span>")
@@ -37,14 +38,17 @@
 			return
 		else
 			var/obj/item/I = pick(contents)
+			add_fingerprint(user)
 			if(ishuman(user))
-				user.put_in_hands(I)
+				I.forceMove_turf()
+				user.put_in_hands(I, ignore_anim = FALSE)
 			else
 				I.loc = get_turf(src)
 			to_chat(user, "<span class='notice'>You find [I] in the cistern.</span>")
 			w_items -= I.w_class
 			return
 
+	add_fingerprint(user)
 	open = !open
 	update_icon()
 
@@ -72,6 +76,7 @@
 			if(RG.reagents.holder_full())
 				to_chat(user, "<span class='warning'>[RG] is full.</span>")
 			else
+				add_fingerprint(user)
 				RG.reagents.add_reagent("toiletwater", min(RG.volume - RG.reagents.total_volume, RG.amount_per_transfer_from_this))
 				to_chat(user, "<span class='notice'>You fill [RG] from [src]. Gross.</span>")
 			return
@@ -88,6 +93,7 @@
 					to_chat(user, "<span class='warning'>[GM] needs to be on [src]!</span>")
 					return
 				if(!swirlie)
+					add_fingerprint(user)
 					if(open)
 						GM.visible_message("<span class='danger'>[user] starts to give [GM] a swirlie!</span>", "<span class='userdanger'>[user] starts to give [GM] a swirlie...</span>")
 						swirlie = GM
@@ -108,6 +114,7 @@
 				to_chat(user, "<span class='warning'>You need a tighter grip!</span>")
 
 	if(cistern)
+		add_fingerprint(user)
 		stash_goods(I, user)
 		return
 
@@ -137,7 +144,7 @@
 		choices += "Connect"
 		choices += "Rotate"
 
-	var/response = input(user, "What do you want to do?", "[src]") as null|anything in choices
+	var/response = tgui_input_list(user, "What do you want to do?", "[src]", choices)
 	if(!Adjacent(user) || !response)	//moved away or cancelled
 		return
 	switch(response)
@@ -172,10 +179,9 @@
 	if(w_items + I.w_class > WEIGHT_CLASS_HUGE) // if item size > 5
 		to_chat(user, "<span class='warning'>The cistern is full!</span>")
 		return
-	if(!user.drop_item())
+	if(!user.drop_transfer_item_to_loc(I, src))
 		to_chat(user, "<span class='warning'>[I] is stuck to your hand, you cannot put it in the cistern!</span>")
 		return
-	I.loc = src
 	w_items += I.w_class
 	to_chat(user, "<span class='notice'>You carefully place [I] into the cistern.</span>")
 
@@ -244,6 +250,7 @@
 				if(GM.loc != get_turf(src))
 					to_chat(user, "<span class='notice'>[GM.name] needs to be on [src].</span>")
 					return
+				add_fingerprint(user)
 				user.changeNext_move(CLICK_CD_MELEE)
 				playsound(src.loc, 'sound/effects/bang.ogg', 25, 1)
 				user.visible_message("<span class='danger'>[user] slams [GM] into [src]!</span>", "<span class='notice'>You slam [GM] into [src]!</span>")
@@ -319,6 +326,7 @@
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 /obj/machinery/shower/attack_hand(mob/M as mob)
+	add_fingerprint(M)
 	on = !on
 	update_icon()
 	if(on)
@@ -335,8 +343,10 @@
 
 /obj/machinery/shower/attackby(obj/item/I as obj, mob/user as mob, params)
 	if(I.type == /obj/item/analyzer)
+		add_fingerprint(user)
 		to_chat(user, "<span class='notice'>The water temperature seems to be [watertemp].</span>")
 	if(on)
+		add_fingerprint(user)
 		I.water_act(100, convertHeat(), src)
 	return ..()
 
@@ -369,7 +379,7 @@
 			qdel(mymist)
 		user.visible_message("<span class='notice'>[user] cuts [src] loose!</span>", "<span class='notice'>You cut [src] loose!</span>")
 		var/obj/item/mounted/shower/S = new /obj/item/mounted/shower(get_turf(user))
-		transfer_prints_to(S, TRUE)
+		transfer_fingerprints_to(S)
 		qdel(src)
 
 /obj/machinery/shower/update_icon()	//this makes the shower mist up or clear mist (depending on water temperature)
@@ -443,7 +453,7 @@
 		var/turf/tile = loc
 		loc.clean_blood()
 		for(var/obj/effect/E in tile)
-			if(is_cleanable(E))
+			if(E.is_cleanable())
 				qdel(E)
 
 /obj/machinery/shower/process()
@@ -509,9 +519,9 @@
 		return
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
-		var/obj/item/organ/external/temp = H.bodyparts_by_name["r_hand"]
+		var/obj/item/organ/external/temp = H.bodyparts_by_name[BODY_ZONE_PRECISE_R_HAND]
 		if(user.hand)
-			temp = H.bodyparts_by_name["l_hand"]
+			temp = H.bodyparts_by_name[BODY_ZONE_PRECISE_L_HAND]
 		if(temp && !temp.is_usable())
 			to_chat(user, "<span class='notice'>You try to move your [temp.name], but cannot!")
 			return
@@ -521,7 +531,7 @@
 		return
 	var/selected_area = parse_zone(user.zone_selected)
 	var/washing_face = 0
-	if(selected_area in list("head", "mouth", "eyes"))
+	if(selected_area in list(BODY_ZONE_HEAD, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_PRECISE_EYES))
 		washing_face = 1
 	user.visible_message("<span class='notice'>[user] starts washing [user.p_their()] [washing_face ? "face" : "hands"]...</span>", \
 						"<span class='notice'>You start washing your [washing_face ? "face" : "hands"]...</span>")
@@ -530,6 +540,8 @@
 	if(!do_after(user, 40, target = src))
 		busy = 0
 		return
+
+	add_fingerprint(user)
 
 	busy = 0
 
@@ -541,7 +553,7 @@
 			H.lip_style = null //Washes off lipstick
 			H.lip_color = initial(H.lip_color)
 			H.regenerate_icons()
-		user.AdjustDrowsy(-rand(2,3)) //Washing your face wakes you up if you're falling asleep
+			H.AdjustDrowsy(-rand(4 SECONDS, 6 SECONDS)) //Washing your face wakes you up if you're falling asleep
 	else
 		user.clean_blood()
 
@@ -563,6 +575,7 @@
 	wateract = (O.wash(user, src))
 	busy = 0
 	if(wateract)
+		add_fingerprint(user)
 		O.water_act(20, COLD_WATER_TEMPERATURE, src)
 
 /obj/structure/sink/wrench_act(mob/user, obj/item/I)
@@ -579,7 +592,7 @@
 		if(can_rotate)
 			choices += "Rotate"
 
-	var/response = input(user, "What do you want to do?", "[src]") as null|anything in choices
+	var/response = tgui_input_list(user, "What do you want to do?", "[src]", choices)
 	if(!Adjacent(user) || !response)	//moved away or cancelled
 		return
 	switch(response)
@@ -689,7 +702,7 @@
 
 /obj/item/mounted/shower/do_build(turf/on_wall, mob/user)
 	var/obj/machinery/shower/S = new /obj/machinery/shower(get_turf(user), get_dir(on_wall, user), 1)
-	transfer_prints_to(S, TRUE)
+	transfer_fingerprints_to(S)
 	qdel(src)
 
 
@@ -731,7 +744,7 @@
 		S.anchored = 0
 		S.dir = user.dir
 		S.update_icon()
-		user.unEquip(src, 1)
+		user.temporarily_remove_item_from_inventory(src, force = TRUE)
 		qdel(src)
 		if(prob(50))
 			new /obj/item/stack/sheet/cardboard(T)

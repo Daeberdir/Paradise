@@ -27,6 +27,13 @@
 	/// Internal seed of the glowshroom, stats are stored here
 	var/obj/item/seeds/myseed = /obj/item/seeds/glowshroom
 
+/obj/structure/glowshroom/has_prints()
+	return FALSE
+
+/obj/structure/glowshroom/extinguish_light(force = FALSE)
+	visible_message(span_warning("[src] withers away!"))
+	qdel(src)
+
 /obj/structure/glowshroom/glowcap
 	name = "glowcap"
 	desc = "Mycena Ruthenia, a species of mushroom that, while it does glow in the dark, is not actually bioluminescent."
@@ -39,12 +46,15 @@
 	icon_state = "shadowshroom"
 	myseed = /obj/item/seeds/glowshroom/shadowshroom
 
+/obj/structure/glowshroom/shadowshroom/extinguish_light(force = FALSE)
+	return
+
 /obj/structure/glowshroom/single/Spread()
 	return
 
 /obj/structure/glowshroom/examine(mob/user)
 	. = ..()
-	. += SPAN_NOTICE("This is a [generation]\th generation [name]!")
+	. += span_notice("This is a [generation]\th generation [name]!")
 
 /**
   *	Creates a new glowshroom structure.
@@ -226,7 +236,7 @@
 
 /obj/structure/glowshroom/acid_act(acidpwr, acid_volume)
 	. = 1
-	visible_message(SPAN_DANGER("[src] melts away!"))
+	visible_message(span_danger("[src] melts away!"))
 	var/obj/effect/decal/cleanable/molten_object/object = new (get_turf(src))
 	object.desc = "Looks like this was \an [src] some time ago."
 	qdel(src)

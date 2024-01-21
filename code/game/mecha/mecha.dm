@@ -38,9 +38,11 @@
 	var/datum/effect_system/spark_spread/spark_system = new
 	var/lights = 0
 	var/lights_power = 6
+	var/lights_color = -99999 // "NONSENSICAL_VALUE"
 	var/emagged = FALSE
 	var/frozen = FALSE
 	var/repairing = FALSE
+	var/cargo_expanded = FALSE // for wide cargo module
 
 	//inner atmos
 	var/use_internal_tank = 0
@@ -79,7 +81,7 @@
 	var/activated = FALSE
 	var/power_warned = FALSE
 
-	var/destruction_sleep_duration = 1 //Time that mech pilot is put to sleep for if mech is destroyed
+	var/destruction_sleep_duration = 2 SECONDS //Time that mech pilot is put to sleep for if mech is destroyed
 
 	var/melee_cooldown = 10
 	var/melee_can_hit = 1
@@ -215,8 +217,17 @@
 		return
 
 	if(GLOB.pacifism_after_gt)
-		to_chat(user, "<span class='warning'>You don't want to harm!</span>")
-		return
+		var/mob/living/L = user
+		if(!target.Adjacent(src))
+			if(selected && selected.is_ranged())
+				if(selected.harmful)
+					to_chat(L, "<span class='warning'>You don't want to harm other living beings!</span>")
+					return
+				selected.action(target, params)
+		else if(selected && selected.is_melee())
+			if(ishuman(target) && selected.harmful)
+				to_chat(user, "<span class='warning'>You don't want to harm other living beings!</span>")
+				return
 
 	var/dir_to_target = get_dir(src, target)
 	if(dir_to_target && !(dir_to_target & dir))//wrong direction
@@ -226,12 +237,14 @@
 		target = safepick(view(3,target))
 		if(!target)
 			return
-
 	var/mob/living/L = user
 	if(!target.Adjacent(src))
 		if(selected && selected.is_ranged())
 			if(HAS_TRAIT(L, TRAIT_PACIFISM) && selected.harmful)
 				to_chat(L, "<span class='warning'>You don't want to harm other living beings!</span>")
+				return
+			if(user.mind?.martial_art?.no_guns)
+				to_chat(L, "<span class='warning'>[L.mind.martial_art.no_guns_message]</span>")
 				return
 			selected.action(target, params)
 	else if(selected && selected.is_melee())
@@ -520,15 +533,14 @@
 			L.take_overall_damage(5,0)
 			if(L.buckled)
 				L.buckled = 0
-			L.Stun(5)
-			L.Weaken(5)
-			L.apply_effect(STUTTER, 5)
+			L.Weaken(10 SECONDS)
+			L.apply_effect(STUTTER, 10 SECONDS)
 			playsound(src, pick(hit_sound), 50, 0, 0)
 			breakthrough = 1
 
 		else
 			if(throwing)
-				throwing.finalize(FALSE)
+				throwing.finalize()
 			crashing = null
 
 		..()
@@ -664,16 +676,16 @@
 	log_message("Attack by hand/paw. Attacker - [user].")
 
 
-/obj/mecha/attack_alien(mob/living/user)
+/obj/mecha/attack_alien(mob/living/carbon/alien/user)
 	log_message("Attack by alien. Attacker - [user].", TRUE)
 	add_attack_logs(user, OCCUPANT_LOGGING, "Alien attacked mech [src]")
 	playsound(src.loc, 'sound/weapons/slash.ogg', 100, TRUE)
-	attack_generic(user, 15, BRUTE, "melee", 0)
+	attack_generic(user, user.obj_damage, BRUTE, MELEE, 0, user.armour_penetration)
 
 /obj/mecha/attack_animal(mob/living/simple_animal/user)
 	log_message("Attack by simple animal. Attacker - [user].")
 	if(!user.melee_damage_upper && !user.obj_damage)
-		user.custom_emote(1, "[user.friendly] [src].")
+		user.custom_emote(EMOTE_VISIBLE, "[user.friendly] [src].")
 		return FALSE
 	else
 		var/play_soundeffect = 1
@@ -700,7 +712,7 @@
 	log_message("Hit by [AM].")
 	if(isitem(AM))
 		var/obj/item/I = AM
-		add_attack_logs(I.thrownby, OCCUPANT_LOGGING, "threw [AM] at mech [src]")
+		add_attack_logs(locateUID(I.thrownby), OCCUPANT_LOGGING, "threw [AM] at mech [src]")
 	. = ..()
 
 /obj/mecha/bullet_act(obj/item/projectile/Proj) //wrapper
@@ -795,7 +807,7 @@
 	if(istype(W, /obj/item/mecha_parts/mecha_equipment))
 		var/obj/item/mecha_parts/mecha_equipment/E = W
 		if(E.can_attach(src))
-			if(!user.drop_item())
+			if(!user.drop_from_active_hand())
 				return
 			E.attach(src)
 			user.visible_message("[user] attaches [W] to [src].", "<span class='notice'>You attach [W] to [src].</span>")
@@ -827,10 +839,9 @@
 	else if(istype(W, /obj/item/stock_parts/cell))
 		if(state==4)
 			if(!cell)
-				if(!user.drop_item())
+				if(!user.drop_transfer_item_to_loc(W, src))
 					return
 				to_chat(user, "<span class='notice'>You install the powercell.</span>")
-				W.forceMove(src)
 				cell = W
 				log_message("Powercell installed")
 			else
@@ -838,10 +849,9 @@
 		return
 
 	else if(istype(W, /obj/item/mecha_parts/mecha_tracking))
-		if(!user.unEquip(W))
+		if(!user.drop_transfer_item_to_loc(W, src))
 			to_chat(user, "<span class='notice'>\the [W] is stuck to your hand, you cannot put it in \the [src]</span>")
 			return
-		W.forceMove(src)
 		trackers += W
 		user.visible_message("[user] attaches [W] to [src].", "<span class='notice'>You attach [W] to [src].</span>")
 		diag_hud_set_mechtracking()
@@ -871,7 +881,7 @@
 		initial_icon = P.new_icon
 		reset_icon()
 
-		user.drop_item()
+		user.temporarily_remove_item_from_inventory(P)
 		qdel(P)
 
 	else if(istype(W, /obj/item/mecha_modkit))
@@ -987,8 +997,8 @@
 		. = ..()
 
 /obj/mecha/emag_act(mob/user)
-	to_chat(user, "<span class='warning'>[src]'s ID slot rejects the card.</span>")
-	return
+	if(user)
+		to_chat(user, "<span class='warning'>[src]'s ID slot rejects the card.</span>")
 
 
 /////////////////////////////////////
@@ -1174,6 +1184,11 @@
 /obj/mecha/proc/toggle_lights()
 	lights_action.Trigger()
 
+/obj/mecha/extinguish_light(force = FALSE)
+	if(!lights || !lights_power)
+		return
+	toggle_lights()
+
 /obj/mecha/proc/toggle_internal_tank()
 	internals_action.Trigger()
 
@@ -1211,7 +1226,7 @@
 
 	visible_message("<span class='notice'>[user] starts to climb into [src]")
 
-	if(do_after(user, src.mech_enter_time, target = src))
+	if(do_after(user, src.mech_enter_time * gettoolspeedmod(user), target = src))
 		if(obj_integrity <= 0)
 			to_chat(user, "<span class='warning'>You cannot get in the [name], it has been destroyed!</span>")
 		else if(occupant)
@@ -1282,7 +1297,7 @@
 		else if(mmi_as_oc.brainmob.stat)
 			to_chat(user, "Beta-rhythm below acceptable level.")
 			return FALSE
-		if(!user.unEquip(mmi_as_oc))
+		if(!user.drop_item_ground(mmi_as_oc))
 			to_chat(user, "<span class='notice'>\the [mmi_as_oc] is stuck to your hand, you cannot put it in \the [src]</span>")
 			return FALSE
 		var/mob/living/carbon/brain/brainmob = mmi_as_oc.brainmob
@@ -1321,6 +1336,7 @@
 	return
 
 /obj/mecha/Exited(atom/movable/M, atom/newloc)
+	..()
 	if(occupant && occupant == M) // The occupant exited the mech without calling go_out()
 		go_out(1, newloc)
 
@@ -1346,8 +1362,9 @@
 		var/mob/living/silicon/ai/AI = occupant
 		if(forced)//This should only happen if there are multiple AIs in a round, and at least one is Malf.
 			RemoveActions(occupant)
-			occupant.gib()  //If one Malf decides to steal a mech from another AI (even other Malfs!), they are destroyed, as they have nowhere to go when replaced.
-			occupant = null
+			if(!istype(newloc, /obj/item/aicard))
+				occupant.gib()  //If one Malf decides to steal a mech from another AI (even other Malfs!), they are destroyed, as they have nowhere to go when replaced.
+				occupant = null
 			return
 		else
 			if(!AI.linked_core || QDELETED(AI.linked_core))

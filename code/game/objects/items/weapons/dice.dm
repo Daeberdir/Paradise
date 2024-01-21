@@ -131,8 +131,8 @@
 /obj/item/dice/attack_self(mob/user)
 	diceroll(user)
 
-/obj/item/dice/throw_impact(atom/target)
-	diceroll(thrownby)
+/obj/item/dice/throw_impact(atom/target, datum/thrownthing/throwingdatum)
+	diceroll(locateUID(thrownby))
 	. = ..()
 
 /obj/item/dice/proc/diceroll(mob/user)

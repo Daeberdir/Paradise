@@ -93,6 +93,12 @@ GLOBAL_DATUM_INIT(global_prizes, /datum/prizes, new())
 	typepath = /obj/item/toy/eight_ball
 	cost = 40
 
+/datum/prize_item/unum
+	name = "Deck of UNUM! Cards"
+	desc = "Everyone's favorite card game!"
+	typepath = /obj/item/deck/unum
+	cost = 45
+
 /datum/prize_item/wallet
 	name = "Colored Wallet"
 	desc = "Brightly colored and big enough for standard issue ID cards."
@@ -328,6 +334,12 @@ GLOBAL_DATUM_INIT(global_prizes, /datum/prizes, new())
 	desc = "Gloves that fill you with an irresistable urge to give headpats."
 	typepath = /obj/item/clothing/gloves/fingerless/rapid/headpat
 	cost = 150
+
+/datum/prize_item/rubbertoolbox
+	name = "Rubber Toolbox"
+	desc = "Practice your robust!"
+	typepath = /obj/item/toy/toolbox
+	cost = 200
 
 /datum/prize_item/bike
 	name = "Awesome Bike!"

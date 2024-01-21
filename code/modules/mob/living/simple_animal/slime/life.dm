@@ -24,6 +24,11 @@
 				handle_mood()
 				handle_speech()
 
+/mob/living/simple_animal/slime/forceMove(atom/destination) //Debug code to catch slimes stuck in null space
+	. = ..()
+	if(!destination && !QDELETED(src))
+		stack_trace("Slime moved to null space")
+
 // Unlike most of the simple animals, slimes support UNCONSCIOUS
 /mob/living/simple_animal/slime/update_stat(reason = "none given", should_log = FALSE)
 	if(status_flags & GODMODE)
@@ -190,7 +195,7 @@
 		var/mob/living/carbon/C = M
 
 		var/feed_mod = round(age_state.feed/3)
-		if(C.dna.species.clone_mod > 0)
+		if((C.dna.species.clone_mod + C.get_vampire_bonus(CLONE)) > 0)
 			C.adjustCloneLoss(rand(2, 4) + feed_mod)
 			C.adjustToxLoss(rand(1, 2) + feed_mod)
 		else
@@ -500,18 +505,18 @@
 					for(var/mob/living/L in view(7,src)-list(src,who))
 						if(findtext(phrase, lowertext(L.name)))
 							if(isslime(L))
-								to_say = "NO... [L] slime friend"
+								to_say = "NO... [L] slime friend..."
 								--Friends[who] //Don't ask a slime to attack its friend
 							else if(!Friends[L] || Friends[L] < 1)
 								Target = L
 								AIprocess()//Wake up the slime's Target AI, needed otherwise this doesn't work
-								to_say = "Ok... I attack [Target]"
+								to_say = "Ok... I attack [Target]..."
 							else
-								to_say = "No... like [L] ..."
+								to_say = "No... like [L]..."
 								--Friends[who] //Don't ask a slime to attack its friend
 							break
 				else
-					to_say = "No... no listen"
+					to_say = "No... no listen..."
 
 		speech_buffer = list()
 

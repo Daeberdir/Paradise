@@ -139,7 +139,8 @@
 	A.AIAltClick(src)
 /mob/living/silicon/ai/MiddleClickOn(atom/A)
     A.AIMiddleClick(src)
-
+/mob/living/silicon/ai/MiddleShiftClickOn(atom/A)
+	A.AIMiddleShiftClick(src)
 
 // DEFAULT PROCS TO OVERRIDE
 
@@ -165,8 +166,11 @@
 /atom/proc/AIMiddleClick(mob/living/user)
 	return
 
+/atom/proc/AIMiddleShiftClick()
+	return
+
 /mob/living/silicon/ai/TurfAdjacent(turf/T)
-	return (GLOB.cameranet && GLOB.cameranet.checkTurfVis(T))
+	return (GLOB.cameranet && GLOB.cameranet.checkTurfVis(T) && (get_dist(eyeobj, T) <= 7)) //not further than view distance
 
 
 // APC

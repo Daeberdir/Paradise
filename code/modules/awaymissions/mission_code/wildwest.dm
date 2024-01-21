@@ -76,7 +76,7 @@
 			if("Power")
 				to_chat(user, "<B>Your wish is granted, but at a terrible cost...</B>")
 				to_chat(user, "The Wish Granter punishes you for your selfishness, claiming your soul and warping your body to match the darkness in your heart.")
-				user.mutations.Add(LASER)
+				user.mutations.Add(LASEREYES)
 				user.mutations.Add(COLDRES)
 				user.mutations.Add(XRAY)
 				if(ishuman(user))
@@ -138,15 +138,16 @@
 /obj/effect/meatgrinder/Crossed(AM as mob|obj, oldloc)
 	Bumped(AM)
 
-/obj/effect/meatgrinder/Bumped(mob/M as mob|obj)
+/obj/effect/meatgrinder/Bumped(atom/movable/moving_atom)
 
-	if(triggered) return
+	if(triggered)
+		return
 
-	if(istype(M, /mob/living/carbon/human))
+	if(istype(moving_atom, /mob/living/carbon/human))
 		for(var/mob/O in viewers(world.view, src.loc))
-			to_chat(O, "<font color='red'>[M] triggered the [bicon(src)] [src]</font>")
+			to_chat(O, "<font color='red'>[moving_atom] triggered the [bicon(src)] [src]</font>")
 		triggered = 1
-		call(src,triggerproc)(M)
+		call(src,triggerproc)(moving_atom)
 
 /obj/effect/meatgrinder/proc/triggerrad1(mob)
 	for(var/mob/O in viewers(world.view, src.loc))
@@ -156,9 +157,6 @@
 
 
 /////For the Wishgranter///////////
-
-/mob/living/carbon
-	var/revival_in_progress = FALSE
 
 /mob/living/carbon/proc/immortality()
 	set category = "Immortality"

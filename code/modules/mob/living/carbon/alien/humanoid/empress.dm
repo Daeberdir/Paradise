@@ -7,7 +7,8 @@
 	status_flags = CANPARALYSE
 	mob_size = MOB_SIZE_LARGE
 	bubble_icon = "alienroyal"
-	large = 1
+	large = TRUE
+	move_resist = MOVE_FORCE_STRONG
 	ventcrawler = 0
 
 /mob/living/carbon/alien/humanoid/empress/large
@@ -42,28 +43,20 @@
 			break
 
 	real_name = name
-	alien_organs += new /obj/item/organ/internal/xenos/plasmavessel/queen
-	alien_organs += new /obj/item/organ/internal/xenos/acidgland
-	alien_organs += new /obj/item/organ/internal/xenos/eggsac
-	alien_organs += new /obj/item/organ/internal/xenos/resinspinner
-	alien_organs += new /obj/item/organ/internal/xenos/neurotoxin
 	..()
 
-/datum/action/innate/xeno_action/lay_egg
-	name = "Lay Egg (250)"
-	desc = "Lay an egg to produce huggers to impregnate prey with."
-	button_icon_state = "alien_egg"
 
-/datum/action/innate/xeno_action/lay_egg/Activate()
-	var/mob/living/carbon/alien/humanoid/empress/host = owner
+/mob/living/carbon/alien/humanoid/empress/get_caste_organs()
+	. = ..()
+	. += list(
+		/obj/item/organ/internal/xenos/plasmavessel/queen,
+		/obj/item/organ/internal/xenos/acidgland/queen,
+		/obj/item/organ/internal/xenos/eggsac,
+		/obj/item/organ/internal/xenos/resinspinner,
+		/obj/item/organ/internal/xenos/neurotoxin
+	)
 
-	if(locate(/obj/structure/alien/egg) in get_turf(owner))
-		to_chat(owner, "<span class='noticealien'>There's already an egg here.</span>")
-		return
 
-	if(plasmacheck(250,1))//Can't plant eggs on spess tiles. That's silly.
-		host.adjustPlasma(-250)
-		for(var/mob/O in viewers(owner, null))
-			O.show_message(text("<span class=notice'><B>[src] has laid an egg!</B></span>"), 1)
-		new /obj/structure/alien/egg(owner.loc)
-	return
+/mob/living/carbon/alien/humanoid/empress/is_strong()
+	return TRUE
+

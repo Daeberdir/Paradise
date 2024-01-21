@@ -42,7 +42,7 @@
 			visible_message("<span class='danger'>[M] [response_disarm] [name]!</span>", "<span class='userdanger'>[M] [response_disarm] you!</span>")
 			add_attack_logs(M, src, "Alien disarmed")
 		else
-			var/damage = rand(15, 30)
+			var/damage = M.attack_damage
 			visible_message("<span class='danger'>[M] has slashed at [src]!</span>", \
 					"<span class='userdanger'>[M] has slashed at [src]!</span>")
 			playsound(loc, 'sound/weapons/slice.ogg', 25, 1, -1)
@@ -53,10 +53,9 @@
 /mob/living/simple_animal/attack_larva(mob/living/carbon/alien/larva/L)
 	if(..()) //successful larva bite
 		if(stat != DEAD)
-			var/damage = rand(5, 10)
-			. = attack_threshold_check(damage)
+			. = attack_threshold_check(L.attack_damage)
 			if(.)
-				L.amount_grown = min(L.amount_grown + damage, L.max_grown)
+				L.evolution_points = min(L.evolution_points + L.attack_damage, L.max_evolution_points)
 
 /mob/living/simple_animal/attack_animal(mob/living/simple_animal/M)
 	. = ..()

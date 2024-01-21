@@ -43,7 +43,7 @@
 	product_cost = cost
 
 /obj/item/circuitboard/machine/bluespace_tap
-	name = "Bluespace Harvester (Machine Board)"
+	board_name = "Bluespace Harvester"
 	build_path = /obj/machinery/power/bluespace_tap
 	origin_tech = "engineering=2;combat=2;bluespace=3"
 	req_components = list(
@@ -115,7 +115,8 @@
 		/obj/item/bedsheet/cult = 2,
 		/obj/item/bedsheet/wiz = 2,
 		/obj/item/stack/sheet/mineral/tranquillite/fifty = 3,
-		/obj/item/clothing/gloves/combat = 5
+		/obj/item/clothing/gloves/combat = 5,
+		/obj/item/melee/bigiron = 5
 	)
 
 /obj/effect/spawner/lootdrop/bluespace_tap/organic
@@ -177,7 +178,7 @@
 		/obj/item/reagent_containers/food/snacks/fishandchips,
 		/obj/item/reagent_containers/food/snacks/meatpie,
 		/obj/item/pizzabox/hawaiian, //it ONLY gives hawaiian. MUHAHAHA
-		/obj/item/reagent_containers/food/snacks/sliceable/xenomeatbread //maybe add some dangerous/special food here, ie robobuger?
+		/obj/item/reagent_containers/food/snacks/sliceable/bread/xeno //maybe add some dangerous/special food here, ie robobuger?
 	)
 
 #define kW *1000
@@ -374,6 +375,9 @@
 
 
 /obj/machinery/power/bluespace_tap/attack_hand(mob/user)
+	if(..())
+		return TRUE
+
 	add_fingerprint(user)
 	ui_interact(user)
 
@@ -426,7 +430,7 @@
 		ui.open()
 
 //emaging provides slightly more points but at much greater risk
-/obj/machinery/power/bluespace_tap/emag_act(mob/living/user as mob)
+/obj/machinery/power/bluespace_tap/emag_act(mob/user)
 	if(emagged)
 		return
 	add_attack_logs(user, src, "emagged")

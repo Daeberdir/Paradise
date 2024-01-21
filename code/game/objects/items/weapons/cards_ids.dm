@@ -16,6 +16,8 @@
 	desc = "A card."
 	icon = 'icons/obj/card.dmi'
 	w_class = WEIGHT_CLASS_TINY
+	pickup_sound = 'sound/items/handling/card_pickup.ogg'
+	drop_sound = 'sound/items/handling/card_drop.ogg'
 	var/associated_account_number = 0
 
 	var/list/files = list(  )
@@ -105,7 +107,10 @@
 	desc = "A card used to provide ID and determine access across the station."
 	icon_state = "id"
 	item_state = "card-id"
-	var/mining_points = 0 //For redeeming at mining equipment lockers
+	/// For redeeming at mining equipment lockers
+	var/mining_points = 0
+	/// Total mining points for the Shift.
+	var/total_mining_points = 0
 	var/list/access = list()
 	var/registered_name = "Unknown" // The name registered_name on the card
 	slot_flags = SLOT_ID
@@ -170,7 +175,7 @@
 	user.visible_message("[user] shows you: [bicon(src)] [src.name]. The assignment on the card: [src.assignment]",\
 		"You flash your ID card: [bicon(src)] [src.name]. The assignment on the card: [src.assignment]")
 	if(mining_points)
-		to_chat(user, "There's [mining_points] mining equipment redemption points loaded onto this card.")
+		to_chat(user, "There's <b>[mining_points] Mining Points</b> loaded onto this card. This card has earned <b>[total_mining_points] Mining Points</b> this Shift!")
 	src.add_fingerprint(user)
 	return
 
@@ -284,9 +289,8 @@
 		if(G.registered_name != registered_name && G.registered_name != "NOT SPECIFIED")
 			to_chat(user, "The guest pass cannot be attached to this ID")
 			return
-		if(!user.unEquip(G))
+		if(!user.drop_transfer_item_to_loc(G, src))
 			return
-		G.loc = src
 		guest_pass = G
 
 /obj/item/card/id/verb/remove_guest_pass()
@@ -317,6 +321,7 @@
 	data["account"] = associated_account_number
 	data["owner"] = registered_name
 	data["mining"] = mining_points
+	data["total_mining"] = total_mining_points
 	return data
 
 /obj/item/card/id/deserialize(list/data)
@@ -330,6 +335,7 @@
 	associated_account_number = data["account"]
 	registered_name = data["owner"]
 	mining_points = data["mining"]
+	total_mining_points = data["total_mining"]
 	// We'd need to use icon serialization(b64) to save the photo, and I don't feel like i
 	UpdateName()
 	RebuildHTML()
@@ -355,6 +361,8 @@
 	untrackable = 1
 	var/anyone = FALSE //Can anyone forge the ID or just syndicate?
 	var/list/card_images
+	var/list/save_slots = list()
+	var/num_of_save_slots = 3
 	var/list/appearances = list(
 							"data",
 							"id",
@@ -398,6 +406,10 @@
 /obj/item/card/id/syndicate/New()
 	access = initial_access.Copy()
 	..()
+	save_slots.len = num_of_save_slots
+	for(var/i = 1 to num_of_save_slots)
+		save_slots[i] = list()
+
 
 /obj/item/card/id/syndicate/vox
 	name = "agent card"
@@ -522,6 +534,17 @@
 				fingerprint_hash = initial(fingerprint_hash)
 				photo = null
 				registered_user = null
+		if("save_slot")
+			save_slot(params["slot"])
+			to_chat(registered_user, "<span class='notice'>You have successfully saved the card data to slot [params["slot"]].</span>")
+		if("load_slot")
+			load_slot(params["slot"])
+			UpdateName()
+			registered_user.sec_hud_set_ID()
+			to_chat(registered_user, "<span class='notice'>You have successfully loaded the card data from slot [params["slot"]].</span>")
+		if("clear_slot")
+			clear_slot(params["slot"])
+			to_chat(registered_user, "<span class='notice'>You have successfully cleared slot [params["slot"]].</span>")
 		if("clear_access")
 			var/response = alert(registered_user, "Are you sure you want to reset access saved on the card?","Reset Access", "No", "Yes")
 			if(response == "Yes")
@@ -709,6 +732,11 @@
 	data["fingerprint_hash"] = fingerprint_hash
 	data["photo"] = photo
 	data["ai_tracking"] = untrackable
+	var/list/saved_info = list()
+	for(var/I = 1 to length(save_slots))
+		var/list/editing_list = save_slots[I]
+		saved_info.Add(list(list("id" = I, "registered_name" = editing_list["registered_name"], "assignment" = editing_list["assignment"])))
+	data["saved_info"] = saved_info
 	return data
 
 /obj/item/card/id/syndicate/ui_static_data(mob/user)
@@ -744,6 +772,43 @@
 		if("Edit")
 			ui_interact(user)
 			return
+
+/obj/item/card/id/syndicate/proc/save_slot(number)
+	number = text2num(number)
+	var/list/editing_list = list()
+	editing_list["registered_name"] = registered_name
+	editing_list["sex"] = sex
+	editing_list["age"] = age
+	editing_list["rank"] = rank
+	editing_list["assignment"] = assignment
+	editing_list["associated_account_number"] = associated_account_number
+	editing_list["blood_type"] = blood_type
+	editing_list["dna_hash"] = dna_hash
+	editing_list["fingerprint_hash"] = fingerprint_hash
+	editing_list["photo"] = photo
+	editing_list["ai_tracking"] = untrackable
+	editing_list["icon_state"] = icon_state
+	save_slots[number] = editing_list
+
+/obj/item/card/id/syndicate/proc/load_slot(number)
+	number = text2num(number)
+	var/list/editing_list = save_slots[number]
+	registered_name = editing_list["registered_name"]
+	sex = editing_list["sex"]
+	age = editing_list["age"]
+	rank = editing_list["rank"]
+	assignment = editing_list["assignment"]
+	associated_account_number = editing_list["associated_account_number"]
+	blood_type = editing_list["blood_type"]
+	dna_hash = editing_list["dna_hash"]
+	fingerprint_hash = editing_list["fingerprint_hash"]
+	photo = editing_list["photo"]
+	untrackable = editing_list["ai_tracking"]
+	icon_state = editing_list["icon_state"]
+
+/obj/item/card/id/syndicate/proc/clear_slot(number)
+	number = text2num(number)
+	save_slots[number] = list()
 
 /obj/item/card/id/syndicate_command
 	name = "syndicate ID card"

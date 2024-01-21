@@ -81,7 +81,7 @@
 
 /datum/reagent/consumable/drink/berry_banned2/on_mob_death(mob/living/M)
 	M << sound('sound/effects/adminhelp.ogg',0,1,0,25)
-	to_chat(M, "<span class='adminhelp'>ЛС от <b>Администратор</b>: Бьёньк!</span>")
+	to_chat(M, chat_box_red("<span class='adminhelp'>PM from-<b>Administrator</b>: BWOINK!</span>"))
 	..()
 
 //Черноглазое варево: Шанс заставить пьющего говорить грейтайдовые фразы, типа "Я думал что клоун был настоящим!"
@@ -156,18 +156,17 @@
 	drink_name = "Moon'drin"
 	drink_desc = "Double distilled Moon'lin. Soft mint taste which is loved by all tajarans. Used in cocktails."
 	addiction_chance = 2
-	dizzy_adj = 3
 	alcohol_perc = 0.5
 
 /datum/reagent/consumable/ethanol/moonlight_skuma/on_mob_life(mob/living/M)
 	var/update_flags = STATUS_UPDATE_NONE
-	update_flags |= M.Druggy(30, FALSE)
-	M.Dizzy(5)
+	M.Druggy(60 SECONDS)
+	M.Dizzy(10 SECONDS)
 	if(prob(15))
 		M.emote(pick("twitch","giggle"))
-		M.Dizzy(3)
+		M.Dizzy(6 SECONDS)
 	if(prob(5))
-		M.Jitter(5)
+		M.Jitter(10 SECONDS)
 		M.emote("smile")
 		to_chat(M, "<span class='notice'>Вы испытываете приятные, теплые чувства, словно вы дома...</span>")
 	return ..() | update_flags

@@ -73,8 +73,10 @@
 				apprentice.mind.special_role = SPECIAL_ROLE_WIZARD_APPRENTICE
 				SSticker.mode.update_wiz_icons_added(apprentice.mind)
 				apprentice.faction = list("wizard")
+				log_game("[apprentice.key] has become [teacher]'s (ckey: [teacher.key]) apprentice.")
 			else
 				used = 0
+				log_game("[teacher] (ckey: [teacher.key]) has failed to spawn aprrentice.")
 				to_chat(teacher, "<span class='warning'>Unable to reach your apprentice! You can either attack the spellbook with the contract to refund your points, or wait and try again later.</span>")
 	return
 
@@ -212,9 +214,9 @@
 	desc = "Школа, практикующие заклинания для выживания и исцеления травм, с созданием защитного барьера для самозащиты."
 
 /datum/magick_school/healer/kit()
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/charge(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/summonitem(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/forcewall(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/charge(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/summonitem(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/forcewall(null))
 	owner.equip_or_collect(new /obj/item/gun/magic/staff/healing(owner), slot_r_hand)
 
 	//Нацепляем белый балахон
@@ -222,11 +224,26 @@
 	suit.magical = TRUE
 	suit.name = "Роба целителя"
 	suit.desc = "Магическая роба прислужника-целителя, оберегающая от проказы."
+	suit.gas_transfer_coefficient = 0.01
+	suit.permeability_coefficient = 0.01
+	suit.body_parts_covered = UPPER_TORSO|LOWER_TORSO|ARMS|LEGS
+	suit.armor = list("melee" = 30, "bullet" = 20, "laser" = 20, "energy" = 30, "bomb" = 20, "bio" = 20, "rad" = 20, "fire" = 100, "acid" = 100)
+	suit.allowed = list(/obj/item/teleportation_scroll)
+	suit.flags_inv = HIDEJUMPSUIT
+	suit.strip_delay = 50
+	suit.put_on_delay = 50
+	suit.resistance_flags = FIRE_PROOF | ACID_PROOF
 	owner.equip_or_collect(suit, slot_wear_suit)
 	var/obj/item/clothing/head/mercy_hood/head = new (owner)
 	head.magical = TRUE
 	head.name = "Капюшон целителя"
 	head.desc = "Магический капюшон робы прислужника-целителя, оберегающий от проказы."
+	head.gas_transfer_coefficient = 0.01
+	head.permeability_coefficient = 0.01
+	head.armor = list("melee" = 30, "bullet" = 20, "laser" = 20, "energy" = 30, "bomb" = 20, "bio" = 20, "rad" = 20, "fire" = 100, "acid" = 100)
+	head.resistance_flags = FIRE_PROOF | ACID_PROOF
+	head.strip_delay = 50
+	head.put_on_delay = 50
 	owner.equip_or_collect(head, slot_head)
 
 
@@ -236,9 +253,9 @@
 	desc = "Школа, практикующая разнообразные техники перемещения. Эфирный прыжок, телепортация и блинк заставят возненавидеть назойливого волшебника!"
 
 /datum/magick_school/motion/kit()
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/ethereal_jaunt(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/area_teleport/teleport(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/turf_teleport/blink(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/ethereal_jaunt(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/area_teleport/teleport(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/turf_teleport/blink(null))
 
 	//Нацепляем фиолетовый защитный балахон
 	var/obj/item/clothing/suit/space/suit = new
@@ -247,12 +264,24 @@
 	suit.icon_state = "psyamp"
 	suit.name = "Роба межпространства"
 	suit.desc = "Магическая роба прислужника школы пространства, оберегающий владельца от перемещений в агрессивных средах."
+	suit.gas_transfer_coefficient = 0.01
+	suit.permeability_coefficient = 0.01
+	suit.armor = list("melee" = 30, "bullet" = 20, "laser" = 20, "energy" = 30, "bomb" = 20, "bio" = 20, "rad" = 20, "fire" = 100, "acid" = 100)
+	suit.strip_delay = 50
+	suit.put_on_delay = 50
+	suit.resistance_flags = FIRE_PROOF | ACID_PROOF
 	owner.equip_or_collect(suit, slot_wear_suit)
 	var/obj/item/clothing/head/helmet/space/head = new
 	head.magical = TRUE
 	head.icon_state = "amp"
 	head.name = "Капюшон Межпространства"
 	head.desc = "Магический головной убор робы прислужника школы пространства, оберегающий от перемещений в агрессивных средах."
+	head.gas_transfer_coefficient = 0.01
+	head.permeability_coefficient = 0.01
+	head.armor = list("melee" = 30, "bullet" = 20, "laser" = 20, "energy" = 30, "bomb" = 20, "bio" = 20, "rad" = 20, "fire" = 100, "acid" = 100)
+	head.resistance_flags = FIRE_PROOF | ACID_PROOF
+	head.strip_delay = 50
+	head.put_on_delay = 50
 	owner.equip_or_collect(head, slot_head)
 
 
@@ -262,21 +291,33 @@
 	desc = "Школа, практикующаяся в нанесении ущерба грязным технологиям магглов. Магглы не любят, когда технологии восстают против них самих."
 
 /datum/magick_school/sabotage/kit()
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/emplosion/disable_tech(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/charge(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/summonitem(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/emplosion/disable_tech(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/charge(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/summonitem(null))
 	owner.equip_or_collect(new /obj/item/gun/magic/staff/animate(owner), slot_r_hand)
 
 	var/obj/item/clothing/suit/blacktrenchcoat/suit = new
 	suit.magical = TRUE
 	suit.name = "Роба саботёра"
 	suit.desc = "Магическая роба-саботёра. Стильная и приталенная!"
+	suit.gas_transfer_coefficient = 0.01
+	suit.permeability_coefficient = 0.01
+	suit.armor = list("melee" = 30, "bullet" = 20, "laser" = 20, "energy" = 30, "bomb" = 20, "bio" = 20, "rad" = 20, "fire" = 100, "acid" = 100)
+	suit.strip_delay = 50
+	suit.put_on_delay = 50
+	suit.resistance_flags = FIRE_PROOF | ACID_PROOF
 	owner.equip_or_collect(suit, slot_wear_suit)
 
 	var/obj/item/clothing/head/fedora/head = new
 	suit.magical = TRUE
-	suit.name = "Ведора саботёра"
-	suit.desc = "Магическая ведора-саботёра. Стильная и уважаемая!"
+	suit.name = "Федора саботёра"
+	suit.desc = "Магическая федора-саботёра. Стильная и уважаемая!"
+	head.gas_transfer_coefficient = 0.01
+	head.permeability_coefficient = 0.01
+	head.armor = list("melee" = 30, "bullet" = 20, "laser" = 20, "energy" = 30, "bomb" = 20, "bio" = 20, "rad" = 20, "fire" = 100, "acid" = 100)
+	head.resistance_flags = FIRE_PROOF | ACID_PROOF
+	head.strip_delay = 50
+	head.put_on_delay = 50
 	owner.equip_or_collect(head, slot_head)
 
 
@@ -286,11 +327,11 @@
 	desc = "Школа, практикующая заклинания защиты, не допускающая допуск неприятеля и заставляющая его держать дистанцию!"
 
 /datum/magick_school/defense/kit()
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/forcewall(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/forcewall/greater(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/repulse(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/sacred_flame(null))
-	ADD_TRAIT(owner, RESISTHOT, SUMMON_MAGIC)	//sacred_flame из-за не совсем верной выдачи, без этого, не выдает защиту от огня.
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/forcewall(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/forcewall/greater(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe/repulse(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/sacred_flame(null))
+	ADD_TRAIT(owner, RESISTHOT, MAGIC_TRAIT)	//sacred_flame из-за не совсем верной выдачи, без этого, не выдает защиту от огня.
 
 	//Стандартный костюм мага-воителя, который есть в башне волшебника и так.
 	owner.equip_or_collect(new /obj/item/clothing/suit/wizrobe/magusred(owner), slot_wear_suit)
@@ -303,16 +344,22 @@
 	desc = "Классическая школа огня, прислужники которой искусно владеют стихией огня!"
 
 /datum/magick_school/fire/kit()
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/smoke(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/click/fireball(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/sacred_flame(null))
-	ADD_TRAIT(owner, RESISTHOT, SUMMON_MAGIC)
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/smoke(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/fireball(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/sacred_flame(null))
+	ADD_TRAIT(owner, RESISTHOT, MAGIC_TRAIT)
 
 	//Надеваем красный балахон
 	var/obj/item/clothing/suit/victcoat/red/suit = new
 	suit.name = "Роба огня"
 	suit.desc = "Магическая роба последователей школы огня."
-	suit.magical = 1
+	suit.gas_transfer_coefficient = 0.01
+	suit.permeability_coefficient = 0.01
+	suit.armor = list("melee" = 30, "bullet" = 20, "laser" = 20, "energy" = 30, "bomb" = 20, "bio" = 20, "rad" = 20, "fire" = 100, "acid" = 100)
+	suit.strip_delay = 50
+	suit.put_on_delay = 50
+	suit.resistance_flags = FIRE_PROOF | ACID_PROOF
+	suit.magical = TRUE
 	owner.equip_or_collect(suit, slot_wear_suit)
 
 
@@ -322,7 +369,7 @@
 	desc = "Школа, практикующая оживление статики, и каменение динамики."
 
 /datum/magick_school/sculpt/kit()
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/touch/flesh_to_stone(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/touch/flesh_to_stone(null))
 	owner.equip_or_collect(new /obj/item/gun/magic/staff/animate(owner), slot_r_hand)
 
 	//Костюм настоящего художника-скульптора.
@@ -330,11 +377,23 @@
 	suit.magical = TRUE
 	suit.name = "Фартук скульптора-волшебника"
 	suit.desc = "Классический фартук последователей школы ваяния, хорошо защищает от разлетающейся глины."
+	suit.gas_transfer_coefficient = 0.01
+	suit.permeability_coefficient = 0.01
+	suit.armor = list("melee" = 30, "bullet" = 20, "laser" = 20, "energy" = 30, "bomb" = 20, "bio" = 20, "rad" = 20, "fire" = 100, "acid" = 100)
+	suit.strip_delay = 50
+	suit.put_on_delay = 50
+	suit.resistance_flags = FIRE_PROOF | ACID_PROOF
 	owner.equip_or_collect(suit, slot_wear_suit)
 	var/obj/item/clothing/head/beret/ce/head = new
 	head.magical = TRUE
 	head.name = "Берет скульптора-волшебника"
 	head.desc = "Классический берет последователей школы ваяния, позволяет выглядеть как настоящий художник."
+	head.gas_transfer_coefficient = 0.01
+	head.permeability_coefficient = 0.01
+	head.armor = list("melee" = 30, "bullet" = 20, "laser" = 20, "energy" = 30, "bomb" = 20, "bio" = 20, "rad" = 20, "fire" = 100, "acid" = 100)
+	head.resistance_flags = FIRE_PROOF | ACID_PROOF
+	head.strip_delay = 50
+	head.put_on_delay = 50
 	owner.equip_or_collect(head, slot_head)
 
 
@@ -344,7 +403,7 @@
 	desc = "Школа, практикующее владение собственным стендом-защитником с защитной стеной."
 
 /datum/magick_school/stand/kit()
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/forcewall/greater(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/forcewall/greater(null))
 	owner.equip_or_collect(new /obj/item/guardiancreator(owner), slot_r_hand)
 
 
@@ -354,8 +413,8 @@
 	desc = "Школа, не позволяющая магглам стоять в полный рост перед волшебниками. Ей даже интересовалась федерация Клоунов."
 
 /datum/magick_school/instability/kit()
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/summonitem(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/repulse(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/summonitem(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe/repulse(null))
 	owner.equip_or_collect(new /obj/item/gun/magic/staff/slipping(owner), slot_r_hand)
 	owner.equip_or_collect(new /obj/item/bikehorn, slot_belt)
 
@@ -367,7 +426,7 @@
 
 /datum/magick_school/blood/kit()
 	owner.equip_or_collect(new /obj/item/storage/belt/soulstone/full(owner), slot_belt)
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/conjure/construct(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe/conjure/construct(null))
 
 	var/obj/item/melee/chainofcommand/chain = new
 	chain.name = "Жертвенная Цепь"
@@ -378,6 +437,13 @@
 	var/obj/item/clothing/suit/hooded/cultrobes/suit = new
 	suit.name = "Жертвенная роба"
 	suit.desc = "Магическая роба последователей школы крови."
+	suit.gas_transfer_coefficient = 0.01
+	suit.permeability_coefficient = 0.01
+	suit.armor = list("melee" = 30, "bullet" = 20, "laser" = 20, "energy" = 30, "bomb" = 20, "bio" = 20, "rad" = 20, "fire" = 100, "acid" = 100)
+	suit.strip_delay = 50
+	suit.put_on_delay = 50
+	suit.magical = TRUE
+	suit.resistance_flags = FIRE_PROOF | ACID_PROOF
 	owner.equip_or_collect(suit, slot_wear_suit)
 
 
@@ -387,7 +453,7 @@
 	desc = "Запретная школа, заставляющая мертвых служить некроманту, заключившему контракт души."
 
 /datum/magick_school/necromantic/kit()
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/lichdom(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/lichdom(null))
 	owner.equip_or_collect(new /obj/item/necromantic_stone(owner), slot_l_store)
 	owner.equip_or_collect(new /obj/item/necromantic_stone(owner), slot_r_store)
 
@@ -398,7 +464,7 @@
 	desc = "Древняя школа, практикующее безмерное видение с лишением зрения недостойных. Послужники носят уникальные робы."
 
 /datum/magick_school/vision/kit()
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/trigger/blind(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/trigger/blind(null))
 	owner.equip_or_collect(new /obj/item/scrying(owner), slot_r_hand)
 	//Выдаем трейты ОРБа
 	if(!(XRAY in owner.mutations))
@@ -420,8 +486,8 @@
 
 /datum/magick_school/singulo/kit()
 	owner.equip_or_collect(new /obj/item/twohanded/singularityhammer(owner), slot_r_hand)
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/repulse(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/summonitem(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe/repulse(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/summonitem(null))
 
 	//Всё тот же костюм мага воителя, но с спрайтом сингулярного рыцаря.
 	var/obj/item/clothing/suit/wizrobe/magusred/suit = new
@@ -446,8 +512,8 @@
 	desc = "Старая школа, практикующая заклинания для чтения без мантии с подменам разума и открытием закрытых дверей."
 
 /datum/magick_school/replace/kit()		//старый набор
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/knock(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/click/mind_transfer(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe/knock(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/mind_transfer(null))
 
 	//Нацепляем простой фиолетовый балахон
 	owner.equip_or_collect(new /obj/item/clothing/suit/wizrobe/psypurple(owner), slot_wear_suit)
@@ -460,9 +526,9 @@
 	desc = "Старая школа, практикующая заклинания на нанесении ущерба."
 
 /datum/magick_school/destruction/kit()	//старый набор
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/projectile/magic_missile(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/click/fireball(null))
-	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/lightning(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/projectile/magic_missile(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/fireball(null))
+	owner.mind.AddSpell(new /obj/effect/proc_holder/spell/charge_up/bounce/lightning(null))
 
 	//Стандартный костюм мага-воителя, который есть в башне волшебника и так.
 	owner.equip_or_collect(new /obj/item/clothing/suit/wizrobe/magusred(owner), slot_wear_suit)

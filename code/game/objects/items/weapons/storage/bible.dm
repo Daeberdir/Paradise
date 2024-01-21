@@ -6,6 +6,8 @@
 	throw_range = 5
 	w_class = WEIGHT_CLASS_NORMAL
 	resistance_flags = FIRE_PROOF
+	drop_sound = 'sound/items/handling/book_drop.ogg'
+	pickup_sound =  'sound/items/handling/book_pickup.ogg'
 	var/mob/affecting = null
 	var/deity_name = "Christ"
 	/// Is the sprite of this bible customisable
@@ -36,15 +38,17 @@
 	user.dust()
 	return OBLITERATION
 
-/obj/item/storage/bible/fart_act(mob/living/M)
-	if(QDELETED(M) || M.stat == DEAD)
-		return
-	M.visible_message("<span class='danger'>[M] farts on \the [name]!</span>")
-	M.visible_message("<span class='userdanger'>A mysterious force smites [M]!</span>")
-	M.suiciding = TRUE
-	do_sparks(3, 1, M)
-	M.gib()
+
+/obj/item/storage/bible/fart_act(mob/living/user)
+	if(QDELETED(user) || user.stat == DEAD)
+		return FALSE
+	user.visible_message(span_danger("[user] farts on \the [name]!"))
+	user.visible_message(span_userdanger("A mysterious force smites [user]!"))
+	user.suiciding = TRUE
+	do_sparks(3, 1, user)
+	user.gib()
 	return TRUE // Don't run the fart emote
+
 
 /obj/item/storage/bible/booze
 	name = "bible"
@@ -64,7 +68,7 @@
 	if(ishuman(M))
 		var/mob/living/carbon/human/H = M
 		var/heal_amt = 10
-		for(var/obj/item/organ/external/affecting in H.bodyparts)
+		for(var/obj/item/organ/external/affecting as anything in H.bodyparts)
 			if(affecting.heal_damage(heal_amt, heal_amt))
 				H.UpdateDamageIcon()
 	return
@@ -92,7 +96,7 @@
 	if((CLUMSY in user.mutations) && prob(50))
 		to_chat(user, "<span class='warning'>The [src] slips out of your hand and hits your head.</span>")
 		user.take_organ_damage(10)
-		user.Paralyse(20)
+		user.Paralyse(40 SECONDS)
 		return
 
 	if(M.stat != DEAD && ishuman(M))
@@ -118,7 +122,7 @@
 			chaplain.electrocute_act(5, "Lightning Bolt", safety = TRUE, override = TRUE)
 			playsound(get_turf(chaplain), 'sound/magic/lightningshock.ogg', 50, 1, -1)
 			chaplain.adjustFireLoss(65)
-			chaplain.Weaken(5)
+			chaplain.Weaken(10 SECONDS)
 			to_chat(chaplain, "<span class='userdanger'>Вы злоупотребили волей бога и за что были наказаны!</span>")
 
 	else
@@ -142,17 +146,20 @@
 			airlock.cult_reveal()
 
 	if(user.mind?.isholy && target.reagents)
-		if(target.reagents.has_reagent("water")) //blesses all the water in the holder
-			to_chat(user, "<span class='notice'>You bless [target].</span>")
-			var/water2holy = target.reagents.get_reagent_amount("water")
-			target.reagents.del_reagent("water")
-			target.reagents.add_reagent("holywater", water2holy)
+		add_holy_water(user, target)
 
-		if(target.reagents.has_reagent("unholywater")) //yeah yeah, copy pasted code - sue me
-			to_chat(user, "<span class='notice'>You purify [target].</span>")
-			var/unholy2clean = target.reagents.get_reagent_amount("unholywater")
-			target.reagents.del_reagent("unholywater")
-			target.reagents.add_reagent("holywater", unholy2clean)
+/obj/item/storage/bible/proc/add_holy_water(mob/user, atom/target)
+	if(target.reagents.has_reagent("water")) //blesses all the water in the holder
+		to_chat(user, "<span class='notice'>You bless [target].</span>")
+		var/water2holy = target.reagents.get_reagent_amount("water")
+		target.reagents.del_reagent("water")
+		target.reagents.add_reagent("holywater", water2holy)
+
+	if(target.reagents.has_reagent("unholywater")) //yeah yeah, copy pasted code - sue me
+		to_chat(user, "<span class='notice'>You purify [target].</span>")
+		var/unholy2clean = target.reagents.get_reagent_amount("unholywater")
+		target.reagents.del_reagent("unholywater")
+		target.reagents.add_reagent("holywater", unholy2clean)
 
 /obj/item/storage/bible/attack_self(mob/user)
 	. = ..()
@@ -200,6 +207,6 @@
 	if(!user?.mind.isholy || !ishuman(user))
 		return FALSE
 	var/mob/living/carbon/human/H = user
-	if(!src || !H.is_in_hands(src) || H.incapacitated())
+	if(!src || !H.is_type_in_hands(src) || H.incapacitated())
 		return FALSE
 	return TRUE

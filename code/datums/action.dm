@@ -3,12 +3,14 @@
 	var/desc = null
 	var/obj/target = null
 	var/check_flags = 0
+	var/invisibility = FALSE
 	var/obj/screen/movable/action_button/button = null
 	var/button_icon = 'icons/mob/actions/actions.dmi'
+	var/button_icon_state = "default"
+	var/background_icon
 	var/background_icon_state = "bg_default"
 	var/buttontooltipstyle = ""
 	var/icon_icon = 'icons/mob/actions/actions.dmi'
-	var/button_icon_state = "default"
 	var/mob/owner
 
 /datum/action/New(var/Target)
@@ -28,39 +30,71 @@
 	QDEL_NULL(button)
 	return ..()
 
-/datum/action/proc/Grant(mob/M)
-	if(owner)
-		if(owner == M)
-			return
-		Remove(owner)
-	owner = M
-	M.actions += src
-	if(M.client)
-		M.client.screen += button
-		button.locked = TRUE
-	M.update_action_buttons()
 
-/datum/action/proc/Remove(mob/M)
+/datum/action/proc/Grant(mob/user)
+	if(owner)
+		if(owner == user)
+			return FALSE
+		Remove(owner)
+	owner = user
+	user.actions += src
+
+	if(user.client)
+		user.client.screen += button
+		button.locked = TRUE
+	user.update_action_buttons()
+
+	return TRUE
+
+
+/datum/action/proc/Remove(mob/user)
 	owner = null
-	if(!M)
-		return
-	if(M.client)
-		M.client.screen -= button
+	if(!user)
+		return FALSE
+
+	if(user.client)
+		user.client.screen -= button
+
 	button.moved = FALSE //so the button appears in its normal position when given to another owner.
 	button.locked = FALSE
-	M.actions -= src
-	M.update_action_buttons()
+	user.actions -= src
+	user.update_action_buttons()
 
-/datum/action/proc/Trigger()
+	return TRUE
+
+
+/datum/action/proc/Trigger(left_click = TRUE)
 	if(!IsAvailable())
 		return FALSE
 	return TRUE
+
+/datum/action/proc/AltTrigger()
+	Trigger()
 
 /datum/action/proc/Process()
 	return
 
 /datum/action/proc/override_location() // Override to set coordinates manually
 	return
+
+
+/datum/action/proc/enable_invisibility(enable = TRUE)
+	if(!owner?.client)
+		return
+	if(enable)
+		if(invisibility)
+			return
+		invisibility = TRUE
+		owner.client.screen -= button
+		owner.actions -= src
+	else
+		if(!invisibility)
+			return
+		invisibility = FALSE
+		owner.client.screen += button
+		owner.actions += src
+	owner.update_action_buttons()
+
 
 /datum/action/proc/IsAvailable()// returns 1 if all checks pass
 	if(!owner)
@@ -69,8 +103,10 @@
 		if(owner.restrained())
 			return FALSE
 	if(check_flags & AB_CHECK_STUNNED)
-		if(owner.stunned || owner.IsWeakened())
-			return FALSE
+		if(isliving(owner))
+			var/mob/living/L = owner
+			if(L.IsStunned() || L.IsWeakened())
+				return FALSE
 	if(check_flags & AB_CHECK_LYING)
 		if(owner.lying)
 			return FALSE
@@ -93,7 +129,10 @@
 			button.icon = ui_style2icon(owner.client.prefs.UI_style)
 			button.icon_state = "template"
 		else
-			button.icon = button_icon
+			if(background_icon)
+				button.icon = background_icon
+			else
+				button.icon = button_icon
 			button.icon_state = background_icon_state
 		button.name = name
 		button.desc = desc
@@ -103,11 +142,12 @@
 		if(IsMayActive())
 			toggle_active_overlay()
 
-		// If the action isn't available, darken the button
-		if(!IsAvailable())
+		var/obj/effect/proc_holder/spell/spell = target
+		if(istype(spell) && spell.cooldown_handler.should_draw_cooldown() || !IsAvailable())
 			apply_unavailable_effect()
 		else
 			return TRUE
+
 
 /datum/action/proc/apply_unavailable_effect()
 	var/image/img = image('icons/mob/screen_white.dmi', icon_state = "template")
@@ -132,6 +172,8 @@
 //Presets for item actions
 /datum/action/item_action
 	check_flags = AB_CHECK_RESTRAINED|AB_CHECK_STUNNED|AB_CHECK_LYING|AB_CHECK_CONSCIOUS
+	/// Whether action trigger should call attack self proc.
+	var/attack_self = TRUE
 	var/use_itemicon = TRUE
 	var/action_initialisation_text = null	//Space ninja abilities only
 
@@ -149,12 +191,12 @@
 	I.actions -= src
 	return ..()
 
-/datum/action/item_action/Trigger(attack_self = TRUE) //Maybe we don't want to click the thing itself
+/datum/action/item_action/Trigger(left_click = TRUE)
 	if(!..())
 		return FALSE
 	if(target && attack_self)
 		var/obj/item/I = target
-		I.ui_action_click(owner, type)
+		I.ui_action_click(owner, type, left_click)
 	return TRUE
 
 /datum/action/item_action/ApplyIcon(obj/screen/movable/action_button/current_button)
@@ -250,7 +292,7 @@
 /datum/action/item_action/toggle_welding_screen/plasmaman
 	name = "Toggle Welding Screen"
 
-/datum/action/item_action/toggle_welding_screen/plasmaman/Trigger()
+/datum/action/item_action/toggle_welding_screen/plasmaman/Trigger(left_click = TRUE)
 	var/obj/item/clothing/head/helmet/space/plasmaman/H = target
 	if(istype(H))
 		H.toggle_welding_screen(owner)
@@ -266,7 +308,7 @@
 	desc = "Toggles if the club's blasts cause friendly fire."
 	button_icon_state = "vortex_ff_on"
 
-/datum/action/item_action/toggle_unfriendly_fire/Trigger()
+/datum/action/item_action/toggle_unfriendly_fire/Trigger(left_click = TRUE)
 	if(..())
 		UpdateButtonIcon()
 
@@ -392,8 +434,9 @@
 
 /datum/action/item_action/remove_tape
 	name = "Remove Duct Tape"
+	attack_self = FALSE
 
-/datum/action/item_action/remove_tape/Trigger(attack_self = FALSE)
+/datum/action/item_action/remove_tape/Trigger(left_click = TRUE)
 	if(..())
 		var/datum/component/ducttape/DT = target.GetComponent(/datum/component/ducttape)
 		DT.remove_tape(target, usr)
@@ -442,11 +485,14 @@
 /datum/action/item_action/hands_free/activate
 	name = "Activate"
 
+/datum/action/item_action/hands_free/activate/always
+	check_flags = NONE
+
 /datum/action/item_action/toggle_research_scanner
 	name = "Toggle Research Scanner"
 	button_icon_state = "scan_mode"
 
-/datum/action/item_action/toggle_research_scanner/Trigger()
+/datum/action/item_action/toggle_research_scanner/Trigger(left_click = TRUE)
 	if(IsAvailable())
 		owner.research_scanner = !owner.research_scanner
 		to_chat(owner, "<span class='notice'>Research analyzer is now [owner.research_scanner ? "active" : "deactivated"].</span>")
@@ -468,7 +514,7 @@
 	name = "Use Instrument"
 	desc = "Use the instrument specified"
 
-/datum/action/item_action/instrument/Trigger()
+/datum/action/item_action/instrument/Trigger(left_click = TRUE)
 	if(istype(target, /obj/item/instrument))
 		var/obj/item/instrument/I = target
 		I.interact(usr)
@@ -495,8 +541,9 @@
 /datum/action/item_action/gravity_jump
 	name = "Gravity jump"
 	desc = "Directs a pulse of gravity in front of the user, pulling them forward rapidly."
+	attack_self = FALSE
 
-/datum/action/item_action/gravity_jump/Trigger(attack_self = FALSE)
+/datum/action/item_action/gravity_jump/Trigger(left_click = TRUE)
 	. = ..()
 	if(!.)
 		return FALSE
@@ -532,7 +579,7 @@
 /datum/action/item_action/voice_changer/voice
 	name = "Set Voice"
 
-/datum/action/item_action/voice_changer/voice/Trigger()
+/datum/action/item_action/voice_changer/voice/Trigger(left_click = TRUE)
 	if(!IsAvailable())
 		return FALSE
 
@@ -577,13 +624,14 @@
 
 /datum/action/spell_action/New(Target)
 	..()
-	var/obj/effect/proc_holder/spell/S = target
-	S.action = src
-	name = S.name
-	desc = S.desc
-	button_icon = S.action_icon
-	button_icon_state = S.action_icon_state
-	background_icon_state = S.action_background_icon_state
+	var/obj/effect/proc_holder/spell/spell = target
+	spell.action = src
+	name = spell.name
+	desc = spell.desc
+	button_icon = spell.action_icon
+	background_icon = spell.action_background_icon
+	button_icon_state = spell.action_icon_state
+	background_icon_state = spell.action_background_icon_state
 	button.name = name
 
 /datum/action/spell_action/Destroy()
@@ -591,53 +639,69 @@
 	S.action = null
 	return ..()
 
-/datum/action/spell_action/Trigger()
-	if(!..())
+/datum/action/spell_action/Trigger(left_click = TRUE)
+	if(!IsAvailable(TRUE))
 		return FALSE
+
 	if(target)
 		var/obj/effect/proc_holder/spell = target
 		spell.Click()
 		return TRUE
 
-/datum/action/spell_action/IsAvailable()
+/datum/action/spell_action/AltTrigger()
+	if(target)
+		var/obj/effect/proc_holder/spell/spell = target
+		spell.AltClick(usr)
+		return TRUE
+
+/datum/action/spell_action/IsAvailable(message = FALSE)
 	if(!target)
 		return FALSE
 	var/obj/effect/proc_holder/spell/spell = target
 
-	if(spell.special_availability_check)
-		return TRUE
-
 	if(owner)
-		return spell.can_cast(owner)
+		return spell.can_cast(owner, show_message = message)
 	return FALSE
+
 
 /datum/action/spell_action/IsMayActive()
 	if(!target)
 		return FALSE
-	var/obj/effect/proc_holder/spell/targeted/click/S = target
-	if(!istype(S))
-		return ..()
-	return TRUE
+
+	var/obj/effect/proc_holder/spell/spell = target
+	if(istype(spell) && spell.need_active_overlay)
+		return TRUE
+
+	return FALSE
+
 
 /datum/action/spell_action/toggle_active_overlay()
-	var/obj/effect/proc_holder/spell/targeted/click/S = target
+	var/obj/effect/proc_holder/spell/spell = target
 	var/image/I = image('icons/mob/screen_gen.dmi', icon_state = "selector")
-	I.plane = FLOAT_PLANE + 1.1
-	I.layer = FLOAT_LAYER
-	if(S.active)
-		button.overlays += I
+	I.appearance_flags |= RESET_COLOR | RESET_ALPHA
+	I.plane = FLOAT_PLANE + 1.2
+	if(spell.active)
+		button.add_overlay(I)
 	else
-		button.overlays -= I
+		button.cut_overlay(I)
+
+
+/datum/action/spell_action/ApplyIcon(obj/screen/movable/action_button/current_button)
+	current_button.cut_overlays()
+	if(button_icon && button_icon_state)
+		var/image/img = image(button_icon, current_button, button_icon_state)
+		img.appearance_flags = RESET_COLOR | RESET_ALPHA
+		img.pixel_x = 0
+		img.pixel_y = 0
+		current_button.add_overlay(img)
+
 
 /datum/action/spell_action/apply_unavailable_effect()
-	var/obj/effect/proc_holder/spell/S = target
-	if(!istype(S))
+	var/obj/effect/proc_holder/spell/spell = target
+	if(!istype(spell))
 		return ..()
-	var/progress = S.get_availability_percentage()
-	if(progress == 1)
-		return ..() // This means that the spell is charged but unavailable due to something else
 
-	var/alpha = 220 - 140 * progress
+	var/alpha = spell.cooldown_handler.get_cooldown_alpha()
 
 	var/image/img = image('icons/mob/screen_white.dmi', icon_state = "template")
 	img.alpha = alpha
@@ -648,28 +712,17 @@
 	// Make a holder for the charge text
 	var/image/count_down_holder = image('icons/effects/effects.dmi', icon_state = "nothing")
 	count_down_holder.plane = FLOAT_PLANE + 1.1
-	count_down_holder.maptext = "<div style=\"font-size:6pt;color:[recharge_text_color];font:'Small Fonts';text-align:center;\" valign=\"bottom\">[round_down(progress * 100)]%</div>"
+	var/text = spell.cooldown_handler.statpanel_info()
+	count_down_holder.maptext = "<div style=\"font-size:6pt;color:[recharge_text_color];font:'Small Fonts';text-align:center;\" valign=\"bottom\">[text]</div>"
 	button.add_overlay(count_down_holder)
 
-/*
-/datum/action/spell_action/alien
-
-/datum/action/spell_action/alien/IsAvailable()
-	if(!target)
-		return 0
-	var/obj/effect/proc_holder/alien/ab = target
-
-	if(owner)
-		return ab.cost_check(ab.check_turf, owner, 1)
-	return 0
-*/
 
 //Preset for general and toggled actions
 /datum/action/innate
 	check_flags = 0
 	var/active = FALSE
 
-/datum/action/innate/Trigger()
+/datum/action/innate/Trigger(left_click = TRUE)
 	if(!..())
 		return FALSE
 	if(!active)
@@ -688,7 +741,7 @@
 	name = "Toggle Research Scanner"
 	button_icon_state = "scan_mode"
 
-/datum/action/innate/research_scanner/Trigger()
+/datum/action/innate/research_scanner/Trigger(left_click = TRUE)
 	if(IsAvailable())
 		owner.research_scanner = !owner.research_scanner
 		to_chat(owner, "<span class='notice'>Research analyzer is now [owner.research_scanner ? "active" : "deactivated"].</span>")
@@ -711,7 +764,7 @@
 	check_flags = 0
 	var/procname
 
-/datum/action/generic/Trigger()
+/datum/action/generic/Trigger(left_click = TRUE)
 	if(!..())
 		return FALSE
 	if(target && procname)

@@ -1,7 +1,7 @@
 // ********************************************************
 // Here's all the seeds (plants) that can be used in hydro
 // ********************************************************
-
+GLOBAL_LIST_EMPTY(plant_seeds)
 /obj/item/seeds
 	icon = 'icons/obj/hydroponics/seeds.dmi'
 	icon_state = "seed"				// Unknown plant seed - these shouldn't exist in-game.
@@ -51,6 +51,7 @@
 	if(!icon_harvest && !get_gene(/datum/plant_gene/trait/plant_type/fungal_metabolism) && yield != -1)
 		icon_harvest = "[species]-harvest"
 	src.nogenes = nogenes
+	GLOB.plant_seeds += src
 
 
 /obj/item/seeds/Initialize(mapload)
@@ -76,6 +77,7 @@
 
 /obj/item/seeds/Destroy()
 	QDEL_LIST(genes)
+	GLOB.plant_seeds -= src
 	return ..()
 
 /obj/item/seeds/proc/Copy()
@@ -317,8 +319,6 @@
 		all_traits += " [traits.get_name()]"
 	text += "- Plant Traits:[all_traits]\n"
 
-	text += "*---------*"
-
 	return text
 
 /obj/item/seeds/proc/on_chem_reaction(datum/reagents/S)  //in case seeds have some special interaction with special chems
@@ -326,7 +326,7 @@
 
 /obj/item/seeds/attackby(obj/item/O, mob/user, params)
 	if (istype(O, /obj/item/plant_analyzer))
-		to_chat(user, "<span class='info'>*---------*\n This is \a <span class='name'>[src]</span>.</span>")
+		to_chat(user, "<span class='info'>This is \a <span class='name'>[src].</span></span>")
 		var/text = get_analyzer_text()
 		if(text)
 			to_chat(user, "<span class='notice'>[text]</span>")
@@ -431,3 +431,12 @@
 			genes += P
 		else
 			qdel(P)
+
+/obj/item/seeds/proc/transform_into_random()
+	name = "pack of strange seeds"
+	desc = "Mysterious seeds as strange as their name implies. Spooky"
+	icon_state = "seed-x"
+	randomize_stats()
+	add_random_reagents(1,2)
+	add_random_traits(1,2)
+	return

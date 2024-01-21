@@ -22,16 +22,14 @@
 		new_dir = 0
 		return ..() //Hits as normal, explodes or emps or whatever
 
-	reflect_turf = get_step(loc,new_dir)
+	reflect_turf = get_step(loc, new_dir)
 
 	P.original = reflect_turf
 	P.starting = reflector_turf
-	P.current = reflector_turf
-	P.yo = reflect_turf.y - reflector_turf.y
-	P.xo = reflect_turf.x - reflector_turf.x
 	P.ignore_source_check = TRUE		//If shot by a laser, will now hit the mob that fired it
 	var/reflect_angle = dir2angle(new_dir)
-	P.setAngle(reflect_angle)
+	P.set_angle_centered(reflect_angle)
+	P.trajectory.set_location(reflect_turf.x, reflect_turf.y, reflect_turf.z)
 
 	new_dir = 0
 	return -1
@@ -49,7 +47,8 @@
 				return
 			else
 				S.use(5)
-				new /obj/structure/reflector/single (src.loc)
+				var/obj/structure/reflector/single/reflector = new(loc)
+				reflector.add_fingerprint(user)
 				qdel(src)
 		if(istype(W,/obj/item/stack/sheet/rglass))
 			if(S.get_amount() < 10)
@@ -57,12 +56,14 @@
 				return
 			else
 				S.use(10)
-				new /obj/structure/reflector/double (src.loc)
+				var/obj/structure/reflector/double/reflector = new(loc)
+				reflector.add_fingerprint(user)
 				qdel(src)
 		if(istype(W, /obj/item/stack/sheet/mineral/diamond))
 			if(S.get_amount() >= 1)
 				S.use(1)
-				new /obj/structure/reflector/box (src.loc)
+				var/obj/structure/reflector/box/reflector = new(loc)
+				reflector.add_fingerprint(user)
 				qdel(src)
 		return
 	return ..()

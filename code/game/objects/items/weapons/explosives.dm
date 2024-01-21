@@ -12,6 +12,7 @@
 	var/image_overlay = null
 	var/obj/item/assembly_holder/nadeassembly = null
 	var/assemblyattacher
+	var/notify_admins = TRUE
 
 /obj/item/grenade/plastic/New()
 	image_overlay = image('icons/obj/weapons/grenade.dmi', "[item_state]2")
@@ -25,7 +26,7 @@
 /obj/item/grenade/plastic/attackby(obj/item/I, mob/user, params)
 	if(!nadeassembly && istype(I, /obj/item/assembly_holder))
 		var/obj/item/assembly_holder/A = I
-		if(!user.unEquip(I))
+		if(!user.drop_item_ground(I))
 			return ..()
 		nadeassembly = A
 		A.master = src
@@ -74,13 +75,13 @@
 	to_chat(user, "<span class='notice'>You start planting the [src]. The timer is set to [det_time]...</span>")
 
 	if(do_after(user, 50 * toolspeed * gettoolspeedmod(user), target = AM))
-		if(!user.unEquip(src))
+		if(!user.drop_item_ground(src))
 			return
 		src.target = AM
 		loc = null
-
-		message_admins("[ADMIN_LOOKUPFLW(user)] planted [src.name] on [target.name] at [ADMIN_COORDJMP(target)] with [det_time] second fuse")
-		add_game_logs("planted [name] on [target.name] at [COORD(target)] with [det_time] second fuse", user)
+		if(notify_admins)
+			message_admins("[ADMIN_LOOKUPFLW(user)] planted [src.name] on [target.name] at [ADMIN_COORDJMP(target)] with [det_time] second fuse")
+			add_game_logs("planted [name] on [target.name] at [COORD(target)] with [det_time] second fuse", user)
 
 		target.overlays += image_overlay
 		if(!nadeassembly)

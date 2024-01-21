@@ -71,6 +71,8 @@
 	if(target.mob_size > mob_size)
 		to_chat(user, "<span class='warning'>Ваша переноска слишком мала!</span>")
 		return FALSE
+	if(istype(target, /mob/living/simple_animal/revenant))
+		return FALSE
 	//if(target.mob_size < mob_size)
 	//	to_chat(user, "<span class='warning'>Ваша переноска слишком большая!</span>")
 	//	return FALSE
@@ -241,12 +243,12 @@
 		if(!(M.restrained()) && !(M.stat))
 			switch(over_object.name)
 				if("r_hand")
-					if(!M.unEquip(src))
+					if(!M.drop_item_ground(src))
 						return
-					M.put_in_r_hand(src)
+					M.put_in_r_hand(src, ignore_anim = FALSE)
 				if("l_hand")
-					if(!M.unEquip(src))
+					if(!M.drop_item_ground(src))
 						return
-					M.put_in_l_hand(src)
+					M.put_in_l_hand(src, ignore_anim = FALSE)
 			add_fingerprint(usr)
 			return

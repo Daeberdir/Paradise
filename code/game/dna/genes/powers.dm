@@ -95,6 +95,7 @@
 	deactivation_messages = list("Your skin no longer feels dry and unreactive.")
 	instability = GENE_INSTABILITY_MODERATE
 	mutation = NO_SHOCK
+	traits_to_add = list(TRAIT_SHOCKIMMUNE)
 
 /datum/dna/gene/basic/noshock/New()
 	..()
@@ -138,11 +139,11 @@
 
 /datum/dna/gene/basic/hulk/activate(mob/M)
 	..()
-	M.AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/hulk/hulk_transform)
+	M.AddSpell(new /obj/effect/proc_holder/spell/hulk_transform)
 
 /datum/dna/gene/basic/hulk/deactivate(mob/M)
 	..()
-	M.RemoveSpell(/obj/effect/proc_holder/spell/aoe_turf/hulk/hulk_transform)
+	M.RemoveSpell(/obj/effect/proc_holder/spell/hulk_transform)
 
 /datum/dna/gene/basic/hulk/OnDrawUnderlays(mob/M, g)
 	if(HULK in M.mutations)

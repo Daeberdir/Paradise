@@ -45,7 +45,7 @@
 	// Components
 	component_parts = list()
 	var/obj/item/circuitboard/smartfridge/board = new(null)
-	board.set_type(type)
+	board.set_type(null, type)
 	component_parts += board
 	component_parts += new /obj/item/stock_parts/matter_bin(null)
 	RefreshParts()
@@ -59,6 +59,7 @@
 		/obj/item/reagent_containers/food/snacks/grown,
 		/obj/item/seeds,
 		/obj/item/grown,
+		/obj/item/slimepotion,
 	))
 
 /obj/machinery/smartfridge/RefreshParts()
@@ -141,6 +142,7 @@
 		to_chat(user, "<span class='notice'>\The [src] is unpowered and useless.</span>")
 		return
 
+	add_fingerprint(user)
 	if(load(O, user))
 		user.visible_message("<span class='notice'>[user] has added \the [O] to \the [src].</span>", "<span class='notice'>You add \the [O] to \the [src].</span>")
 		SStgui.update_uis(src)
@@ -150,6 +152,7 @@
 		var/items_loaded = 0
 		for(var/obj/G in P.contents)
 			if(load(G, user))
+				G.add_fingerprint(user)
 				items_loaded++
 		if(items_loaded)
 			user.visible_message("<span class='notice'>[user] loads \the [src] with \the [P].</span>", "<span class='notice'>You load \the [src] with \the [P].</span>")
@@ -161,9 +164,6 @@
 	else if(!istype(O, /obj/item/card/emag))
 		to_chat(user, "<span class='notice'>\The [src] smartly refuses [O].</span>")
 		return TRUE
-
-/obj/machinery/smartfridge/attack_ai(mob/user)
-	return FALSE
 
 /obj/machinery/smartfridge/attack_ghost(mob/user)
 	return attack_hand(user)
@@ -188,9 +188,11 @@
 		to_chat(user, "<span class='notice'>\The [P] is empty.</span>")
 		return
 
+	add_fingerprint(user)
 	var/items_loaded = 0
 	for(var/obj/G in P.contents)
 		if(load(G, user))
+			G.add_fingerprint(user)
 			items_loaded++
 	if(items_loaded)
 		user.visible_message("<span class='notice'>[user] empties \the [P] into \the [src].</span>", "<span class='notice'>You empty \the [P] into \the [src].</span>")
@@ -260,9 +262,9 @@
 			if(i == 1 && Adjacent(user) && !issilicon(user))
 				for(var/obj/O in contents)
 					if(O.name == K)
-						if(!user.put_in_hands(O))
-							O.forceMove(loc)
-							adjust_item_drop_location(O)
+						O.forceMove(get_turf(src))
+						adjust_item_drop_location(O)
+						user.put_in_hands(O, ignore_anim = FALSE)
 						update_icon()
 						break
 			else
@@ -283,24 +285,37 @@
   * * I - The item to load.
   * * user - The user trying to load the item.
   */
-/obj/machinery/smartfridge/proc/load(obj/I, mob/user)
+/obj/machinery/smartfridge/proc/load(obj/item/I, mob/user)
 	if(accept_check(I))
 		if(length(contents) >= max_n_of_items)
 			to_chat(user, "<span class='notice'>\The [src] is full.</span>")
 			return FALSE
 		else
-			if(istype(I.loc, /obj/item/storage))
+			if(istype(I, /obj/item/gripper))
+				var/obj/item/gripper/gripper = I
+				var/obj/item/gripped_item = gripper.gripped_item
+				gripper.drop_gripped_item(silent = TRUE)
+				I = gripped_item
+				I.do_pickup_animation(src)
+				I.forceMove(src)
+
+			else if(istype(I.loc, /obj/item/storage))
 				var/obj/item/storage/S = I.loc
-				S.remove_from_storage(I, src)
+				if(user)
+					S.remove_from_storage(I, user.drop_location())
+					I.do_pickup_animation(src)
+					I.forceMove(src)
+				else
+					S.remove_from_storage(I, src)
+
 			else if(ismob(I.loc))
 				var/mob/M = I.loc
 				if(M.get_active_hand() == I)
-					if(!M.drop_item())
+					if(!M.drop_transfer_item_to_loc(I, src))
 						to_chat(user, "<span class='warning'>\The [I] is stuck to you!</span>")
 						return FALSE
 				else
-					M.unEquip(I)
-				I.forceMove(src)
+					M.drop_transfer_item_to_loc(I, src)
 			else
 				I.forceMove(src)
 
@@ -341,8 +356,11 @@
   * Arguments:
   * * O - The item to check.
   */
-/obj/machinery/smartfridge/proc/accept_check(obj/item/O)
-	return is_type_in_typecache(O, accepted_items_typecache)
+/obj/machinery/smartfridge/proc/accept_check(obj/item/I)
+	if(istype(I, /obj/item/gripper))
+		var/obj/item/gripper/gripper = I
+		I = gripper.gripped_item
+	return is_type_in_typecache(I, accepted_items_typecache)
 
 /**
   * # Syndie Fridge
@@ -361,7 +379,8 @@
 
 /obj/machinery/smartfridge/secure/emag_act(mob/user)
 	emagged = TRUE
-	to_chat(user, "<span class='notice'>You short out the product lock on \the [src].</span>")
+	if(user)
+		to_chat(user, "<span class='notice'>You short out the product lock on \the [src].</span>")
 
 /obj/machinery/smartfridge/secure/emp_act(severity)
 	if(!emagged && prob(40 / severity))
@@ -516,6 +535,41 @@
 /obj/machinery/smartfridge/secure/chemistry/preloaded/syndicate/Initialize(mapload)
 	. = ..()
 
+/obj/machinery/smartfridge/secure/medbay/organ
+	req_access = list(ACCESS_SURGERY)
+	name = "\improper Secure Refrigerated Organ Storage"
+	desc = "A refrigerated storage unit for storing organs, limbs, implants and IV bags."
+	opacity = 1
+
+/obj/machinery/smartfridge/secure/medbay/organ/Initialize(mapload)
+	. = ..()
+	accepted_items_typecache = typecacheof(list(
+		/obj/item/organ,
+		/obj/item/reagent_containers/iv_bag,
+		/obj/item/robot_parts/l_arm,
+		/obj/item/robot_parts/r_arm,
+		/obj/item/robot_parts/l_leg,
+		/obj/item/robot_parts/r_leg,
+	))
+
+/// Copy pasting to reuse existing sprites
+/obj/machinery/smartfridge/secure/medbay/organ/update_icon()
+	var/prefix = initial(icon_state)
+	if(stat & (BROKEN|NOPOWER))
+		icon_state = "[prefix]-off"
+	else if(visible_contents)
+		switch(length(contents))
+			if(0)
+				icon_state = "[prefix]"
+			if(1 to 25)
+				icon_state = "[prefix]-organ1"
+			if(26 to 75)
+				icon_state = "[prefix]-organ2"
+			if(76 to INFINITY)
+				icon_state = "[prefix]-organ3"
+	else
+		icon_state = "[prefix]"
+
 /**
   * # Disk Compartmentalizer
   *
@@ -543,13 +597,16 @@
 /obj/machinery/smartfridge/secure/chemistry/virology
 	name = "\improper Smart Virus Storage"
 	desc = "A refrigerated storage unit for volatile sample storage."
+	icon_state = "smartfridge_virology"
 	req_access = list(ACCESS_VIROLOGY)
 
 /obj/machinery/smartfridge/secure/chemistry/virology/Initialize(mapload)
 	spawn_meds = list(
 		/obj/item/reagent_containers/syringe/antiviral = 4,
 		/obj/item/reagent_containers/glass/bottle/cold = 1,
-		/obj/item/reagent_containers/glass/bottle/flu_virion = 1,
+		/obj/item/reagent_containers/glass/bottle/flu = 1,
+		/obj/item/reagent_containers/glass/bottle/sneezing = 1,
+		/obj/item/reagent_containers/glass/bottle/cough = 1,
 		/obj/item/reagent_containers/glass/bottle/mutagen = 1,
 		/obj/item/reagent_containers/glass/bottle/plasma = 1,
 		/obj/item/reagent_containers/glass/bottle/diphenhydramine = 1
@@ -560,6 +617,23 @@
 		/obj/item/reagent_containers/glass/bottle,
 		/obj/item/reagent_containers/glass/beaker,
 	))
+
+/obj/machinery/smartfridge/secure/chemistry/virology/update_icon()
+	var/prefix = initial(icon_state)
+	if(stat & (BROKEN|NOPOWER))
+		icon_state = "[prefix]-off"
+	else if(visible_contents)
+		switch(length(contents))
+			if(0)
+				icon_state = "[prefix]"
+			if(1 to 25)
+				icon_state = "[prefix]1"
+			if(26 to 75)
+				icon_state = "[prefix]2"
+			if(76 to INFINITY)
+				icon_state = "[prefix]3"
+	else
+		icon_state = "[prefix]"
 
 /**
   * # Smart Virus Storage (Preloaded)
@@ -573,7 +647,9 @@
 	spawn_meds = list(
 		/obj/item/reagent_containers/syringe/antiviral = 4,
 		/obj/item/reagent_containers/glass/bottle/cold = 1,
-		/obj/item/reagent_containers/glass/bottle/flu_virion = 1,
+		/obj/item/reagent_containers/glass/bottle/flu = 1,
+		/obj/item/reagent_containers/glass/bottle/sneezing = 1,
+		/obj/item/reagent_containers/glass/bottle/cough = 1,
 		/obj/item/reagent_containers/glass/bottle/mutagen = 1,
 		/obj/item/reagent_containers/glass/bottle/plasma = 1,
 		/obj/item/reagent_containers/glass/bottle/reagent/synaptizine = 1,
@@ -750,8 +826,7 @@
 			SStgui.update_uis(src)
 		return TRUE
 	for(var/obj/item/stack/sheet/wetleather/WL in contents)
-		var/obj/item/stack/sheet/leather/L = new(loc)
-		L.amount = WL.amount
+		new /obj/item/stack/sheet/leather(loc, WL.amount)
 		item_quants[WL.name]--
 		qdel(WL)
 		SStgui.update_uis(src)

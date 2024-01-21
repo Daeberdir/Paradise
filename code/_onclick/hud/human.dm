@@ -21,7 +21,11 @@
 
 /obj/screen/human/equip/Click()
 	if(istype(usr.loc,/obj/mecha)) // stops inventory actions in a mech
-		return 1
+		return TRUE
+
+	if(is_ventcrawling(usr)) // stops inventory actions in vents
+		return TRUE
+
 	var/mob/living/carbon/human/H = usr
 	H.quick_equip()
 
@@ -33,8 +37,13 @@
 	screen_loc = ui_lingstingdisplay
 
 /obj/screen/ling/sting/Click()
-	var/mob/living/carbon/U = usr
-	U.unset_sting()
+	var/datum/antagonist/changeling/cling = usr?.mind?.has_antag_datum(/datum/antagonist/changeling)
+	cling?.chosen_sting?.unset_sting()
+
+/obj/screen/ling/chems
+	name = "chemical storage"
+	icon_state = "power_display"
+	screen_loc = ui_lingchemdisplay
 
 /obj/screen/devil
 	invisibility = INVISIBILITY_ABSTRACT
@@ -64,11 +73,6 @@
 
 /obj/screen/devil/soul_counter/proc/clear()
 	invisibility = INVISIBILITY_ABSTRACT
-
-/obj/screen/ling/chems
-	name = "chemical storage"
-	icon_state = "power_display"
-	screen_loc = ui_lingchemdisplay
 
 
 /mob/living/carbon/human/proc/remake_hud() //used for preference changes mid-round; can't change hud icons without remaking the hud.
@@ -371,10 +375,14 @@
 	infodisplay += mymob.healthdoll
 
 	mymob.pullin = new /obj/screen/pull()
+	mymob.pullin.hud = src
 	mymob.pullin.icon = ui_style
-	mymob.pullin.update_icon(mymob)
+	mymob.pullin.update_icon(UPDATE_ICON_STATE)
 	mymob.pullin.screen_loc = ui_pull_resist
 	static_inventory += mymob.pullin
+
+	mymob.stamina_bar = new /obj/screen/stamina_bar()
+	infodisplay += mymob.stamina_bar
 
 	lingchemdisplay = new /obj/screen/ling/chems()
 	infodisplay += lingchemdisplay
@@ -386,13 +394,18 @@
 	infodisplay += devilsouldisplay
 
 	zone_select =  new /obj/screen/zone_sel()
+	zone_select.hud = src
 	zone_select.color = ui_color
 	zone_select.icon = ui_style
 	zone_select.alpha = ui_alpha
-	zone_select.update_icon(mymob)
+	zone_select.update_icon(UPDATE_OVERLAYS)
 	static_inventory += zone_select
 
 	inventory_shown = FALSE
+
+	combo_display = new()
+	infodisplay += combo_display
+
 
 	for(var/obj/screen/inventory/inv in (static_inventory + toggleable_inventory))
 		if(inv.slot_id)
@@ -423,7 +436,7 @@
 			crafting.invisibility = initial(crafting.invisibility)
 
 /datum/hud/human/hidden_inventory_update()
-	if(!mymob)
+	if(!mymob?.client)
 		return
 	var/mob/living/carbon/human/H = mymob
 	if(inventory_shown && hud_shown)

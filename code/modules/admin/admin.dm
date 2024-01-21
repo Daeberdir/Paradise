@@ -87,8 +87,8 @@ GLOBAL_VAR_INIT(nologevent, 0)
 		else
 			body += "\[[M.client.holder ? M.client.holder.rank : "Player"]\] "
 		body += "\[<A href='?_src_=holder;getplaytimewindow=[M.UID()]'>" + M.client.get_exp_type(EXP_TYPE_CREW) + " as [EXP_TYPE_CREW]</a>\]"
-		body += "<br>BYOND account registration date: [M.client.byondacc_date || "ERROR"] [M.client.byondacc_age <= config.byond_account_age_threshold ? "<b>" : ""]([M.client.byondacc_age] days old)[M.client.byondacc_age <= config.byond_account_age_threshold ? "</b>" : ""]"
-		body += "<br>Global Ban DB Lookup: [config.centcom_ban_db_url ? "<a href='?_src_=holder;open_ccbdb=[M.client.ckey]'>Lookup</a>" : "<i>Disabled</i>"]"
+		body += "<br>BYOND account registration date: [M.client.byondacc_date || "ERROR"] [M.client.byondacc_age <= CONFIG_GET(number/byond_account_age_threshold) ? "<b>" : ""]([M.client.byondacc_age] days old)[M.client.byondacc_age <= CONFIG_GET(number/byond_account_age_threshold) ? "</b>" : ""]"
+		body += "<br>Global Ban DB Lookup: [CONFIG_GET(string/centcom_ban_db_url) ? "<a href='?_src_=holder;open_ccbdb=[M.client.ckey]'>Lookup</a>" : "<i>Disabled</i>"]"
 
 		body += "<br>"
 
@@ -106,8 +106,9 @@ GLOBAL_VAR_INIT(nologevent, 0)
 		body += "<a href='?src=[usr.UID()];priv_msg=[M.client.ckey]'>PM</a> - "
 		body += "[ADMIN_SM(M,"SM")] - "
 	if(ishuman(M) && M.mind)
-		body += "<a href='?_src_=holder;HeadsetMessage=[M.UID()]'>HM</a> -"
-	body += "[admin_jump_link(M)]\] </b><br>"
+		body += "<a href='?_src_=holder;HeadsetMessage=[M.UID()]'>HM</a> - "
+	body += "[admin_jump_link(M)] - "
+	body += "<a href='?_src_=holder;adminalert=[M.UID()]'>SEND ALERT</a>\]</b><br>"
 	body += "<b>Mob type:</b> [M.type]<br>"
 	if(M.client)
 		if(M.client.prefs.discord_id)
@@ -127,7 +128,7 @@ GLOBAL_VAR_INIT(nologevent, 0)
 		body += "<A href='?_src_=holder;appearanceban=[M.UID()];dbbanaddckey=[M.ckey]'>Appearance Ban</A> | "
 		body += "<A href='?_src_=holder;shownoteckey=[M.ckey]'>Notes</A> | "
 		body += "<A href='?_src_=holder;geoip=[M.UID()]'>GeoIP</A> | "
-		if(config.forum_playerinfo_url)
+		if(CONFIG_GET(string/forum_playerinfo_url))
 			body += "<A href='?_src_=holder;webtools=[M.ckey]'>WebInfo</A> | "
 	if(M.client)
 		if(check_watchlist(M.client.ckey))
@@ -144,7 +145,9 @@ GLOBAL_VAR_INIT(nologevent, 0)
 			<A href='?_src_=holder;mute=[M.UID()];mute_type=[MUTE_OOC]'><font color='[(muted & MUTE_OOC)?"red":"#6685f5"]'>OOC</font></a> |
 			<A href='?_src_=holder;mute=[M.UID()];mute_type=[MUTE_PRAY]'><font color='[(muted & MUTE_PRAY)?"red":"#6685f5"]'>PRAY</font></a> |
 			<A href='?_src_=holder;mute=[M.UID()];mute_type=[MUTE_ADMINHELP]'><font color='[(muted & MUTE_ADMINHELP)?"red":"#6685f5"]'>ADMINHELP</font></a> |
-			<A href='?_src_=holder;mute=[M.UID()];mute_type=[MUTE_DEADCHAT]'><font color='[(muted & MUTE_DEADCHAT)?"red":"#6685f5"]'>DEADCHAT</font></a>\]
+			<A href='?_src_=holder;mute=[M.UID()];mute_type=[MUTE_DEADCHAT]'><font color='[(muted & MUTE_DEADCHAT)?"red":"#6685f5"]'>DEADCHAT</font></a> |
+			<A href='?_src_=holder;mute=[M.UID()];mute_type=[MUTE_TTS]'><font color='[(muted & MUTE_TTS)?"red":"#6685f5"]'>TTS</font></a> |
+			<A href='?_src_=holder;mute=[M.UID()];mute_type=[MUTE_EMOTE]'><font color='[(muted & MUTE_EMOTE)?"red":"#6685f5"]'>EMOTE</font></a>\]
 			(<A href='?_src_=holder;mute=[M.UID()];mute_type=[MUTE_ALL]'><font color='[(muted & MUTE_ALL)?"red":"#6685f5"]'>toggle all</font></a>)
 		"}
 		body += {"<br><b>Mob Manipulation:</b>
@@ -350,6 +353,8 @@ GLOBAL_VAR_INIT(nologevent, 0)
 		"}
 	if(GLOB.master_mode == "secret")
 		dat += "<A href='?src=[UID()];f_secret=1'>(Force Secret Mode)</A><br>"
+	if(GLOB.master_mode == "antag-paradise" || GLOB.secret_force_mode == "antag-paradise")
+		dat += "<A href='?src=[UID()];change_weights=1'>Change Antag Weights</A><br>"
 
 	dat += {"
 		<BR>
@@ -443,8 +448,9 @@ GLOBAL_VAR_INIT(nologevent, 0)
 	if(message)
 		if(!check_rights(R_SERVER,0))
 			message = adminscrub(message,500)
+		message = handleDiscordEmojis(message)
 		message = replacetext(message, "\n", "<br>") // required since we're putting it in a <p> tag
-		to_chat(world, "<span class='notice'><b>[usr.client.holder.fakekey ? "Administrator" : usr.key] Announces:</b><p style='text-indent: 50px'>[message]</p></span>")
+		to_chat(world, chat_box_notice("<span class='notice'><b>[usr.client.holder.fakekey ? "Administrator" : usr.key] Announces:</b><br><br><p>[message]</p></span>"))
 		log_admin("Announce: [key_name(usr)] : [message]")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Announce") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
@@ -468,8 +474,9 @@ GLOBAL_VAR_INIT(nologevent, 0)
 	if(!check_rights(R_ADMIN))
 		return
 
-	config.looc_allowed = !(config.looc_allowed)
-	if(config.looc_allowed)
+	CONFIG_SET(flag/looc_allowed, !CONFIG_GET(flag/looc_allowed))
+
+	if(CONFIG_GET(flag/looc_allowed))
 		to_chat(world, "<B>The LOOC channel has been globally enabled!</B>")
 	else
 		to_chat(world, "<B>The LOOC channel has been globally disabled!</B>")
@@ -484,8 +491,9 @@ GLOBAL_VAR_INIT(nologevent, 0)
 	if(!check_rights(R_ADMIN))
 		return
 
-	config.dsay_allowed = !(config.dsay_allowed)
-	if(config.dsay_allowed)
+	CONFIG_SET(flag/dsay_allowed, !CONFIG_GET(flag/dsay_allowed))
+
+	if(CONFIG_GET(flag/dsay_allowed))
 		to_chat(world, "<B>Deadchat has been globally enabled!</B>")
 	else
 		to_chat(world, "<B>Deadchat has been globally disabled!</B>")
@@ -500,8 +508,8 @@ GLOBAL_VAR_INIT(nologevent, 0)
 	if(!check_rights(R_ADMIN))
 		return
 
-	config.dooc_allowed = !( config.dooc_allowed )
-	if(config.dooc_allowed)
+	CONFIG_SET(flag/dooc_allowed, !(CONFIG_GET(flag/dooc_allowed)))
+	if(CONFIG_GET(flag/dooc_allowed))
 		to_chat(world, "<B>Dead OOC has been globally enabled!</B>")
 	else
 		to_chat(world, "<B>Dead OOC has been globally disabled!</B>")
@@ -515,8 +523,8 @@ GLOBAL_VAR_INIT(nologevent, 0)
 
 	if(!check_rights(R_ADMIN))
 		return
+	CONFIG_SET(flag/disable_ooc_emoji, !CONFIG_GET(flag/disable_ooc_emoji))
 
-	config.disable_ooc_emoji = !(config.disable_ooc_emoji)
 	log_and_message_admins("toggled OOC Emoji.")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Toggle OOC Emoji")
 
@@ -532,7 +540,7 @@ GLOBAL_VAR_INIT(nologevent, 0)
 		alert("Unable to start the game as it is not set up.")
 		return
 
-	if(config.start_now_confirmation)
+	if(CONFIG_GET(flag/start_now_confirmation))
 		if(alert(usr, "This is a live server. Are you sure you want to start now?", "Start game", "Yes", "No") != "Yes")
 			return
 
@@ -574,8 +582,8 @@ GLOBAL_VAR_INIT(nologevent, 0)
 	if(!check_rights(R_EVENT))
 		return
 
-	config.allow_ai = !( config.allow_ai )
-	if(!( config.allow_ai ))
+	CONFIG_SET(flag/allow_ai, !CONFIG_GET(flag/allow_ai))
+	if(!CONFIG_GET(flag/allow_ai))
 		to_chat(world, "<B>The AI job is no longer chooseable.</B>")
 	else
 		to_chat(world, "<B>The AI job is chooseable now.</B>")
@@ -627,7 +635,7 @@ GLOBAL_VAR_INIT(nologevent, 0)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////ADMIN HELPER PROCS
 
-/proc/is_special_character(mob/M as mob) // returns 1 for specail characters and 2 for heroes of gamemode
+/*/proc/is_special_character(mob/M as mob) // returns 1 for specail characters and 2 for heroes of gamemode
 	if(!SSticker || !SSticker.mode)
 		return 0
 	if(!istype(M))
@@ -663,7 +671,94 @@ GLOBAL_VAR_INIT(nologevent, 0)
 	if(M.mind&&M.mind.special_role)//If they have a mind and special role, they are some type of traitor or antagonist.
 		return 1
 
-	return 0
+	return 0*/
+
+
+/**
+  * A proc that return whether the mob is a "Special Character" aka Antagonist
+  *
+  * Arguments:
+  * * M - the mob you're checking
+  */
+/proc/is_special_character(mob/M)
+	if(!SSticker.mode)
+		return FALSE
+	if(!istype(M))
+		return FALSE
+	if(isrobot(M))
+		var/mob/living/silicon/robot/R = M
+		if(R.emagged)
+			return TRUE
+	if(M.mind?.special_role)//If they have a mind and special role, they are some type of traitor or antagonist.
+		return TRUE
+	return FALSE
+
+
+/**
+  * A proc that return an array of capitalized strings containing name of the antag types they are
+  *
+  * Arguments:
+  * * M - the mob you're checking
+  */
+/proc/get_antag_type_strings_list(mob/M) // return an array of all the antag types they are with name
+	var/list/antag_list = list()
+
+	if(!SSticker.mode || !istype(M) || !M.mind)
+		return FALSE
+
+	if(M.mind in SSticker.mode.head_revolutionaries)
+		antag_list += "Head Rev"
+	if(M.mind in SSticker.mode.revolutionaries)
+		antag_list += "Revolutionary"
+	if(M.mind in SSticker.mode.cult)
+		antag_list += "Cultist"
+	if(M.mind in SSticker.mode.syndicates)
+		antag_list += "Nuclear Operative"
+	if(M.mind in SSticker.mode.wizards)
+		antag_list += "Wizard"
+	if(M.mind in SSticker.mode.changelings)
+		antag_list += "Changeling"
+	if(M.mind in SSticker.mode.abductors)
+		antag_list += "Abductor"
+	if(M.mind.has_antag_datum(/datum/antagonist/goon_vampire))
+		antag_list += "Goon Vampire"
+	if(M.mind.has_antag_datum(/datum/antagonist/mindslave/goon_thrall))
+		antag_list += "Goon Vampire Thrall"
+	if(M.mind.has_antag_datum(/datum/antagonist/vampire))
+		antag_list += "Vampire"
+	if(M.mind.has_antag_datum(/datum/antagonist/mindslave/thrall))
+		antag_list += "Vampire Thrall"
+	if(M.mind.has_antag_datum(/datum/antagonist/traitor))
+		antag_list += "Traitor"
+	if(M.mind.has_antag_datum(/datum/antagonist/mindslave, FALSE))
+		antag_list += "Mindslave"
+	if(isrobot(M))
+		var/mob/living/silicon/robot/R = M
+		if(R.emagged)
+			antag_list += "Emagged Borg"
+	if(!length(antag_list) && M.mind.special_role) // Snowflake check. If none of the above but still special, then other antag. Technically not accurate.
+		antag_list += "Other Antag(s)"
+	return antag_list
+
+
+/**
+  * A proc that return a string containing all the singled out antags . Empty string if not antag
+  *
+  * Usually, you'd return a FALSE, but since this is consumed by javascript you're in
+  * for a world of hurt if you pass a byond FALSE which get converted into a fucking string anyway and pass for TRUE in check. Fuck.
+  * It always append "(May be other antag)"
+  * Arguments:
+  * * M - the mob you're checking
+  * *
+  */
+/proc/get_antag_type_truncated_plaintext_string(mob/M as mob)
+	var/list/antag_list = get_antag_type_strings_list(M)
+
+	if(length(antag_list))
+		return antag_list.Join(" &amp; ") + " " + "(May be other antag)"
+
+	return ""
+
 
 /datum/admins/proc/spawn_atom(var/object as text)
 	set category = "Debug"
@@ -700,6 +795,7 @@ GLOBAL_VAR_INIT(nologevent, 0)
 
 	log_and_message_admins("spawned [chosen] at [COORD(usr)]")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Spawn Atom") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+
 
 /datum/admins/proc/show_traitor_panel(var/mob/M in GLOB.mob_list)
 	set category = "Admin"
@@ -922,3 +1018,15 @@ GLOBAL_VAR_INIT(gamma_ship_location, 1) // 0 = station , 1 = space
 		result[1]++
 	return result
 
+
+/datum/admins/proc/changetitlescreen()
+	set category = "Admin"
+	set desc = "Changes current title screen"
+	set name = "Change Title Screen"
+
+	if(!check_rights(R_ADMIN))
+		return
+
+	if(SStitle?.create_title_screen(usr))
+		log_and_message_admins("changed title screen.")
+		SSblackbox.record_feedback("tally", "admin_verb", 1, "Change Title Screen")

@@ -795,7 +795,7 @@
 		return TRUE
 	if(user.can_admin_interact())
 		return TRUE
-	else if(isAI(user) || (isrobot(user) || emagged) && !iscogscarab(user))
+	else if(isAI(user) || (isrobot(user) || emagged || user.has_unlimited_silicon_privilege) && !iscogscarab(user))
 		return TRUE
 	else
 		return !locked
@@ -805,7 +805,7 @@
 		return STATUS_CLOSE
 
 	if(aidisabled && (isAI(user) || isrobot(user)))
-		to_chat(user, "<span class='warning'>AI control for \the [src] interface has been disabled.</span>")
+		to_chat(user, span_warning("AI control for \the [src] interface has been disabled."))
 		return STATUS_CLOSE
 
 	. = shorted ? STATUS_DISABLED : STATUS_INTERACTIVE
@@ -931,7 +931,7 @@
 				return
 			input_temperature = input_temperature + T0C
 			if(input_temperature > max_temperature || input_temperature < min_temperature)
-				to_chat(usr, "<span class='warning'>Temperature must be between [min_temperature_c]C and [max_temperature_c]C</span>")
+				to_chat(usr, span_warning("Temperature must be between [min_temperature_c]C and [max_temperature_c]C"))
 			else
 				target_temperature = input_temperature
 
@@ -942,12 +942,11 @@
 	if(!emagged)
 		emagged = TRUE
 		if(user)
-			user.visible_message("<span class='warning'>Sparks fly out of the [src]!</span>", "<span class='notice'>You emag the [src], disabling its safeties.</span>")
+			user.visible_message(span_warning("Sparks fly out of the [src]!"), span_notice("You emag the [src], disabling its safeties."))
 		playsound(src.loc, 'sound/effects/sparks4.ogg', 50, TRUE)
 		return
 
 /obj/machinery/alarm/attackby(obj/item/I, mob/user, params)
-	add_fingerprint(user)
 
 	switch(buildstage)
 		if(2)
@@ -957,11 +956,12 @@
 					return
 				else
 					if(allowed(usr) && !wires.is_cut(WIRE_IDSCAN))
+						add_fingerprint(user)
 						locked = !locked
-						to_chat(user, "<span class='notice'>You [ locked ? "lock" : "unlock"] the Air Alarm interface.</span>")
+						to_chat(user, span_notice("You [ locked ? "lock" : "unlock"] the Air Alarm interface."))
 						SStgui.update_uis(src)
 					else
-						to_chat(user, "<span class='warning'>Access denied.</span>")
+						to_chat(user, span_warning("Access denied."))
 				return
 
 		if(1)
@@ -971,6 +971,7 @@
 					to_chat(user, "You need more cable for this!")
 					return
 
+				add_fingerprint(user)
 				to_chat(user, "You wire \the [src]!")
 				playsound(get_turf(src), coil.usesound, 50, 1)
 				coil.use(5)
@@ -983,6 +984,7 @@
 				return
 		if(0)
 			if(istype(I, /obj/item/airalarm_electronics))
+				add_fingerprint(user)
 				to_chat(user, "You insert the circuit!")
 				playsound(get_turf(src), I.usesound, 50, 1)
 				qdel(I)
@@ -1036,8 +1038,7 @@
 	if(!I.use_tool(src, user, 0, volume = I.tool_volume))
 		return
 	if(wires.is_all_cut()) // all wires cut
-		var/obj/item/stack/cable_coil/new_coil = new /obj/item/stack/cable_coil(user.drop_location())
-		new_coil.amount = 5
+		new /obj/item/stack/cable_coil(user.drop_location(), 5)
 		buildstage = AIR_ALARM_BUILDING
 		update_icon()
 	if(wiresexposed)
@@ -1077,9 +1078,9 @@
 /obj/machinery/alarm/examine(mob/user)
 	. = ..()
 	if(buildstage < 2)
-		. += "<span class='notice'>It is not wired.</span>"
+		. += span_notice("It is not wired.")
 	if(buildstage < 1)
-		. += "<span class='notice'>The circuit is missing.</span>"
+		. += span_notice("The circuit is missing.")
 
 /obj/machinery/alarm/proc/unshort_callback()
 	if(shorted)

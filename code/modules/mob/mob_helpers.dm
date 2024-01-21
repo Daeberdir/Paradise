@@ -43,11 +43,6 @@
 			return 1
 	return 0
 
-/proc/ismindslave(A) //Checks to see if the person contains a mindslave implant, then checks that the implant is actually inside of them
-	for(var/obj/item/implant/traitor/T in A)
-		if(T && T.implanted)
-			return 1
-	return 0
 
 /proc/isLivingSSD(mob/M)
 	return istype(M) && M.player_logged && M.stat != DEAD
@@ -86,7 +81,7 @@
 
 /proc/cannotPossess(A)
 	var/mob/dead/observer/G = A
-	if(G.has_enabled_antagHUD && config.antag_hud_restricted)
+	if(G.has_enabled_antagHUD && CONFIG_GET(flag/antag_hud_restricted))
 		return 1
 	return 0
 
@@ -129,19 +124,22 @@
 		theghost = pick(candidates)
 		to_chat(M, "Your mob has been taken over by a ghost!")
 		message_admins("[key_name_admin(theghost)] has taken control of ([key_name_admin(M)])")
+		log_game("[theghost.key] has taken control of [M] (ckey: [M.key])")
 		M.ghostize()
 		M.key = theghost.key
 	else
 		to_chat(M, "There were no ghosts willing to take control.")
+		log_game("No one decided to take control of [M] (ckey: [M.key])")
 		message_admins("No ghosts were willing to take control of [key_name_admin(M)])")
 
 /proc/check_zone(zone)
-	if(!zone)	return "chest"
+	if(!zone)
+		return BODY_ZONE_CHEST
 	switch(zone)
-		if("eyes")
-			zone = "head"
-		if("mouth")
-			zone = "head"
+		if(BODY_ZONE_PRECISE_EYES)
+			zone = BODY_ZONE_HEAD
+		if(BODY_ZONE_PRECISE_MOUTH)
+			zone = BODY_ZONE_HEAD
 	return zone
 
 // Returns zone with a certain probability.
@@ -156,27 +154,36 @@
 	if(prob(probability))
 		return zone
 
-	var/t = rand(1, 18) // randomly pick a different zone, or maybe the same one
-	switch(t)
-		if(1)		 return "head"
-		if(2)		 return "chest"
-		if(3 to 4)	 return "l_arm"
-		if(5 to 6)   return "l_hand"
-		if(7 to 8)	 return "r_arm"
-		if(9 to 10)  return "r_hand"
-		if(11 to 12) return "l_leg"
-		if(13 to 14) return "l_foot"
-		if(15 to 16) return "r_leg"
-		if(17 to 18) return "r_foot"
-
+	switch(rand(1, 18))	// randomly pick a different zone, or maybe the same one
+		if(1)
+			return BODY_ZONE_HEAD
+		if(2)
+			return BODY_ZONE_CHEST
+		if(3 to 4)
+			return BODY_ZONE_L_ARM
+		if(5 to 6)
+			return BODY_ZONE_PRECISE_L_HAND
+		if(7 to 8)
+			return BODY_ZONE_R_ARM
+		if(9 to 10)
+			return BODY_ZONE_PRECISE_R_HAND
+		if(11 to 12)
+			return BODY_ZONE_L_LEG
+		if(13 to 14)
+			return BODY_ZONE_PRECISE_L_FOOT
+		if(15 to 16)
+			return BODY_ZONE_R_LEG
+		if(17 to 18)
+			return BODY_ZONE_PRECISE_R_FOOT
 	return zone
 
+
 /proc/above_neck(zone)
-	var/list/zones = list("head", "mouth", "eyes")
+	var/list/zones = list(BODY_ZONE_HEAD, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_PRECISE_EYES)
 	if(zones.Find(zone))
-		return 1
-	else
-		return 0
+		return TRUE
+	return FALSE
+
 
 /proc/stars(n, pr)
 	if(pr == null)
@@ -412,12 +419,12 @@ GLOBAL_LIST_INIT(intents, list(INTENT_HELP,INTENT_DISARM,INTENT_GRAB,INTENT_HARM
 	set name = "Sleep"
 	set category = "IC"
 
-	if(sleeping)
+	if(IsSleeping())
 		to_chat(src, "<span class='notice'>Вы уже спите.</span>")
 		return
 	else
 		if(alert(src, "You sure you want to sleep for a while?", "Sleep", "Yes", "No") == "Yes")
-			SetSleeping(20) //Short nap
+			SetSleeping(40 SECONDS) //Short nap
 
 /mob/living/verb/lay_down()
 	set name = "Rest"
@@ -451,7 +458,7 @@ GLOBAL_LIST_INIT(intents, list(INTENT_HELP,INTENT_DISARM,INTENT_GRAB,INTENT_HARM
 //Direct dead say used both by emote and say
 //It is somewhat messy. I don't know what to do.
 //I know you can't see the change, but I rewrote the name code. It is significantly less messy now
-/proc/say_dead_direct(var/message, var/mob/subject = null)
+/proc/say_dead_direct(message, mob/subject = null)
 	var/name
 	var/keyname
 	if(subject && subject.client)
@@ -462,8 +469,8 @@ GLOBAL_LIST_INIT(intents, list(INTENT_HELP,INTENT_DISARM,INTENT_GRAB,INTENT_HARM
 			var/realname = C.mob.real_name
 			if(C.mob.mind)
 				mindname = C.mob.mind.name
-				if(C.mob.mind.original && C.mob.mind.original.real_name)
-					realname = C.mob.mind.original.real_name
+				if(C.mob.mind.original_mob_name)
+					realname = C.mob.mind.original_mob_name
 			if(mindname && mindname != realname)
 				name = "[realname] died as [mindname]"
 			else
@@ -479,13 +486,13 @@ GLOBAL_LIST_INIT(intents, list(INTENT_HELP,INTENT_DISARM,INTENT_GRAB,INTENT_HARM
 				if(M.stat != DEAD && check_rights(R_ADMIN|R_MOD,0,M))
 					follow = "([admin_jump_link(subject)]) "
 				var/mob/dead/observer/DM
-				if(istype(subject, /mob/dead/observer))
+				if(isobserver(subject))
 					DM = subject
-				if(check_rights(R_ADMIN|R_MOD,0,M)) 							// What admins see
-					lname = "[keyname][(DM && DM.client && DM.client.prefs.toggles2 & PREFTOGGLE_2_ANONDCHAT) ? "*" : (DM ? "" : "^")] ([name])"
+				if(check_rights(R_ADMIN|R_MOD, FALSE, M)) 							// What admins see
+					lname = "[keyname][(DM?.client.prefs.toggles2 & PREFTOGGLE_2_ANON) ? (@"[ANON]") : (DM ? "" : "^")] ([name])"
 				else
-					if(DM && DM.client && DM.client.prefs.toggles2 & PREFTOGGLE_2_ANONDCHAT)	// If the person is actually observer they have the option to be anonymous
-						lname = "Ghost of [name]"
+					if(DM?.client.prefs.toggles2 & PREFTOGGLE_2_ANON)	// If the person is actually observer they have the option to be anonymous
+						lname = "<i>Anon</i> ([name])"
 					else if(DM)									// Non-anons
 						lname = "[keyname] ([name])"
 					else										// Everyone else (dead people who didn't ghost yet, etc.)
@@ -756,6 +763,69 @@ GLOBAL_LIST_INIT(intents, list(INTENT_HELP,INTENT_DISARM,INTENT_GRAB,INTENT_HARM
 		return FALSE
 	// Cast to 1/0
 	return !!(client.prefs.toggles & toggleflag)
+
+
+/**
+ * Helper proc to determine if a mob can use emotes that make sound or not.
+ */
+/mob/proc/can_use_audio_emote(intentional)
+	var/emote_status = intentional ? audio_emote_cd_status : audio_emote_unintentional_cd_status
+	switch(emote_status)
+		if(EMOTE_INFINITE)  // Spam those emotes
+			return TRUE
+		if(EMOTE_ADMIN_BLOCKED)  // Cooldown emotes were disabled by an admin, prevent use
+			return FALSE
+		if(EMOTE_ON_COOLDOWN)	// Already on CD, prevent use
+			return FALSE
+		if(EMOTE_READY)
+			return TRUE
+
+	CRASH("Invalid emote type")
+
+
+/**
+ * Start the cooldown for an emote that plays audio.
+ *
+ * Arguments:
+ * * intentional - Whether or not the user deliberately triggered this emote.
+ * * cooldown - The amount of time that should be waited before any other audio emote can fire.
+ */
+/mob/proc/start_audio_emote_cooldown(intentional, cooldown = AUDIO_EMOTE_COOLDOWN)
+	if(!can_use_audio_emote(intentional))
+		return FALSE
+
+	var/cooldown_source = intentional ? audio_emote_cd_status : audio_emote_unintentional_cd_status
+
+	if(cooldown_source == EMOTE_READY)
+		// we do have to juggle between cooldowns a little bit, but this lets us keep them on separate cooldowns so
+		// a user screaming every five seconds doesn't prevent them from sneezing.
+		if(intentional)
+			audio_emote_cd_status = EMOTE_ON_COOLDOWN	// Starting cooldown
+		else
+			audio_emote_unintentional_cd_status = EMOTE_ON_COOLDOWN
+		addtimer(CALLBACK(src, PROC_REF(on_audio_emote_cooldown_end), intentional), cooldown)
+	return TRUE  // proceed with emote
+
+
+/mob/proc/on_audio_emote_cooldown_end(intentional)
+	if(intentional)
+		if(audio_emote_cd_status == EMOTE_ON_COOLDOWN)
+			// only reset to ready if we're in a cooldown state
+			audio_emote_cd_status = EMOTE_READY
+	else
+		if(audio_emote_unintentional_cd_status == EMOTE_ON_COOLDOWN)
+			audio_emote_unintentional_cd_status = EMOTE_READY
+
+
+/proc/stat_to_text(stat)
+	switch(stat)
+		if(CONSCIOUS)
+			return "conscious"
+		if(UNCONSCIOUS)
+			return "unconscious"
+		if(DEAD)
+			return "dead"
+
 
 // Used to make sure that a player has a valid job preference setup, used to knock players out of eligibility for anything if their prefs don't make sense.
 // A "valid job preference setup" in this situation means at least having one job set to low, or not having "return to lobby" enabled

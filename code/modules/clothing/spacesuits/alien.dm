@@ -34,7 +34,10 @@
 	icon = 'icons/obj/clothing/species/unathi/hats.dmi'
 	species_restricted = list("Unathi")
 	sprite_sheets = list(
-		"Unathi" = 'icons/mob/species/unathi/helmet.dmi'
+		"Unathi" = 'icons/mob/clothing/species/unathi/helmet.dmi',
+		"Ash Walker" = 'icons/mob/clothing/species/unathi/helmet.dmi',
+		"Ash Walker Shaman" = 'icons/mob/clothing/species/unathi/helmet.dmi',
+		"Draconid" = 'icons/mob/clothing/species/unathi/helmet.dmi'
 		)
 
 /obj/item/clothing/head/helmet/space/unathi/helmet_cheap
@@ -48,7 +51,10 @@
 	icon = 'icons/obj/clothing/species/unathi/suits.dmi'
 	species_restricted = list("Unathi")
 	sprite_sheets = list(
-		"Unathi" = 'icons/mob/species/unathi/suit.dmi'
+		"Unathi" = 'icons/mob/clothing/species/unathi/suit.dmi',
+		"Ash Walker" = 'icons/mob/clothing/species/unathi/suit.dmi',
+		"Ash Walker Shaman" = 'icons/mob/clothing/species/unathi/suit.dmi',
+		"Draconid" = 'icons/mob/clothing/species/unathi/suit.dmi'
 		)
 
 /obj/item/clothing/suit/space/unathi/rig_cheap
@@ -82,8 +88,8 @@
 	icon = 'icons/obj/clothing/species/vox/suits.dmi'
 	species_restricted = list("Vox", "Vox Armalis")
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/suit.dmi',
-		"Vox Armalis" = 'icons/mob/species/armalis/suit.dmi',
+		"Vox" = 'icons/mob/clothing/species/vox/suit.dmi',
+		"Vox Armalis" = 'icons/mob/clothing/species/armalis/suit.dmi',
 		)
 
 /obj/item/clothing/head/helmet/space/vox
@@ -93,8 +99,8 @@
 	icon = 'icons/obj/clothing/species/vox/hats.dmi'
 	species_restricted = list("Vox","Vox Armalis")
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/head.dmi',
-		"Vox Armalis" = 'icons/mob/species/armalis/head.dmi',
+		"Vox" = 'icons/mob/clothing/species/vox/head.dmi',
+		"Vox Armalis" = 'icons/mob/clothing/species/armalis/head.dmi',
 		)
 
 /obj/item/clothing/head/helmet/space/vox/pressure
@@ -151,7 +157,7 @@
 	icon = 'icons/obj/clothing/species/vox/uniforms.dmi'
 	species_restricted = list("Vox")
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/uniform.dmi'
+		"Vox" = 'icons/mob/clothing/species/vox/uniform.dmi'
 		)
 
 /obj/item/clothing/under/vox/vox_casual
@@ -170,8 +176,8 @@
 	item_state = "vox-casual-2"
 	species_restricted = list("Vox","Vox Armalis")
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/uniform.dmi',
-		"Vox Armalis" = 'icons/mob/species/armalis/suit.dmi'
+		"Vox" = 'icons/mob/clothing/species/vox/uniform.dmi',
+		"Vox Armalis" = 'icons/mob/clothing/species/armalis/suit.dmi'
 		)
 
 /obj/item/clothing/gloves/color/yellow/vox
@@ -185,8 +191,8 @@
 	icon = 'icons/obj/clothing/species/vox/gloves.dmi'
 	species_restricted = list("Vox","Vox Armalis")
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/gloves.dmi',
-		"Vox Armalis" = 'icons/mob/species/armalis/gloves.dmi',
+		"Vox" = 'icons/mob/clothing/species/vox/gloves.dmi',
+		"Vox Armalis" = 'icons/mob/clothing/species/armalis/gloves.dmi',
 		)
 
 /obj/item/clothing/shoes/magboots/vox
@@ -197,8 +203,8 @@
 	icon = 'icons/obj/clothing/species/vox/shoes.dmi'
 	species_restricted = list("Vox","Vox Armalis")
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/species/vox/feet.dmi',
-		"Vox Armalis" = 'icons/mob/species/armalis/feet.dmi'
+		"Vox" = 'icons/mob/clothing/species/vox/feet.dmi',
+		"Vox Armalis" = 'icons/mob/clothing/species/armalis/feet.dmi'
 		)
 
 /obj/item/clothing/shoes/magboots/vox/attack_self(mob/user)
@@ -224,7 +230,7 @@
 		to_chat(user, "It would be hard to take off the [src] without relaxing your grip first.")
 
 //In case they somehow come off while enabled.
-/obj/item/clothing/shoes/magboots/vox/dropped(mob/user as mob)
+/obj/item/clothing/shoes/magboots/vox/dropped(mob/user, silent = FALSE)
 	..()
 	if(src.magpulse)
 		user.visible_message("The [src] go limp as they are removed from [usr]'s feet.", "The [src] go limp as they are removed from your feet.")
@@ -256,20 +262,3 @@
 	max_combined_w_class = 30
 	slowdown = 1
 
-/obj/item/storage/backpack/alien/mob_can_equip(M as mob, slot)
-	//if we can't equip the item anyway, don't bother with species_restricted (also cuts down on spam)
-	if(!..())
-		return 0
-
-	// Skip species restriction checks on non-equipment slots
-	if(slot in list(slot_r_hand, slot_l_hand, slot_in_backpack, slot_l_store, slot_r_store))
-		return 1
-
-	if(species_restricted && istype(M,/mob/living/carbon/human))
-		var/mob/living/carbon/human/H = M
-
-		if(H.dna.species)
-			if(!(H.dna.species.name in species_restricted))
-				to_chat(M, "<span class='warning'>Your species cannot wear [src].</span>")
-				return 0
-	return 1

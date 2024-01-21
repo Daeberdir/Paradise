@@ -14,6 +14,8 @@
 	strip_delay = 70
 	put_on_delay = 70
 	resistance_flags = FIRE_PROOF
+	pickup_sound = 'sound/items/handling/boots_pickup.ogg'
+	drop_sound = 'sound/items/handling/boots_drop.ogg'
 
 /obj/item/clothing/shoes/magboots/atmos
 	desc = "Magnetic boots, made to withstand gusts of space wind over 500kmph."
@@ -99,18 +101,20 @@
 	magpulse_name = "honk-powered traction system"
 	item_color = "clown"
 	origin_tech = "magnets=4;syndicate=2"
+	pickup_sound = 'sound/items/handling/shoes_pickup.ogg'
+	drop_sound = 'sound/items/handling/shoes_drop.ogg'
 	var/enabled_waddle = TRUE
 
 /obj/item/clothing/shoes/magboots/clown/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/squeak, list('sound/effects/clownstep1.ogg' = 1, 'sound/effects/clownstep2.ogg' = 1), 50, falloff_exponent = 20) //die off quick please
 
-/obj/item/clothing/shoes/magboots/clown/equipped(mob/user, slot)
+/obj/item/clothing/shoes/magboots/clown/equipped(mob/user, slot, initial)
 	. = ..()
 	if(slot == slot_shoes && enabled_waddle)
 		user.AddElement(/datum/element/waddling)
 
-/obj/item/clothing/shoes/magboots/clown/dropped(mob/user)
+/obj/item/clothing/shoes/magboots/clown/dropped(mob/user, silent = FALSE)
 	. = ..()
 	user.RemoveElement(/datum/element/waddling)
 
@@ -220,8 +224,8 @@
 
 	if(!I.use_tool(src, user, volume = I.tool_volume))
 		return
-
-	user.put_in_hands(cell)
+	cell.forceMove_turf()
+	user.put_in_hands(cell, ignore_anim = FALSE)
 	to_chat(user, "<span class='notice'>You remove [cell] from [src].</span>")
 	cell.update_icon()
 	cell = null
@@ -232,9 +236,8 @@
 		if(cell)
 			to_chat(user, "<span class='warning'>[src] already has a cell!</span>")
 			return
-		if(!user.unEquip(I))
+		if(!user.drop_transfer_item_to_loc(I, src))
 			return
-		I.forceMove(src)
 		cell = I
 		to_chat(user, "<span class='notice'>You install [I] into [src].</span>")
 		update_icon()
@@ -244,23 +247,23 @@
 		if(core)
 			to_chat(user, "<span class='notice'>[src] already has a [I]!</span>")
 			return
-		if(!user.drop_item())
+		if(!user.drop_transfer_item_to_loc(I, src))
 			to_chat(user, "<span class='warning'>[I] is stuck to your hand!</span>")
 			return
 		to_chat(user, "<span class='notice'>You insert [I] into [src], and [src] starts to warm up.</span>")
-		I.forceMove(src)
 		core = I
 	else
 		return ..()
 
-/obj/item/clothing/shoes/magboots/gravity/equipped(mob/user, slot)
-	..()
+/obj/item/clothing/shoes/magboots/gravity/equipped(mob/user, slot, initial)
+	. = ..()
+
 	if(!ishuman(user))
 		return
 	if(slot == slot_shoes && cell && core)
 		style.teach(user, TRUE)
 
-/obj/item/clothing/shoes/magboots/gravity/dropped(mob/user)
+/obj/item/clothing/shoes/magboots/gravity/dropped(mob/user, silent = FALSE)
 	..()
 	if(!ishuman(user))
 		return

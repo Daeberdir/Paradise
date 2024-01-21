@@ -12,7 +12,16 @@
 	density = 1
 
 /obj/structure/signpost/attack_hand(mob/user as mob)
+	add_fingerprint(user)
 	to_chat(user, "Civilians: NT is recruiting! Please head SOUTH to the NT Recruitment office to join the station's crew!")
+
+/obj/structure/wooden_sign
+	name = "Wooden sign"
+	desc = "What?"
+	icon = 'icons/obj/stationobjs.dmi'
+	icon_state = "signpost2"
+	anchored = 1
+	density = 0
 
 /obj/structure/respawner
 	name = "\improper Long-Distance Cloning Machine"

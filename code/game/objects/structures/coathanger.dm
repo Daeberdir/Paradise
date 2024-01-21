@@ -20,9 +20,10 @@
 
 /obj/structure/coatrack/attack_hand(mob/living/user)
 	if(coat)
+		add_fingerprint(user)
 		user.visible_message("[user] takes [coat] off \the [src].", "You take [coat] off the \the [src].")
-		if(!user.put_in_active_hand(coat))
-			coat.loc = get_turf(user)
+		coat.forceMove_turf()
+		user.put_in_active_hand(coat, ignore_anim = FALSE)
 		coat = null
 		update_icon()
 
@@ -31,32 +32,48 @@
 	for(var/T in allowed)
 		if(istype(W,T))
 			can_hang = TRUE
-			continue
+			break
 
 	if(can_hang && !coat)
+		add_fingerprint(user)
 		user.visible_message("[user] hangs [W] on \the [src].", "You hang [W] on the \the [src].")
 		coat = W
-		user.drop_item(src)
-		coat.loc = src
+		user.drop_transfer_item_to_loc(W, src)
 		update_icon()
 	else
 		return ..()
 
-/obj/structure/coatrack/CanPass(atom/movable/mover, turf/target, height=0)
+/obj/structure/coatrack/MouseDrop_T(obj/item/W, mob/user)
 	var/can_hang = FALSE
 	for(var/T in allowed)
-		if(istype(mover,T))
+		if(istype(W,T))
 			can_hang = TRUE
-			continue
+			break
 
 	if(can_hang && !coat)
-		visible_message("[mover] lands on \the [src].")
-		coat = mover
-		coat.loc = src
+		add_fingerprint(user)
+		user.visible_message("[user] hangs [W] on \the [src].", "You hang [W] on the \the [src].")
+		coat = W
+		user.drop_transfer_item_to_loc(W, src)
 		update_icon()
-		return 0
 	else
 		return ..()
+
+// Hanging a coat on the hanger only after a bump. Force stoping throwing
+/obj/structure/coatrack/Bumped(atom/movable/moving_atom)
+	..()
+
+	if (coat)
+		return
+
+	for (var/T in allowed)
+		if (!istype(moving_atom, T))
+			continue
+		visible_message("[moving_atom] lands on \the [src].")
+		moving_atom.forceMove(src)
+		coat = moving_atom
+		update_icon()
+		return
 
 /obj/structure/coatrack/update_icon()
 	overlays.Cut()

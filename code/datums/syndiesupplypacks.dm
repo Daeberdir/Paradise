@@ -386,12 +386,12 @@ GLOBAL_LIST_INIT(all_syndie_supply_groups, list(SYNDIE_SUPPLY_EMERGENCY,SYNDIE_S
 
 /datum/syndie_supply_packs/security/armory/a357
 	name = "Syndicate .357 Revolver - Speedloader's"
-	contains = list(/obj/item/ammo_box/a357,
-					/obj/item/ammo_box/a357,
-					/obj/item/ammo_box/a357,
-					/obj/item/ammo_box/a357,
-					/obj/item/ammo_box/a357,
-					/obj/item/ammo_box/a357)
+	contains = list(/obj/item/ammo_box/speedloader/a357,
+					/obj/item/ammo_box/speedloader/a357,
+					/obj/item/ammo_box/speedloader/a357,
+					/obj/item/ammo_box/speedloader/a357,
+					/obj/item/ammo_box/speedloader/a357,
+					/obj/item/ammo_box/speedloader/a357)
 	cost = 1750
 	containername = ".357 Revolver - Speedloader's crate"
 
@@ -433,12 +433,12 @@ GLOBAL_LIST_INIT(all_syndie_supply_groups, list(SYNDIE_SUPPLY_EMERGENCY,SYNDIE_S
 
 /datum/syndie_supply_packs/security/armory/m12g_buckshot_slugs
 	name = "Syndicate Bulldog - 12g Buckshot Magazine Crate"
-	contains = list(/obj/item/ammo_box/magazine/m12g/buckshot,
-					/obj/item/ammo_box/magazine/m12g/buckshot,
-					/obj/item/ammo_box/magazine/m12g/buckshot,
-					/obj/item/ammo_box/magazine/m12g/buckshot,
-					/obj/item/ammo_box/magazine/m12g/buckshot,
-					/obj/item/ammo_box/magazine/m12g/buckshot)
+	contains = list(/obj/item/ammo_box/magazine/m12g,
+					/obj/item/ammo_box/magazine/m12g,
+					/obj/item/ammo_box/magazine/m12g,
+					/obj/item/ammo_box/magazine/m12g,
+					/obj/item/ammo_box/magazine/m12g,
+					/obj/item/ammo_box/magazine/m12g)
 	cost = 1000
 	containername = "Bulldog - 12g Buckshot Magazine crate"
 
@@ -844,8 +844,10 @@ GLOBAL_LIST_INIT(all_syndie_supply_groups, list(SYNDIE_SUPPLY_EMERGENCY,SYNDIE_S
 
 /datum/syndie_supply_packs/medical/virus
 	name = "Virus Crate"
-	contains = list(/obj/item/reagent_containers/glass/bottle/flu_virion,
+	contains = list(/obj/item/reagent_containers/glass/bottle/flu,
 					/obj/item/reagent_containers/glass/bottle/cold,
+					/obj/item/reagent_containers/glass/bottle/sneezing,
+					/obj/item/reagent_containers/glass/bottle/cough,
 					/obj/item/reagent_containers/glass/bottle/epiglottis_virion,
 					/obj/item/reagent_containers/glass/bottle/liver_enhance_virion,
 					/obj/item/reagent_containers/glass/bottle/fake_gbs,
@@ -861,6 +863,15 @@ GLOBAL_LIST_INIT(all_syndie_supply_groups, list(SYNDIE_SUPPLY_EMERGENCY,SYNDIE_S
 	cost = 250
 	containertype = /obj/structure/closet/crate/secure/plasma
 	containername = "virus crate"
+	access = ACCESS_CMO
+
+/datum/syndie_supply_packs/medical/cloning
+	name = "Cloning Kit Crate"
+	contains = list(/obj/item/circuitboard/clonepod,
+					/obj/item/circuitboard/cloning)
+	cost = 9000
+	containertype = /obj/structure/closet/crate/secure
+	containername = "cloning kit crate"
 	access = ACCESS_CMO
 
 /datum/syndie_supply_packs/medical/vending
@@ -2167,8 +2178,8 @@ GLOBAL_LIST_INIT(all_syndie_supply_groups, list(SYNDIE_SUPPLY_EMERGENCY,SYNDIE_S
 /datum/syndie_supply_packs/syndicate_special/payday
 	name = "Syndicate 'PayDay' Bundle"
 	contains = list(/obj/item/gun/projectile/revolver, // 13TC
-					/obj/item/ammo_box/a357, // 3TC
-					/obj/item/ammo_box/a357, // 3TC
+					/obj/item/ammo_box/speedloader/a357, // 3TC
+					/obj/item/ammo_box/speedloader/a357, // 3TC
 					/obj/item/card/emag, // 6TC
 					/obj/item/jammer, // 5TC
 					/obj/item/card/id/syndicate, // 2TC
@@ -2233,8 +2244,8 @@ GLOBAL_LIST_INIT(all_syndie_supply_groups, list(SYNDIE_SUPPLY_EMERGENCY,SYNDIE_S
 /datum/syndie_supply_packs/syndicate_special/professional
 	name = "Syndicate 'Professional' Bundle"
 	contains = list(/obj/item/gun/projectile/automatic/sniper_rifle/syndicate/penetrator, // 16TC
-					/obj/item/ammo_box/magazine/sniper_rounds/penetrator, // 5TC
-					/obj/item/ammo_box/magazine/sniper_rounds/soporific, // 3TC
+					/obj/item/ammo_box/magazine/sniper_rounds/compact/penetrator, // 5TC
+					/obj/item/ammo_box/magazine/sniper_rounds/compact/soporific, // 3TC
 					/obj/item/clothing/glasses/chameleon/thermal, // 6TC
 					/obj/item/clothing/gloves/combat, // 0 TC
 					/obj/item/clothing/under/suit_jacket/really_black, // 0 TC

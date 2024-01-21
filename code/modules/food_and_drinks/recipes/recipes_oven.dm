@@ -19,7 +19,7 @@
 		/obj/item/reagent_containers/food/snacks/cheesewedge,
 		/obj/item/reagent_containers/food/snacks/cheesewedge,
 	)
-	result = /obj/item/reagent_containers/food/snacks/sliceable/meatbread
+	result = /obj/item/reagent_containers/food/snacks/sliceable/bread/meat
 
 /datum/recipe/oven/syntibread
 	items = list(
@@ -33,7 +33,7 @@
 		/obj/item/reagent_containers/food/snacks/cheesewedge,
 		/obj/item/reagent_containers/food/snacks/cheesewedge,
 	)
-	result = /obj/item/reagent_containers/food/snacks/sliceable/meatbread
+	result = /obj/item/reagent_containers/food/snacks/sliceable/bread/meat
 
 /datum/recipe/oven/xenomeatbread
 	items = list(
@@ -47,7 +47,7 @@
 		/obj/item/reagent_containers/food/snacks/cheesewedge,
 		/obj/item/reagent_containers/food/snacks/cheesewedge,
 	)
-	result = /obj/item/reagent_containers/food/snacks/sliceable/xenomeatbread
+	result = /obj/item/reagent_containers/food/snacks/sliceable/bread/xeno
 
 /datum/recipe/oven/bananabread
 	reagents = list("milk" = 5, "sugar" = 15)
@@ -57,7 +57,7 @@
 		/obj/item/reagent_containers/food/snacks/dough,
 		/obj/item/reagent_containers/food/snacks/grown/banana
 	)
-	result = /obj/item/reagent_containers/food/snacks/sliceable/bananabread
+	result = /obj/item/reagent_containers/food/snacks/sliceable/bread/banana
 
 /datum/recipe/oven/muffin
 	reagents = list("milk" = 5, "sugar" = 5)
@@ -154,7 +154,7 @@
 		/obj/item/reagent_containers/food/snacks/cheesewedge,
 		/obj/item/reagent_containers/food/snacks/cheesewedge,
 	)
-	result = /obj/item/reagent_containers/food/snacks/sliceable/tofubread
+	result = /obj/item/reagent_containers/food/snacks/sliceable/bread/tofu
 
 /datum/recipe/oven/loadedbakedpotato
 	items = list(
@@ -673,3 +673,71 @@
 		/obj/item/reagent_containers/food/snacks/sliceable/cheesewheel
 	)
 	result = /obj/item/stack/sheet/cheese
+
+/datum/recipe/oven/bakedvulp
+	reagents = list("sodiumchloride" = 2, "blackpepper" = 2)
+	items = list(
+		/obj/item/reagent_containers/food/snacks/meat,
+		/obj/item/organ/external/head/vulpkanin,
+		/obj/item/reagent_containers/food/snacks/grown/apple
+	)
+	result = /obj/item/reagent_containers/food/snacks/bakedvulp
+
+//////////////////////////////////////////
+//Reinforced gingerbread
+//////////////////////////////////////////
+
+/datum/recipe/oven/reinforcedcheese
+	reagents = list("sodiumchloride" = 10)
+	items = list(
+		/obj/item/reagent_containers/food/snacks/gingercookie,
+		/obj/item/reagent_containers/food/snacks/gingercookie
+	)
+	result = /obj/item/stack/sheet/gingerbread/five
+
+//////////////////////////////////////////
+//Ginger cookies
+//////////////////////////////////////////
+
+/datum/recipe/oven/gingercokie
+	reagents = list("sugar" = 1)
+	items = list(/obj/item/reagent_containers/food/snacks/cookiedough)
+	result = /obj/item/reagent_containers/food/snacks/gingercookie
+
+/datum/recipe/oven/gingercokie/ball
+	reagents = list("sugar" = 2)
+	items = list(/obj/item/reagent_containers/food/snacks/cookiedough)
+	result = /obj/item/reagent_containers/food/snacks/gingercookie/ball
+
+/datum/recipe/oven/gingercokie/cane
+	reagents = list("sugar" = 3)
+	items = list(/obj/item/reagent_containers/food/snacks/cookiedough)
+	result = /obj/item/reagent_containers/food/snacks/gingercookie/cane
+
+/datum/recipe/oven/gingercokie/heart
+	reagents = list("sugar" = 4)
+	items = list(/obj/item/reagent_containers/food/snacks/cookiedough)
+	result = /obj/item/reagent_containers/food/snacks/gingercookie/heart
+
+/datum/recipe/oven/gingercokie/home
+	reagents = list("sugar" = 5)
+	items = list(/obj/item/reagent_containers/food/snacks/cookiedough)
+	result = /obj/item/reagent_containers/food/snacks/gingercookie/home
+
+/datum/recipe/oven/gingercokie/mitten
+	reagents = list("sugar" = 6)
+	items = list(/obj/item/reagent_containers/food/snacks/cookiedough)
+	result = /obj/item/reagent_containers/food/snacks/gingercookie/mitten
+
+/datum/recipe/oven/gingercokie/tree
+	reagents = list("sugar" = 7)
+	items = list(/obj/item/reagent_containers/food/snacks/cookiedough)
+	result = /obj/item/reagent_containers/food/snacks/gingercookie/tree
+
+//////////////////////////////////////////
+//Carbon dulce Feliz Navidad
+//////////////////////////////////////////
+
+/datum/recipe/oven/sugar_coal
+	reagents = list("charcoal" = 5, "sugar" = 5, "egg" = 5)
+	result = /obj/item/reagent_containers/food/snacks/sugar_coal

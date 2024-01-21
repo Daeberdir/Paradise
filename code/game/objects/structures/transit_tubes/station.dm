@@ -34,17 +34,17 @@
 /obj/structure/transit_tube/station/should_stop_pod(pod, from_dir)
 	return TRUE
 
-/obj/structure/transit_tube/station/Bumped(mob/living/L)
-	if(!pod_moving && hatch_state == TRANSIT_TUBE_OPEN && isliving(L) && !is_type_in_list(L, disallowed_mobs))
+/obj/structure/transit_tube/station/Bumped(atom/movable/moving_atom)
+	if(!pod_moving && hatch_state == TRANSIT_TUBE_OPEN && isliving(moving_atom) && !is_type_in_list(moving_atom, disallowed_mobs))
 		var/failed = FALSE
 		for(var/obj/structure/transit_tube_pod/pod in loc)
 			if(pod.contents.len)
 				failed = TRUE
 			else if(!pod.moving && (pod.dir in directions()))
-				pod.move_into(L)
+				pod.move_into(moving_atom)
 				return
 		if(failed)
-			to_chat(L, "<span class='warning'>The pod is already occupied.</span>")
+			to_chat(moving_atom, "<span class='warning'>The pod is already occupied.</span>")
 
 
 
@@ -66,22 +66,26 @@
 		"<span class='notice'>You start emptying [pod]'s contents onto the floor.</span>", "<span class='warning'>You hear a loud noise! As if somebody is throwing stuff on the floor!</span>")
 	if(!do_after(user, 20, target = pod))
 		return
+	add_fingerprint(user)
 	for(var/atom/movable/AM in pod)
+		AM.add_fingerprint(user)
 		pod.eject(AM)
-		if(ismob(AM))
-			var/mob/M = AM
-			M.Weaken(5)
+		if(isliving(AM))
+			var/mob/living/L = AM
+			L.Weaken(10 SECONDS)
 
 
 /obj/structure/transit_tube/station/attackby(obj/item/W, mob/user, params)
+	add_fingerprint(user)
 	if(istype(W, /obj/item/grab) && hatch_state == TRANSIT_TUBE_OPEN)
 		var/obj/item/grab/G = W
 		if(ismob(G.affecting) && G.state >= GRAB_AGGRESSIVE)
-			var/mob/GM = G.affecting
+			var/mob/living/GM = G.affecting
 			for(var/obj/structure/transit_tube_pod/pod in loc)
 				pod.visible_message("<span class='warning'>[user] starts putting [GM] into the [pod]!</span>")
 				if(do_after(user, 30, target = GM) && GM && G && G.affecting == GM)
-					GM.Weaken(5)
+					GM.add_fingerprint(user)
+					GM.Weaken(10 SECONDS)
 					Bumped(GM)
 					qdel(G)
 				break

@@ -23,12 +23,12 @@
 	. = ..()
 	if(!summoner)
 		return
-	if(!(NO_SHOCK in summoner.mutations))
-		summoner.mutations.Add(NO_SHOCK)
+	if(!(HAS_TRAIT(summoner, TRAIT_SHOCKIMMUNE)))
+		ADD_TRAIT(summoner, TRAIT_SHOCKIMMUNE, "guardian")
 
 /mob/living/simple_animal/hostile/guardian/beam/New()
 	..()
-	AddSpell(new /obj/effect/proc_holder/spell/targeted/lightning/guardian)
+	AddSpell(new /obj/effect/proc_holder/spell/charge_up/bounce/lightning/guardian)
 
 /mob/living/simple_animal/hostile/guardian/beam/electrocute_act(shock_damage, obj/source, siemens_coeff = 1, safety = FALSE, override = FALSE, tesla_shock = FALSE, illusion = FALSE, stun = TRUE)
 	return FALSE //You are lightning, you should not be hurt by such things.
@@ -105,6 +105,6 @@
 				. = 1
 
 /mob/living/simple_animal/hostile/guardian/beam/death(gibbed)
-    if(summoner && (NO_SHOCK in summoner.mutations))
-        summoner.mutations.Remove(NO_SHOCK)
+    if(HAS_TRAIT(summoner, TRAIT_SHOCKIMMUNE))
+        REMOVE_TRAIT(summoner, TRAIT_SHOCKIMMUNE, "guardian")
     return ..()

@@ -35,6 +35,7 @@
 		return
 	if(W.GetID())
 		if(check_access(W))
+			add_fingerprint(user)
 			if(active)
 				//This is not the device that made the initial request. It is the device confirming the request.
 				if(event_source)
@@ -192,7 +193,7 @@
 				var/list/excludemodes = list(/datum/game_mode/nuclear, /datum/game_mode/blob)
 				if(SSticker.mode.type in excludemodes)
 					return
-				var/list/excludeevents = list(/datum/event/blob, /datum/event/disease_outbreak)
+				var/list/excludeevents = list(/datum/event/blob)
 				for(var/datum/event/E in SSevents.active_events|SSevents.finished_events)
 					if(E.type in excludeevents)
 						return

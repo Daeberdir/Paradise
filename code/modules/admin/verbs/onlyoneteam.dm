@@ -68,7 +68,7 @@
 	item_state = "basketball"
 	desc = "Used for playing the most violent and degrading of childhood games."
 
-/obj/item/beach_ball/dodgeball/throw_impact(atom/hit_atom)
+/obj/item/beach_ball/dodgeball/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	..()
 	if((ishuman(hit_atom)))
 		var/mob/living/carbon/human/H = hit_atom
@@ -76,7 +76,7 @@
 			return
 		if(H.l_hand == src)
 			return
-		var/mob/A = thrownby
+		var/mob/A = locateUID(thrownby)
 		if((H in GLOB.team_alpha) && (A in GLOB.team_alpha))
 			to_chat(A, "<span class='warning'>He's on your team!</span>")
 			return

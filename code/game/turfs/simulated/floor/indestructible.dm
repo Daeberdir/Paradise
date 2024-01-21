@@ -33,6 +33,15 @@
 /turf/simulated/floor/indestructible/mech_melee_attack(obj/mecha/M)
 	return
 
+/turf/simulated/floor/indestructible/crowbar_act(mob/user, obj/item/I)
+	return
+
+/turf/simulated/floor/indestructible/screwdriver_act(mob/living/user, obj/item/I)
+	return
+
+/turf/simulated/floor/indestructible/welder_act(mob/living/user, obj/item/I)
+	return
+
 /turf/simulated/floor/indestructible/plating
 	name = "plating"
 	icon_state = "plating"
@@ -214,6 +223,9 @@
 	if(!linkedcontroller)
 		return
 	if(ismob(AM))
+		if(isliving(AM))
+			var/mob/living/creature = AM
+			creature.ExtinguishMob()
 		linkedcontroller.mobinpool += AM
 
 /turf/simulated/floor/indestructible/beach/water/Exited(atom/movable/AM, atom/newloc)

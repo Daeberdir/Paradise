@@ -61,30 +61,13 @@
 	sheet_type = /obj/item/stack/sheet/mineral/uranium
 	canSmoothWith = list(/turf/simulated/wall/mineral/uranium, /obj/structure/falsewall/uranium, /turf/simulated/wall/indestructible/uranium)
 
-/turf/simulated/wall/mineral/uranium/proc/radiate()
-	if(!active)
-		if(world.time > last_event+15)
-			active = 1
-			for(var/mob/living/L in range(3,src))
-				L.apply_effect(12,IRRADIATE,0)
-			for(var/turf/simulated/wall/mineral/uranium/T in range(3,src))
-				T.radiate()
-			last_event = world.time
-			active = null
-			return
-	return
-
-/turf/simulated/wall/mineral/uranium/attack_hand(mob/user as mob)
-	radiate()
-	..()
-
-/turf/simulated/wall/mineral/uranium/attackby(obj/item/W as obj, mob/user as mob, params)
-	radiate()
-	..()
-
-/turf/simulated/wall/mineral/uranium/Bumped(AM as mob|obj)
-	radiate()
-	..()
+/turf/simulated/wall/mineral/uranium/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/radioactivity, \
+				rad_per_interaction = 12, \
+				rad_interaction_radius = 3, \
+				rad_interaction_cooldown = 1.5 SECONDS \
+	)
 
 /turf/simulated/wall/mineral/plasma
 	name = "plasma wall"
@@ -106,9 +89,9 @@
 /turf/simulated/wall/mineral/plasma/welder_act(mob/user, obj/item/I)
 	if(I.tool_enabled)
 		ignite(2500) //The number's big enough
-		user.visible_message("<span class='danger'>[user] sets [src] on fire!</span>",\
-							"<span class='danger'>[src] disintegrates into a cloud of plasma!</span>",\
-							"<span class='warning'>You hear a 'whoompf' and a roar.</span>")
+		user.visible_message(span_danger("[user] sets [src] on fire!"),\
+							span_danger("[src] disintegrates into a cloud of plasma!"),\
+							span_italics("You hear a 'whoompf' and a roar."))
 		add_attack_logs(user, src, "Ignited using [I]", ATKLOG_FEW)
 		investigate_log("was <span class='warning'>ignited</span> by [key_name_log(user)]",INVESTIGATE_ATMOS)
 
@@ -187,6 +170,19 @@
 	sheet_type = /obj/item/stack/sheet/mineral/abductor
 	explosion_block = 3
 	canSmoothWith = list(/turf/simulated/wall/mineral/abductor, /obj/structure/falsewall/abductor, /turf/simulated/wall/indestructible/abductor)
+
+/turf/simulated/wall/mineral/abductor/Initialize(mapload)
+	..()
+	AddComponent(/datum/component/wall_regenerate)
+
+/turf/simulated/wall/mineral/gingerbread
+	name = "gingerbread wall"
+	desc = "Don't even try to bite it!"
+	icon = 'icons/turf/walls/gingerbread_wall.dmi'
+	icon_state = "gingerbread"
+	sheet_amount = 5
+	sheet_type = /obj/item/stack/sheet/gingerbread
+	canSmoothWith = list(/turf/simulated/wall/indestructible/gingerbread, /obj/structure/falsewall/gingerbread, /turf/simulated/wall/mineral/gingerbread)
 
 /////////////////////Titanium walls/////////////////////
 

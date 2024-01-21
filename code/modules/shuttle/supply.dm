@@ -211,6 +211,14 @@
 						SSshuttle.discoveredPlants[S.type] = S.potency
 						msg += "<span class='good'>[S.rarity + S.potency]</span>: New species discovered: \"[capitalize(S.species)]\". Excellent work.<br>"
 						SSshuttle.points += S.rarity + S.potency
+				// Sell gems
+				if(istype(thing, /obj/item/gem))
+					var/obj/item/gem/G = thing
+					pointsEarned = round(G.sell_multiplier * SSshuttle.points_per_gem)
+					msg += "<span class='good'>+[pointsEarned]</span>: Received [G]. Excellent work.<br>"
+					SSshuttle.points += pointsEarned
+					qdel(thing, force = TRUE) //ovveride for special gems
+
 		qdel(MA)
 		SSshuttle.sold_atoms += "."
 
@@ -412,14 +420,19 @@
 		playsound(src, pick('sound/machines/button.ogg', 'sound/machines/button_alternate.ogg', 'sound/machines/button_meloboom.ogg'), 20)
 		return 1
 
+	if(..())
+		return TRUE
+
+	add_fingerprint(user)
 	post_signal("supply")
 	ui_interact(user)
 	return
 
-/obj/machinery/computer/supplycomp/emag_act(user as mob)
+/obj/machinery/computer/supplycomp/emag_act(mob/user)
 	if(!hacked)
 		add_attack_logs(user, src, "emagged")
-		to_chat(user, "<span class='notice'>Special supplies unlocked.</span>")
+		if(user)
+			to_chat(user, "<span class='notice'>Special supplies unlocked.</span>")
 		hacked = TRUE
 		return
 
@@ -527,6 +540,14 @@
 				visible_message("<b>[src]</b>'s monitor flashes, \"[world.time - reqtime] seconds remaining until another requisition form may be printed.\"")
 				return
 
+			var/datum/supply_packs/P = locateUID(params["crate"])
+			if(!istype(P))
+				return
+
+			if(P.times_ordered >= P.order_limit && P.order_limit != -1) //If the crate has reached the limit, do not allow it to be ordered.
+				to_chat(usr, "<span class='warning'>[P.name] is out of stock, and can no longer be ordered.</span>")
+				return
+
 			var/amount = 1
 			if(params["multiple"] == "1") // 1 is a string here. DO NOT MAKE THIS A BOOLEAN YOU DORK
 				var/num_input = input(usr, "Amount", "How many crates? (20 Max)") as null|num
@@ -535,16 +556,12 @@
 				amount = clamp(round(num_input), 1, 20)
 
 
-			var/datum/supply_packs/P = locateUID(params["crate"])
-			if(!istype(P))
-				return
-
 			var/timeout = world.time + 600 // If you dont type the reason within a minute, theres bigger problems here
 			var/reason = input(usr, "Reason", "Why do you require this item?","") as null|text
 			if(world.time > timeout || !reason || (!is_public && !is_authorized(usr)) || ..())
 				// Cancel if they take too long, they dont give a reason, they aint authed, or if they walked away
 				return
-			reason = sanitize(copytext_char(reason, 1, MAX_MESSAGE_LEN))
+			reason = sanitize(copytext_char(reason, 1, 100)) //Preventing tgui overflow
 
 			var/idname = "*None Provided*"
 			var/idrank = "*None Provided*"
@@ -580,10 +597,13 @@
 				if(SO.ordernum == ordernum)
 					O = SO
 					P = O.object
-					if(SSshuttle.points >= P.cost)
+					if(P.times_ordered >= P.order_limit && P.order_limit != -1) //If this order would put it over the limit, deny it
+						to_chat(usr, "<span class='warning'>[P.name] is out of stock, and can no longer be ordered.</span>")
+					else if(SSshuttle.points >= P.cost)
 						SSshuttle.requestlist.Cut(i,i+1)
 						SSshuttle.points -= P.cost
 						SSshuttle.shoppinglist += O
+						P.times_ordered += 1
 						investigate_log("[key_name_log(usr)] has authorized an order for [P.name]. Remaining points: [SSshuttle.points].", INVESTIGATE_CARGO)
 					else
 						to_chat(usr, "<span class='warning'>There are insufficient supply points for this request.</span>")
