@@ -328,16 +328,17 @@
 			return TRUE
 
 		target.visible_message(
-			span_danger("[declent_ru(NOMINATIVE)] указыва[pluralize_ru(src.gender,"ет","ют")] [hand_item.declent_ru(INSTRUMENTAL)] на [pointed_object]!"),
-			span_userdanger("[declent_ru(NOMINATIVE)] указыва[pluralize_ru(src.gender,"ет","ют")] [hand_item.declent_ru(INSTRUMENTAL)] на [pluralize_ru(target.gender,"тебя","вас")]!"),
+			span_danger("[declent_ru(NOMINATIVE)] направля[pluralize_ru(src.gender,"ет","ют")] [hand_item.declent_ru(INSTRUMENTAL)] на [pointed_object]!"),
+			span_userdanger("[declent_ru(NOMINATIVE)] направля[pluralize_ru(src.gender,"ет","ют")] [hand_item.declent_ru(INSTRUMENTAL)] на [pluralize_ru(target.gender,"тебя","вас")]!"),
 		)
-		SEND_SOUND(target, sound('sound/weapons/targeton.ogg'))
+		SEND_SOUND(target, 'sound/weapons/targeton.ogg')
+		SEND_SOUND(src, 'sound/weapons/targeton.ogg')
 		add_emote_logs(src, "point [hand_item] HARM to [key_name(target)] [COORD(target)]")
 		return TRUE
 
 	if(istype(hand_item, /obj/item/toy/russian_revolver/trick_revolver) && target != hand_item)
 		var/obj/item/toy/russian_revolver/trick_revolver/trick = hand_item
-		visible_message(span_danger("[declent_ru(NOMINATIVE)] указыва[pluralize_ru(src.gender,"ет","ют")] [trick.declent_ru(INSTRUMENTAL)] на... и [trick.declent_ru(NOMINATIVE)] срабатывает у [genderize_ru(gender, "него","неё","него","них")] в руке!"))
+		visible_message(span_danger("[declent_ru(NOMINATIVE)] направля[pluralize_ru(src.gender,"ет","ют")] [trick.declent_ru(INSTRUMENTAL)] на... и [trick.declent_ru(NOMINATIVE)] срабатывает у [genderize_ru(gender, "него","неё","него","них")] в руках!"))
 		trick.shoot_gun(src)
 		add_emote_logs(src, "point to [key_name(target)] [COORD(target)]")
 		return TRUE
@@ -375,7 +376,7 @@
 	return 1
 
 /mob/living/welder_act(mob/user, obj/item/I)
-	if(!I.tool_use_check(null, 0)) //Don't need the message, just if it succeeded
+	if(!I.tool_use_check(user, 0, silent = TRUE)) //Don't need the message, just if it succeeded
 		return
 	if(IgniteMob())
 		message_admins("[key_name_admin(user)] set [key_name_admin(src)] on fire with [I]")
@@ -1119,7 +1120,7 @@
 	return 0
 
 /mob/living/proc/attempt_harvest(obj/item/I, mob/user)
-	if(user.a_intent == INTENT_HARM && stat == DEAD && butcher_results) //can we butcher it?
+	if(user.a_intent == INTENT_HARM && stat == DEAD && (butcher_results || issmall(src))) //can we butcher it?
 		var/sharpness = is_sharp(I)
 		if(sharpness)
 			to_chat(user, "<span class='notice'>You begin to butcher [src]...</span>")
@@ -1387,16 +1388,18 @@ GLOBAL_LIST_INIT(ventcrawl_machinery, list(/obj/machinery/atmospherics/unary/ven
 
 /mob/living/run_examinate(atom/target)
 	var/datum/status_effect/staring/user_staring_effect = has_status_effect(STATUS_EFFECT_STARING)
+	face_atom(target)
+
 	if(user_staring_effect || hindered_inspection(target))
 		return
 
 	var/examine_time = target.get_examine_time()
-	face_atom(target)
 	if(examine_time && target != src)
 		var/visible_gender = target.get_visible_gender()
 		var/visible_species = "Unknown"
 
 		if(isliving(target))
+			to_chat(src, span_notice("You begin to examine [target]."))
 			var/mob/living/target_living = target
 			visible_species = target_living.get_visible_species()
 
@@ -1415,8 +1418,9 @@ GLOBAL_LIST_INIT(ventcrawl_machinery, list(/obj/machinery/atmospherics/unary/ven
 /mob/living/proc/hindered_inspection(atom/target)
 	if(QDELETED(src) || QDELETED(target))
 		return TRUE
+	if(!(target in view(client.maxview(), client.eye)))
+		return TRUE
 	if(!has_vision(information_only = TRUE))
 		to_chat(src, span_notice("Здесь что-то есть, но вы не видите — что именно."))
 		return TRUE
 	return FALSE
-
