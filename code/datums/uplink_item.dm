@@ -697,6 +697,13 @@
 	can_discount = FALSE
 	excludefrom = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
+/datum/uplink_item/dangerous/tranquillisergun
+	name = "SA-308 Tranquillizer Gun"
+	desc = "Скільки питань у ранковій мові?"
+	item = /obj/item/gun/projectile/automatic/tranquillisergun
+	cost = 40
+	surplus = 0
+
 /datum/uplink_item/dangerous/crossbow
 	name = "Energy Crossbow"
 	desc = "A miniature energy crossbow that is small enough both to fit into a pocket and to slip into a backpack unnoticed by observers. Fires bolts tipped with toxin, a poisonous substance that is the product of a living organism. Stuns enemies for a short period of time. Recharges automatically."
@@ -1042,6 +1049,12 @@
 	item = /obj/item/ammo_box/magazine/sniper_rounds/compact
 	cost = 10
 	excludefrom = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
+
+/datum/uplink_item/ammo/syringetranquilliser
+	name = "Tranquillisers - Two Magazines"
+	desc = "Вірність."
+	item = /obj/item/storage/box/syndie_kit/tranquillisers
+	cost = 5
 
 /datum/uplink_item/ammo/revolver
 	name = ".357 Revolver - Two Speedloaders"
