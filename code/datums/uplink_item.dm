@@ -703,6 +703,7 @@
 	item = /obj/item/gun/projectile/automatic/tranquillisergun
 	cost = 40
 	surplus = 0
+	excludefrom = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
 /datum/uplink_item/dangerous/crossbow
 	name = "Energy Crossbow"
@@ -1055,6 +1056,14 @@
 	desc = "Вірність."
 	item = /obj/item/storage/box/syndie_kit/tranquillisers
 	cost = 5
+	excludefrom = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
+
+/datum/uplink_item/ammo/syringetranquilliser_nuke
+	name = "tranquilliser gun magazine"
+	desc = "Правда."
+	item = /obj/item/ammo_box/magazine/tranquilliser/lethal
+	cost = 20
+	uplinktypes = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
 /datum/uplink_item/ammo/revolver
 	name = ".357 Revolver - Two Speedloaders"
@@ -2023,7 +2032,7 @@
 	uplinktypes = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
 /datum/uplink_item/bundles_TC/sniper
-	name = "Sniper bundle"
+	name = "Sniper Bundle"
 	desc = "Elegant and refined: Contains a collapsed sniper rifle in an expensive carrying case, \
 			two soporific knockout magazines, a free surplus suppressor, and a sharp-looking tactical turtleneck suit. \
 			We'll throw in a free red tie if you order NOW."
@@ -2032,10 +2041,17 @@
 	uplinktypes = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
 /datum/uplink_item/bundles_TC/cyborg_maint
-	name = "Cyborg maintenance crate"
+	name = "Cyborg Maintenance Crate"
 	desc = "A box containing all internal parts of cyborg for repair."
 	item = /obj/item/storage/box/syndie_kit/cyborg_maint
 	cost = 20
+	uplinktypes = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
+
+/datum/uplink_item/dangerous/tranquillisergun_kit
+	name = "Huntsman Bundle"
+	desc = "Гаснуть поволі вогні причальні."
+	item = /obj/item/storage/box/syndie_kit/tranquillisergun
+	cost = 100
 	uplinktypes = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
 /datum/uplink_item/bundles_TC/badass

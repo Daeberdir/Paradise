@@ -211,6 +211,10 @@
 /obj/item/ammo_box/magazine/internal/shot/toy/tommygun
  	max_ammo = 10
 
+
+/obj/item/ammo_box/magazine/internal/tranquilisergun
+
+
 ///////////EXTERNAL MAGAZINES////////////////
 /obj/item/ammo_box/magazine
 	materials = list(MAT_METAL = 2000)
@@ -663,3 +667,9 @@
 	name = "C.A.T.S. magazine (12g)-UL"
 	desc = "Похоже, этот расширенный магазин может принять в себя любые патроны 12-о калибра."
 	max_ammo = 14
+
+
+/obj/item/ammo_box/magazine/tranquilliser
+
+
+/obj/item/ammo_box/magazine/tranquilliser/lethal

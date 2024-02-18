@@ -490,3 +490,7 @@
 	mag_type = /obj/item/ammo_box/magazine/m52mag
 	can_suppress = 0
 
+
+// Tranquillizer Gun SA-308
+
+/obj/item/gun/projectile/automatic/tranquillisergun
