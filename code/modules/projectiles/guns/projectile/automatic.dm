@@ -493,4 +493,6 @@
 
 // Tranquillizer Gun SA-308
 
-/obj/item/gun/projectile/automatic/tranquillisergun
+/obj/item/gun/projectile/automatic/tranquilizergun
+
+/obj/item/gun/projectile/automatic/tranquilizergun/nuke

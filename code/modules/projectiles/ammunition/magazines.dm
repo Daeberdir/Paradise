@@ -212,7 +212,7 @@
  	max_ammo = 10
 
 
-/obj/item/ammo_box/magazine/internal/tranquilisergun
+/obj/item/ammo_box/magazine/internal/tranquilizergun
 
 
 ///////////EXTERNAL MAGAZINES////////////////
@@ -669,7 +669,7 @@
 	max_ammo = 14
 
 
-/obj/item/ammo_box/magazine/tranquilliser
+/obj/item/ammo_box/magazine/tranquilizer
 
 
-/obj/item/ammo_box/magazine/tranquilliser/lethal
+/obj/item/ammo_box/magazine/tranquilizer/lethal
