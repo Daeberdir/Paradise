@@ -475,12 +475,12 @@ To apply, hold the injector a short distance away from the outer thigh before ap
 	new /obj/item/ammo_box/speedloader/a357(src)
 	new /obj/item/ammo_box/speedloader/a357(src)
 
-/obj/item/storage/box/syndie_kit/tranquilizers
-	name = "additional tranquilizers ammunition kit"
+/obj/item/storage/box/syndie_kit/tranquillisers
+	name = "additional tranquillisers ammunition kit"
 
-/obj/item/storage/box/syndie_kit/tranquilizers/populate_contents()
-	new /obj/item/ammo_box/magazine/tranquilizer(src)
-	new /obj/item/ammo_box/magazine/tranquilizer(src)
+/obj/item/storage/box/syndie_kit/tranquillisers/populate_contents()
+	new /obj/item/ammo_box/magazine/tranquilliser(src)
+	new /obj/item/ammo_box/magazine/tranquilliser(src)
 
 /obj/item/storage/box/syndie_kit/dangertray
 	name = "Danger Tray pack"

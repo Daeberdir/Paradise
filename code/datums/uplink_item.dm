@@ -697,10 +697,10 @@
 	can_discount = FALSE
 	excludefrom = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
-/datum/uplink_item/dangerous/tranquilizergun
-	name = "SA-308 Tranquilizer Gun"
+/datum/uplink_item/dangerous/tranquillisergun
+	name = "SA-308 Tranquillizer Gun"
 	desc = "Скільки питань у ранковій мові?"
-	item = /obj/item/gun/projectile/automatic/tranquilizergun
+	item = /obj/item/gun/projectile/automatic/tranquillisergun
 	cost = 40
 	surplus = 0
 	excludefrom = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
@@ -1051,17 +1051,17 @@
 	cost = 10
 	excludefrom = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
-/datum/uplink_item/ammo/syringetranquilizer
-	name = "Tranquilizers - Two Magazines"
+/datum/uplink_item/ammo/syringetranquilliser
+	name = "Tranquillisers - Two Magazines"
 	desc = "Вірність."
-	item = /obj/item/storage/box/syndie_kit/tranquilizers
+	item = /obj/item/storage/box/syndie_kit/tranquillisers
 	cost = 5
 	excludefrom = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
-/datum/uplink_item/ammo/syringetranquilizer_nuke
-	name = "tranquilizer gun magazine"
+/datum/uplink_item/ammo/syringetranquilliser_nuke
+	name = "tranquilliser gun magazine"
 	desc = "Правда."
-	item = /obj/item/ammo_box/magazine/tranquilizer/lethal
+	item = /obj/item/ammo_box/magazine/tranquilliser/lethal
 	cost = 20
 	uplinktypes = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
@@ -2047,10 +2047,10 @@
 	cost = 20
 	uplinktypes = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
-/datum/uplink_item/dangerous/tranquilizergun_kit
+/datum/uplink_item/dangerous/tranquillisergun_kit
 	name = "Huntsman Bundle"
 	desc = "Гаснуть поволі вогні причальні."
-	item = /obj/item/storage/backpack/duffel/syndie/huntsmanbundle
+	item = /obj/item/storage/box/syndie_kit/tranquillisergun
 	cost = 100
 	uplinktypes = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
