@@ -495,5 +495,23 @@
 // Tranquillizer Gun SA-308
 
 /obj/item/gun/projectile/automatic/tranquilizergun
+	name = "SA-308 Pneumatic Rifle"
+	desc = "Щедрість - вона не лише в любові, але й прощанні."
+	icon_state = "M52"
+	item_state = "arg"
+	fire_sound = 'sound/weapons/gunshots/aussec.ogg'
+	mag_type = /obj/item/ammo_box/magazine/tranquilizer
+	weapon_weight = WEAPON_HEAVY
+	slot_flags = SLOT_BACK
+	can_unsuppress = FALSE
+	suppressed = TRUE
+	zoomable = TRUE
+	fire_delay = 40
+	burst_size = 1
+	zoom_amt = 7
+	actions_types = null
+
+
 
 /obj/item/gun/projectile/automatic/tranquilizergun/nuke
+	mag_type = /obj/item/ammo_box/magazine/tranquilizer/lethal
