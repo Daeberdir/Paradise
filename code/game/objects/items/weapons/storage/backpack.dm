@@ -553,7 +553,7 @@
 /obj/item/storage/backpack/duffel/syndie/huntsmanbundle
 	desc = "A large duffel bag containing a tranquilizer gun with deadly toxin, and an addictional magazine."
 
-/obj/item/storage/backpack/duffel/syndie/bulldogbundle/populate_contents()
+/obj/item/storage/backpack/duffel/syndie/huntsmanbundle/populate_contents()
 	new /obj/item/gun/projectile/automatic/tranquilizergun/nuke(src)
 	new /obj/item/ammo_box/magazine/tranquilizer/lethal(src)
 
