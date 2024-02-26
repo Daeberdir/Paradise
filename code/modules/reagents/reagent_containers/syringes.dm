@@ -16,7 +16,7 @@
 	pass_open_check = TRUE
 	var/busy = FALSE
 	var/mode = SYRINGE_DRAW
-	var/projectile_type = /obj/item/projectile/bullet/dart/syringe
+	var/ammo_casing = /obj/item/projectile/bullet/dart/syringe
 	materials = list(MAT_METAL=10, MAT_GLASS=20)
 	container_type = TRANSPARENT
 
@@ -24,6 +24,7 @@
 	if(list_reagents) //syringe starts in inject mode if its already got something inside
 		mode = SYRINGE_INJECT
 	. = ..()
+	ammo_casing = new ammo_casing(src)
 
 /obj/item/reagent_containers/syringe/set_APTFT()
 	set hidden = TRUE
@@ -148,6 +149,12 @@
 				mode = SYRINGE_DRAW
 				update_icon()
 
+
+/obj/item/reagent_containers/syringe/proc/convert_to_ammo(mob/living/user)
+	if(user)
+		if(user.drop_transfer_item_to_loc(src, ammo_casing))
+			user.put_in_hands(ammo_casing)
+			ammo_casing.
 
 /obj/item/reagent_containers/syringe/update_icon_state()
 	var/rounded_vol

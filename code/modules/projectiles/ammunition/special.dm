@@ -49,14 +49,15 @@
 /obj/item/ammo_casing/magic/forcebolt
 	projectile_type = /obj/item/projectile/forcebolt
 
-/obj/item/ammo_casing/syringegun
-	name = "syringe gun spring"
-	desc = "A high-power spring that throws syringes."
-	projectile_type = null
-	muzzle_flash_effect = null
-
 /obj/item/ammo_casing/energy/c3dbullet
 	projectile_type = /obj/item/projectile/bullet/midbullet3
 	select_name = "spraydown"
 	fire_sound = 'sound/weapons/gunshots/1mg2.ogg'
 	e_cost = 20
+
+
+/obj/item/ammo_casing/syringegun
+	name = "syringe gun spring"
+	desc = "A high-power spring that throws syringes."
+	projectile_type = /obj/item/projectile/bullet/dart/syringe
+	muzzle_flash_effect = null

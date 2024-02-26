@@ -691,6 +691,12 @@
 
 
 /obj/item/ammo_box/magazine/tranquilizer
+	name = "tranquilizer magazine"
+	desc = "Щирість."
+	ammo_type = /obj/item/ammo_casing/syringe/dart
+	caliber = "syringe"
+	max_ammo = 7
 
 
 /obj/item/ammo_box/magazine/tranquilizer/lethal
+	ammo_type = /obj/item/ammo_casing/syringe/dart/lethal

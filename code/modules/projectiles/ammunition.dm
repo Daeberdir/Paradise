@@ -214,10 +214,17 @@
 			if(!multiload || !did_load)
 				break
 		AM.update_mat_value()
-	if(istype(A, /obj/item/ammo_casing))
+	else if(istype(A, /obj/item/ammo_casing))
 		var/obj/item/ammo_casing/AC = A
 		if(give_round(AC, replace_spent))
 			user.drop_transfer_item_to_loc(AC, src)
+			num_loaded++
+	else if(istype(A, /obj/item/reagent_containers/syringe))
+		var/obj/item/reagent_containers/syringe/dart = A
+		if(give_round(dart.ammo_casing))
+			dart.convert_to_ammo(user)
+			user.drop_transfer_item_to_loc(dart, dart.ammo_casing)
+			dart.ammo_casing.syringe = dart
 			num_loaded++
 	if(num_loaded)
 		if(!silent)
