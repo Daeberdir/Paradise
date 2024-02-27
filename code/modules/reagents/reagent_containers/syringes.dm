@@ -16,15 +16,20 @@
 	pass_open_check = TRUE
 	var/busy = FALSE
 	var/mode = SYRINGE_DRAW
-	var/ammo_casing = /obj/item/projectile/bullet/dart/syringe
+	var/ammo_casing = /obj/item/ammo_casing/syringe
 	materials = list(MAT_METAL=10, MAT_GLASS=20)
 	container_type = TRANSPARENT
 
-/obj/item/reagent_containers/syringe/Initialize(mapload)
-	if(list_reagents) //syringe starts in inject mode if its already got something inside
+
+/obj/item/reagent_containers/syringe/Initialize(mapload, ammo_casing)
+	if(list_reagents && mode != SYRINGE_BROKEN) //syringe starts in inject mode if its already got something inside
 		mode = SYRINGE_INJECT
 	. = ..()
-	ammo_casing = new ammo_casing(src)
+	if(!ammo_casing)
+		src.ammo_casing = new src.ammo_casing(src, src)
+	else
+		src.ammo_casing = ammo_casing
+
 
 /obj/item/reagent_containers/syringe/set_APTFT()
 	set hidden = TRUE
@@ -152,9 +157,9 @@
 
 /obj/item/reagent_containers/syringe/proc/convert_to_ammo(mob/living/user)
 	if(user)
-		if(user.drop_transfer_item_to_loc(src, ammo_casing))
-			user.put_in_hands(ammo_casing)
-			ammo_casing.
+		var/obj/item/ammo_casing/ammo = ammo_casing
+		user.drop_transfer_item_to_loc(src, ammo)
+		reagents.trans_to(ammo.BB, reagents.total_volume)
 
 /obj/item/reagent_containers/syringe/update_icon_state()
 	var/rounded_vol
@@ -248,3 +253,16 @@
 	amount_per_transfer_from_this = 50
 	volume = 50
 	list_reagents = list("toxin" = 15, "pancuronium" = 10, "cyanide" = 5, "facid" = 10, "fluorine" = 10)
+
+
+/obj/item/reagent_containers/syringe/tranquilizergun
+	container_type = REFILLABLE
+	mode = SYRINGE_BROKEN
+	ammo_casing = /obj/item/ammo_casing/syringe/piercing
+	volume = 25
+	list_reagents = list("capulettium" = 18, "perfluorodecalin" = 7)
+
+
+/obj/item/reagent_containers/syringe/tranquilizergun/lethal
+	ammo_casing = /obj/item/ammo_casing/syringe/piercing/lethal
+	list_reagents = list("beer2" = 15, "gibbis" = 5, "spidereggs" = 5)

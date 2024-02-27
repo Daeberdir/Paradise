@@ -224,7 +224,6 @@
 		if(give_round(dart.ammo_casing))
 			dart.convert_to_ammo(user)
 			user.drop_transfer_item_to_loc(dart, dart.ammo_casing)
-			dart.ammo_casing.syringe = dart
 			num_loaded++
 	if(num_loaded)
 		if(!silent)

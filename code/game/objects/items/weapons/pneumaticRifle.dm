@@ -24,7 +24,7 @@
 
 /obj/item/gun/pneumatic_rifle/Initialize(mapload)
 	. = ..()
-	chambered = new /obj/item/ammo_casing/syringegun(src)
+	chambered = new /obj/item/ammo_casing/syringe(src)
 
 /obj/item/gun/pneumatic_rifle/Destroy()
 	QDEL_NULL(tank)
@@ -125,7 +125,7 @@
 	if(!S)
 		return
 
-	chambered.BB = new S.projectile_type(src)
+	chambered.BB = new S.ammo_casing(src)
 	S.reagents.trans_to(chambered.BB, S.reagents.total_volume)
 	chambered.BB.name = S.name
 

@@ -693,10 +693,16 @@
 /obj/item/ammo_box/magazine/tranquilizer
 	name = "tranquilizer magazine"
 	desc = "Щирість."
-	ammo_type = /obj/item/ammo_casing/syringe/dart
-	caliber = "syringe"
-	max_ammo = 7
+	ammo_type = /obj/item/ammo_casing/syringe/piercing
+	caliber = list("syringe", "dart")
+	max_ammo = 8
+
+
+/obj/item/ammo_box/magazine/tranquilizer/ammo_suitability(obj/item/ammo_casing/bullet)
+	if(!bullet || !(bullet.caliber in caliber))
+		return FALSE
+	return TRUE
 
 
 /obj/item/ammo_box/magazine/tranquilizer/lethal
-	ammo_type = /obj/item/ammo_casing/syringe/dart/lethal
+	ammo_type = /obj/item/ammo_casing/syringe/piercing/lethal

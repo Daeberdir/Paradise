@@ -56,8 +56,29 @@
 	e_cost = 20
 
 
-/obj/item/ammo_casing/syringegun
+/obj/item/ammo_casing/syringe
 	name = "syringe gun spring"
 	desc = "A high-power spring that throws syringes."
+	caliber = "syringe"
 	projectile_type = /obj/item/projectile/bullet/dart/syringe
 	muzzle_flash_effect = null
+
+
+/obj/item/ammo_casing/syringe/New(loc, syringe)
+	..()
+	var/obj/item/projectile/bullet/dart/syringe/bb = BB
+	if(!syringe)
+		var/obj/item/reagent_containers/syringe/new_syringe = new bb.syringe(src, src)
+		bb.syringe = new_syringe
+		new_syringe.reagents.trans_to(bb, new_syringe.reagents.total_volume)
+	else
+		bb.syringe = syringe
+
+
+/obj/item/ammo_casing/syringe/piercing
+	caliber = "dart"
+	projectile_type = /obj/item/projectile/bullet/dart/syringe/piercing
+
+
+/obj/item/ammo_casing/syringe/piercing/lethal
+	projectile_type = /obj/item/projectile/bullet/dart/syringe/piercing/lethal

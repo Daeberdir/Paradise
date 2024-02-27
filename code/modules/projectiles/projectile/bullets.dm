@@ -337,17 +337,35 @@
 	reagents.add_reagent("fluorosurfactant", 5)
 	reagents.add_reagent("sacid", 5)
 
-//This one is for future syringe guns update
-/obj/item/projectile/bullet/dart/syringe
+
+/obj/item/projectile/bullet/dart/tranquilizer
 	name = "syringe"
 	icon = 'icons/obj/chemical.dmi'
 	icon_state = "syringeproj"
 
-/obj/item/projectile/bullet/dart/syringe/tranquilizer
 
-/obj/item/projectile/bullet/dart/syringe/tranquilizer/New()
+/obj/item/projectile/bullet/dart/tranquilizer/New()
 	..()
 	reagents.add_reagent("haloperidol", 15)
+
+
+/obj/item/projectile/bullet/dart/syringe
+	name = "syringe"
+	icon = 'icons/obj/chemical.dmi'
+	icon_state = "syringeproj"
+	var/obj/item/reagent_containers/syringe/syringe
+
+
+/obj/item/projectile/bullet/dart/syringe/piercing
+	damage = 10
+	armour_penetration = 5
+	piercing = TRUE
+	syringe = /obj/item/reagent_containers/syringe/tranquilizergun
+
+
+/obj/item/projectile/bullet/dart/syringe/piercing/lethal
+	syringe = /obj/item/reagent_containers/syringe/tranquilizergun/lethal
+
 
 /obj/item/projectile/bullet/neurotoxin
 	name = "neurotoxin spit"

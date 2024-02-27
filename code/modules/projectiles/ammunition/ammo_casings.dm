@@ -378,7 +378,7 @@
 	desc = "A tranquilizer round used to subdue individuals utilizing stimulants."
 	icon_state = "tranquilizershell"
 	materials = list(MAT_METAL = 500, MAT_GLASS = 200)
-	projectile_type = /obj/item/projectile/bullet/dart/syringe/tranquilizer
+	projectile_type = /obj/item/projectile/bullet/dart/tranquilizer
 	muzzle_flash_strength = MUZZLE_FLASH_STRENGTH_NORMAL
 	muzzle_flash_range = MUZZLE_FLASH_RANGE_NORMAL
 
