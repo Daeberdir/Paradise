@@ -117,7 +117,7 @@
 		user.visible_message("<span class='danger'>[user.name] opens [src] up and the shells go goes flying around!</span>", "<span class='userdanger'>You open [src] up and the shells go goes flying everywhere!!</span>")
 		while(get_ammo(FALSE) > 0)
 			var/obj/item/ammo_casing/CB
-			CB = magazine.get_round(0)
+			CB = magazine.pull_round()
 			if(CB)
 				CB.loc = get_turf(loc)
 				CB.update_icon()
@@ -160,7 +160,7 @@
 		user.visible_message("<span class='danger'>[user.name] opens [src] up and the shells go goes flying around!</span>", "<span class='userdanger'>You open [src] up and the shells go goes flying everywhere!!</span>")
 		while(get_ammo() > 0)
 			var/obj/item/ammo_casing/CB
-			CB = magazine.get_round(0)
+			CB = magazine.pull_round()
 			if(CB)
 				CB.loc = get_turf(loc)
 				CB.update_icon()

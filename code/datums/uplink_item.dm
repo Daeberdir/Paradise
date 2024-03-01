@@ -1052,14 +1052,14 @@
 	excludefrom = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
 /datum/uplink_item/ammo/syringetranquilizer
-	name = "Tranquilizers - Two Magazines"
+	name = "Tranquilizer Gun - Two Magazines"
 	desc = "Вірність."
 	item = /obj/item/storage/box/syndie_kit/tranquilizers
 	cost = 5
 	excludefrom = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
 /datum/uplink_item/ammo/syringetranquilizer_nuke
-	name = "tranquilizer gun magazine"
+	name = "Tranquilizer Gun - Lethal Toxins"
 	desc = "Правда."
 	item = /obj/item/ammo_box/magazine/tranquilizer/lethal
 	cost = 20
@@ -2047,7 +2047,7 @@
 	cost = 20
 	uplinktypes = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 
-/datum/uplink_item/dangerous/tranquilizergun_kit
+/datum/uplink_item/bundles_TC/tranquilizergun_kit
 	name = "Huntsman Bundle"
 	desc = "Гаснуть поволі вогні причальні."
 	item = /obj/item/storage/backpack/duffel/syndie/huntsmanbundle

@@ -44,7 +44,7 @@
 	chambered = null
 	while(get_ammo(FALSE) > 0)
 		var/obj/item/ammo_casing/CB
-		CB = magazine.get_round(FALSE)
+		CB = magazine.pull_round()
 		if(CB)
 			CB.loc = get_turf(loc)
 			CB.SpinAnimation(10, 1)
@@ -462,7 +462,7 @@
 	var/num_unloaded = 0
 	while(get_ammo(FALSE) > 0)
 		var/obj/item/ammo_casing/CB
-		CB = magazine.get_round(0)
+		CB = magazine.pull_round()
 		chambered = null
 		CB.loc = get_turf(loc)
 		CB.SpinAnimation(10, 1)

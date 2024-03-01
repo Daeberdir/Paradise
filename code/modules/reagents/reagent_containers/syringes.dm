@@ -46,8 +46,9 @@
 	update_icon()
 
 /obj/item/reagent_containers/syringe/attack_self(mob/user)
-	mode = !mode
-	update_icon()
+	if(mode != SYRINGE_BROKEN)
+		mode = !mode
+		update_icon()
 
 /obj/item/reagent_containers/syringe/attack_hand()
 	..()
@@ -158,8 +159,9 @@
 /obj/item/reagent_containers/syringe/proc/convert_to_ammo(mob/living/user)
 	if(user)
 		var/obj/item/ammo_casing/ammo = ammo_casing
-		user.drop_transfer_item_to_loc(src, ammo)
+		user.drop_transfer_item_to_loc(src, ammo.BB)
 		reagents.trans_to(ammo.BB, reagents.total_volume)
+
 
 /obj/item/reagent_containers/syringe/update_icon_state()
 	var/rounded_vol

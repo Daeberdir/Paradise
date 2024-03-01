@@ -68,11 +68,18 @@
 	..()
 	var/obj/item/projectile/bullet/dart/syringe/bb = BB
 	if(!syringe)
-		var/obj/item/reagent_containers/syringe/new_syringe = new bb.syringe(src, src)
+		var/obj/item/reagent_containers/syringe/new_syringe = new bb.syringe(bb, src)
 		bb.syringe = new_syringe
 		new_syringe.reagents.trans_to(bb, new_syringe.reagents.total_volume)
 	else
 		bb.syringe = syringe
+
+
+/obj/item/ammo_casing/syringe/deconvert_from_ammo()
+	var/obj/item/projectile/bullet/dart/syringe/bb = BB
+	forceMove(bb.syringe)
+	bb.reagents.trans_to(bb.syringe, bb.reagents.total_volume)
+	return bb.syringe
 
 
 /obj/item/ammo_casing/syringe/piercing

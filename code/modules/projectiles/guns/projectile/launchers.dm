@@ -124,7 +124,7 @@
 	var/num_unloaded = 0
 	var/obj/item/ammo_casing/CB
 	while(get_ammo() > 0)
-		CB = magazine.get_round(0)
+		CB = magazine.pull_round()
 		chambered = null
 		CB.loc = get_turf(loc)
 		user.put_in_hands(CB)

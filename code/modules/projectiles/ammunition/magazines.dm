@@ -21,7 +21,7 @@
 			boolets++
 	return boolets
 
-/obj/item/ammo_box/magazine/internal/cylinder/get_round(keep = 0)
+/obj/item/ammo_box/magazine/internal/cylinder/get_round(keep = FALSE)
 	rotate()
 
 	var/b = stored_ammo[1]

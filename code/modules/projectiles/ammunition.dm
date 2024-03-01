@@ -55,6 +55,11 @@
 		BB = new projectile_type(src, params)
 	return
 
+
+/obj/item/ammo_casing/proc/deconvert_from_ammo()
+	return src
+
+
 /obj/item/ammo_casing/decompile_act(obj/item/matter_decompiler/C, mob/user)
 	if(!BB)
 		qdel(src)
@@ -166,6 +171,13 @@
 		update_icon()
 		return b
 
+
+/obj/item/ammo_box/proc/pull_round()
+	var/obj/item/ammo_casing/ammo = get_round()
+	if(ammo)
+		return ammo.deconvert_from_ammo()
+
+
 /obj/item/ammo_box/proc/give_round(obj/item/ammo_casing/R, replace_spent = FALSE)
 	if(!ammo_suitability(R))
 		return FALSE
@@ -235,10 +247,10 @@
 	return num_loaded
 
 /obj/item/ammo_box/attack_self(mob/user)
-	var/obj/item/ammo_casing/A = get_round()
+	var/A = pull_round()
 	if(A)
 		user.put_in_hands(A)
-		playsound(src, remove_sound, 50, 1)
+		playsound(src, remove_sound, 50, TRUE)
 		to_chat(user, span_notice("You remove a round from \the [src]!"))
 		update_appearance(UPDATE_ICON|UPDATE_DESC)
 
