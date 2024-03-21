@@ -230,7 +230,7 @@
 	max_ammo = 5
 
 /obj/item/ammo_box/magazine/internal/shot/toy/tommygun
- 	max_ammo = 10
+	max_ammo = 10
 
 
 /obj/item/ammo_box/magazine/internal/tranquilizergun

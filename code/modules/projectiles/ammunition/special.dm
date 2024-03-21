@@ -68,9 +68,9 @@
 	..()
 	var/obj/item/projectile/bullet/dart/syringe/bb = BB
 	if(!syringe)
-		var/obj/item/reagent_containers/syringe/new_syringe = new bb.syringe(bb, src)
-		bb.syringe = new_syringe
-		new_syringe.reagents.trans_to(bb, new_syringe.reagents.total_volume)
+		var/obj/item/reagent_containers/syringe/new_syringe = new bb.syringe(bb)
+		new_syringe.ammo_casing = src
+		new_syringe.convert_to_ammo()
 	else
 		bb.syringe = syringe
 

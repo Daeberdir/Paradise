@@ -22,13 +22,9 @@
 
 
 /obj/item/reagent_containers/syringe/Initialize(mapload, ammo_casing)
-	if(list_reagents && mode != SYRINGE_BROKEN) //syringe starts in inject mode if its already got something inside
+	if(list_reagents && mode != SYRINGE_BROKEN) // Syringe starts in inject mode if its already got something inside.
 		mode = SYRINGE_INJECT
 	. = ..()
-	if(!ammo_casing)
-		src.ammo_casing = new src.ammo_casing(src, src)
-	else
-		src.ammo_casing = ammo_casing
 
 
 /obj/item/reagent_containers/syringe/set_APTFT()
@@ -157,10 +153,17 @@
 
 
 /obj/item/reagent_containers/syringe/proc/convert_to_ammo(mob/living/user)
+	if(ispath(ammo_casing) || QDELETED(ammo_casing))
+		ammo_casing = new initial(ammo_casing(src, src))
+
+	var/obj/item/ammo_casing/syringe/ammo = ammo_casing
+
 	if(user)
-		var/obj/item/ammo_casing/ammo = ammo_casing
 		user.drop_transfer_item_to_loc(src, ammo.BB)
-		reagents.trans_to(ammo.BB, reagents.total_volume)
+	else
+		forceMove(ammo.BB)
+
+	reagents.trans_to(ammo.BB, reagents.total_volume)
 
 
 /obj/item/reagent_containers/syringe/update_icon_state()
