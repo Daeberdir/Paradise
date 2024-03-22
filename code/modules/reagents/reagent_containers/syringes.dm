@@ -270,6 +270,10 @@
 	list_reagents = list("capulettium" = 18, "perfluorodecalin" = 7)
 
 
+/obj/item/reagent_containers/syringe/tranquilizergun/update_icon_state()
+	return
+
+
 /obj/item/reagent_containers/syringe/tranquilizergun/lethal
 	ammo_casing = /obj/item/ammo_casing/syringe/piercing/lethal
 	list_reagents = list("beer2" = 15, "gibbis" = 5, "spidereggs" = 5)
