@@ -357,6 +357,8 @@
 
 
 /obj/item/projectile/bullet/dart/syringe/piercing
+	name = "dart"
+	icon_state = "dartproj"
 	damage = 10
 	armour_penetration = 5
 	piercing = TRUE

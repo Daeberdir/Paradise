@@ -261,6 +261,8 @@
 
 
 /obj/item/reagent_containers/syringe/tranquilizergun
+	name = "reinforced dart"
+	icon_state = "r_dart"
 	container_type = REFILLABLE
 	mode = SYRINGE_BROKEN
 	ammo_casing = /obj/item/ammo_casing/syringe/piercing

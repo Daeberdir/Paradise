@@ -497,9 +497,9 @@
 /obj/item/gun/projectile/automatic/tranquilizergun
 	name = "SA-308 Pneumatic Rifle"
 	desc = "Щедрість - вона не лише в любові, але й прощанні."
-	icon_state = "M52"
-	item_state = "arg"
-	fire_sound = 'sound/weapons/gunshots/aussec.ogg'
+	icon_state = "sa-308"
+	item_state = "sa-308"
+	fire_sound = 'sound/items/syringeproj.ogg'
 	mag_type = /obj/item/ammo_box/magazine/tranquilizer
 	weapon_weight = WEAPON_HEAVY
 	slot_flags = SLOT_BACK

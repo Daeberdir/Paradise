@@ -158,7 +158,7 @@
 	..()
 
 /obj/item/gun/projectile/attack_self(mob/living/user)
-	var/AC = chambered.deconvert_from_ammo() //Find chambered round
+	var/atom/AC = chambered.deconvert_from_ammo() //Find chambered round
 	if(magazine)
 		magazine.loc = get_turf(loc)
 		user.put_in_hands(magazine)
