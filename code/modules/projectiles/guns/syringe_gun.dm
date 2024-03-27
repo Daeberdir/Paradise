@@ -1,24 +1,22 @@
-/obj/item/gun/syringe
+/obj/item/gun/projectile/revolver/syringe
 	name = "syringe gun"
 	desc = "A spring loaded rifle designed to fit syringes, used to incapacitate unruly patients from a distance."
 	icon_state = "syringegun"
 	item_state = "syringegun"
-	w_class = WEIGHT_CLASS_NORMAL
 	origin_tech = "combat=2;biotech=3"
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/syringe
 	throw_speed = 3
 	throw_range = 7
 	force = 4
 	materials = list(MAT_METAL=2000)
 	clumsy_check = 0
 	fire_sound = 'sound/items/syringeproj.ogg'
-	var/list/syringes = list()
-	var/max_syringes = 1
-
-/obj/item/gun/syringe/Initialize()
+/*
+/obj/item/gun/projectile/revolver/syringe/Initialize()
 	. = ..()
-	chambered = new /obj/item/ammo_casing/syringe(src)
+	chambered = new /obj/item/ammo_casing/caseless/syringe(src)
 
-/obj/item/gun/syringe/process_chamber()
+/obj/item/gun/projectile/revolver/syringe/process_chamber()
 	if(!length(syringes) || chambered.BB)
 		return
 
@@ -33,19 +31,19 @@
 	syringes.Remove(S)
 	qdel(S)
 
-/obj/item/gun/syringe/afterattack(atom/target, mob/living/user, flag, params)
+/obj/item/gun/projectile/revolver/syringe/afterattack(atom/target, mob/living/user, flag, params)
 	if(target == loc)
 		return
 	..()
 
-/obj/item/gun/syringe/examine(mob/user)
+/obj/item/gun/projectile/revolver/syringe/examine(mob/user)
 	. = ..()
-	var/num_syringes = syringes.len + (chambered.BB ? 1 : 0)
-	. += "<span class='notice'>Can hold [max_syringes] syringe\s. Has [num_syringes] syringe\s remaining.</span>"
+	var/num_syringes = chambered.BB
+	. += span_notice("Can hold [max_syringes] syringe\s. Has [num_syringes] syringe\s remaining.")
 
-/obj/item/gun/syringe/attack_self(mob/living/user)
+/obj/item/gun/projectile/revolver/syringe/attack_self(mob/living/user)
 	if(!length(syringes) && !chambered.BB)
-		to_chat(user, "<span class='notice'>[src] is empty.</span>")
+		to_chat(user, span_notice("[src] is empty."))
 		return FALSE
 
 	var/obj/item/reagent_containers/syringe/S
@@ -63,7 +61,7 @@
 	to_chat(user, "<span class='notice'>You unload [S] from \the [src]!</span>")
 	return TRUE
 
-/obj/item/gun/syringe/attackby(obj/item/A, mob/user, params, show_msg = TRUE)
+/obj/item/gun/projectile/revolver/syringe/attackby(obj/item/A, mob/user, params, show_msg = TRUE)
 	if(istype(A, /obj/item/reagent_containers/syringe))
 		var/in_clip = length(syringes) + (chambered.BB ? 1 : 0)
 		if(in_clip < max_syringes)
@@ -77,14 +75,14 @@
 			to_chat(user, "<span class='notice'>[src] cannot hold more syringes.</span>")
 	else
 		return ..()
-
-/obj/item/gun/syringe/rapidsyringe
+*/
+/obj/item/gun/projectile/revolver/syringe/rapidsyringe
 	name = "rapid syringe gun"
 	desc = "A modification of the syringe gun design, using a rotating cylinder to store up to six syringes."
 	icon_state = "rapidsyringegun"
-	max_syringes = 6
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/syringe/rapid
 
-/obj/item/gun/syringe/syndicate
+/obj/item/gun/projectile/revolver/syringe/syndicate
 	name = "dart pistol"
 	desc = "A small spring-loaded sidearm that functions identically to a syringe gun."
 	icon_state = "syringe_pistol"
@@ -92,19 +90,19 @@
 	w_class = WEIGHT_CLASS_SMALL
 	origin_tech = "combat=2;syndicate=2;biotech=3"
 	force = 2 //Also very weak because it's smaller
-	suppressed = 1 //Softer fire sound
-	can_unsuppress = 0 //Permanently silenced
+	suppressed = TRUE //Softer fire sound
+	can_unsuppress = FALSE //Permanently silenced
 
-/obj/item/gun/syringe/blowgun
+/obj/item/gun/projectile/revolver/syringe/blowgun
 	name = "blowgun"
 	desc = "Fire syringes at a short distance."
 	icon_state = "blowgun"
 	item_state = "blowgun"
 	fire_sound = 'sound/items/blowgunproj.ogg'
 
-/obj/item/gun/syringe/blowgun/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0)
-	visible_message("<span class='danger'>[user] starts aiming with a blowgun!</span>")
-	if(do_after(user, 15, target = src))
+/obj/item/gun/projectile/revolver/syringe/blowgun/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0)
+	visible_message(span_danger("[user] starts aiming with a blowgun!"))
+	if(do_after(user, 1.5 SECONDS, target = src))
 		user.adjustStaminaLoss(20)
 		user.adjustOxyLoss(20)
 		..()

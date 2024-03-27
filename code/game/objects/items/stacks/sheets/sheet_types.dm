@@ -747,7 +747,7 @@ GLOBAL_LIST_INIT(plastic_recipes, list(
 
 GLOBAL_LIST_INIT(bamboo_recipes, list(
 	new /datum/stack_recipe("Bamboo spear", /obj/item/twohanded/bamboospear, 25, time = 90),
-	new /datum/stack_recipe("Blow gun", /obj/item/gun/syringe/blowgun, 10, time = 70),
+	new /datum/stack_recipe("Blow gun", /obj/item/gun/projectile/revolver/syringe/blowgun, 10, time = 70),
 	new /datum/stack_recipe("Punji sticks trap", /obj/structure/punji_sticks, 5, time = 30, one_per_turf = TRUE, on_floor = TRUE),
 ))
 

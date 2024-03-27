@@ -290,7 +290,7 @@
 	desc = "Набор для тех, кто не желает чтобы рядом стоящие держали глаза открытыми."
 	item_list = list(
 		/obj/item/pen/sleepy,
-		/obj/item/gun/syringe, //default x1
+		/obj/item/gun/projectile/revolver/syringe, //default x1
 		/obj/item/reagent_containers/syringe/pancuronium,
 		/obj/item/reagent_containers/syringe/pancuronium,
 		/obj/item/reagent_containers/syringe/capulettium_plus,

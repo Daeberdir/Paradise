@@ -136,8 +136,9 @@
 	var/ammo_type = /obj/item/ammo_casing
 	var/max_ammo = 7
 	var/multiple_sprites = 0
-	var/icon_prefix // boxes with multiple sprites use this as their base
-	var/caliber
+	/// Boxes with multiple sprites use this as their base
+	var/icon_prefix
+	var/list/caliber
 	var/multiload = TRUE
 	var/list/initial_mats
 	var/replacing_sound = 'sound/weapons/gun_interactions/shotguninsert.ogg'
@@ -205,9 +206,9 @@
 
 /obj/item/ammo_box/proc/ammo_suitability(obj/item/ammo_casing/bullet)
 	// Boxes don't have a caliber type, magazines do. Not sure if it's intended or not, but if we fail to find a caliber, then we fall back to ammo_type.
-	if(!bullet || (caliber && bullet.caliber != caliber) || (!caliber && bullet.type != ammo_type))
-		return FALSE
-	return TRUE
+	if(bullet && (LAZYIN(caliber, bullet.caliber) || bullet.type == ammo_type))
+		return TRUE
+	return FALSE
 
 /obj/item/ammo_box/proc/can_load(mob/user)
 	return TRUE
@@ -231,12 +232,15 @@
 		if(give_round(AC, replace_spent))
 			user.drop_transfer_item_to_loc(AC, src)
 			num_loaded++
-	else if(istype(A, /obj/item/reagent_containers/syringe))
-		var/obj/item/reagent_containers/syringe/dart = A
-		if(give_round(dart.ammo_casing))
-			dart.convert_to_ammo(user)
-			user.drop_transfer_item_to_loc(dart, dart.ammo_casing)
+	else
+		A = A.convert_to_ammo(user)
+		if(!A)
+			return
+		if(give_round(A))
 			num_loaded++
+		else
+			A.deconvert_from_ammo()
+
 	if(num_loaded)
 		if(!silent)
 			to_chat(user, span_notice("You load [num_loaded] shell\s into \the [src]!"))

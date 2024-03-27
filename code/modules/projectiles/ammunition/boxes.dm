@@ -246,7 +246,7 @@
 	materials = list(MAT_METAL = 2000)
 	ammo_type = /obj/item/ammo_casing/a357
 	max_ammo = 7
-	caliber = ".357"
+	caliber = list(".357")
 	icon_state = "357-7" // DEFAULT icon, composed of prefix + "-" + max_ammo for multiple_sprites == 1 boxes
 	multiple_sprites = 1 // see: /obj/item/ammo_box/update_icon()
 	icon_prefix = "357" // icon prefix, used in above formula to generate dynamic icons
@@ -257,7 +257,7 @@
 	ammo_type = null
 	icon_state = "makeshift_speedloader"
 	max_ammo = 4
-	caliber = ".257"
+	caliber = list(".257")
 
 /obj/item/ammo_box/speedloader/improvised/update_overlays()
 	. = ..()
@@ -275,7 +275,7 @@
 	materials = list(MAT_METAL = 2000)
 	ammo_type = /obj/item/ammo_casing/c38
 	max_ammo = 6
-	caliber = ".38"
+	caliber = list(".38")
 	icon_state = "38-6"
 	multiple_sprites = 1
 	icon_prefix = "38"
@@ -293,7 +293,7 @@
 	icon_state = "shotgunloader"
 	icon_prefix = "shotgunloader"
 	origin_tech = "combat=2"
-	caliber = ".12"
+	caliber = list(".12")
 	max_ammo = 7
 	ammo_type = null
 	w_class = WEIGHT_CLASS_NORMAL
@@ -404,7 +404,7 @@
 	name = "stripper clip (7.62mm)"
 	desc = "A stripper clip."
 	icon_state = "762"
-	caliber = "7.62x54mm"
+	caliber = list("7.62x54mm")
 	ammo_type = /obj/item/ammo_casing/a762
 	max_ammo = 5
 	multiple_sprites = 1

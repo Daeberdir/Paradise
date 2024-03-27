@@ -74,7 +74,7 @@
 /obj/item/ammo_box/magazine/internal/bombarda
 	name = "bombarda internal magazine"
 	ammo_type = /obj/item/ammo_casing/grenade/improvised
-	caliber = "40mm"
+	caliber = list("40mm")
 	max_ammo = 1
 	insert_sound = 'sound/weapons/bombarda/load.ogg'
 	remove_sound = 'sound/weapons/bombarda/open.ogg'

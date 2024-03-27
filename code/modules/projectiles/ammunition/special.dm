@@ -56,15 +56,15 @@
 	e_cost = 20
 
 
-/obj/item/ammo_casing/syringe
-	name = "syringe gun spring"
-	desc = "A high-power spring that throws syringes."
+/obj/item/ammo_casing/caseless/syringe
+	name = "syringe"
+	desc = "A syringe."
 	caliber = "syringe"
 	projectile_type = /obj/item/projectile/bullet/dart/syringe
 	muzzle_flash_effect = null
 
 
-/obj/item/ammo_casing/syringe/New(loc, syringe)
+/obj/item/ammo_casing/caseless/syringe/New(loc, syringe)
 	..()
 	var/obj/item/projectile/bullet/dart/syringe/bb = BB
 	if(!syringe)
@@ -75,17 +75,19 @@
 		bb.syringe = syringe
 
 
-/obj/item/ammo_casing/syringe/deconvert_from_ammo()
+/obj/item/ammo_casing/caseless/syringe/deconvert_from_ammo()
 	var/obj/item/projectile/bullet/dart/syringe/bb = BB
 	forceMove(bb.syringe)
 	bb.reagents.trans_to(bb.syringe, bb.reagents.total_volume)
 	return bb.syringe
 
 
-/obj/item/ammo_casing/syringe/piercing
+/obj/item/ammo_casing/caseless/syringe/piercing
+	name = "reinforced dart"
+	desc = "A reinforced dart."
 	caliber = "dart"
 	projectile_type = /obj/item/projectile/bullet/dart/syringe/piercing
 
 
-/obj/item/ammo_casing/syringe/piercing/lethal
+/obj/item/ammo_casing/caseless/syringe/piercing/lethal
 	projectile_type = /obj/item/projectile/bullet/dart/syringe/piercing/lethal

@@ -36876,8 +36876,8 @@
 	pixel_y = -24
 	},
 /obj/structure/cable,
-/obj/item/gun/syringe,
-/obj/item/gun/syringe{
+/obj/item/gun/projectile/revolver/syringe,
+/obj/item/gun/projectile/revolver/syringe{
 	pixel_x = 3;
 	pixel_y = -3
 	},

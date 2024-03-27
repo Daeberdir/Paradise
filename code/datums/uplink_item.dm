@@ -1214,7 +1214,7 @@
 /datum/uplink_item/stealthy_weapons/RSG
 	name = "Rapid Syringe Gun"
 	desc = "A rapid syringe gun able to hold six shot and fire them rapidly. Great together with the bioterror syringe"
-	item = /obj/item/gun/syringe/rapidsyringe
+	item = /obj/item/gun/projectile/revolver/syringe/rapidsyringe
 	cost = 20
 	uplinktypes = list(UPLINK_TYPE_NUCLEAR, UPLINK_TYPE_SST)
 

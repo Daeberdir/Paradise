@@ -386,7 +386,7 @@
 /area/ruin/unpowered)
 "aW" = (
 /obj/structure/table/reinforced,
-/obj/item/gun/syringe,
+/obj/item/gun/projectile/revolver/syringe,
 /turf/simulated/floor/plasteel{
 	icon_state = "dark"
 	},

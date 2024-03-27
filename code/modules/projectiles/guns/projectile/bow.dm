@@ -80,13 +80,13 @@
 /obj/item/ammo_box/magazine/internal/bow
 	name = "bow internal magazine"
 	ammo_type = /obj/item/ammo_casing/caseless/arrow
-	caliber = "arrow"
+	caliber = list("arrow")
 	max_ammo = 1
 
 /obj/item/ammo_box/magazine/internal/bow/ashen
 	name = "ashen bow internal magazine"
 	ammo_type = /obj/item/ammo_casing/caseless/arrow/bone_tipped
-	caliber = "bone_arrow"
+	caliber = list("bone_arrow")
 	max_ammo = 1
 
 /obj/item/projectile/bullet/reusable/arrow //only for wooden bow!

@@ -16,12 +16,12 @@
 	pass_open_check = TRUE
 	var/busy = FALSE
 	var/mode = SYRINGE_DRAW
-	var/ammo_casing = /obj/item/ammo_casing/syringe
+	var/obj/item/ammo_casing/caseless/syringe/ammo_casing = /obj/item/ammo_casing/caseless/syringe
 	materials = list(MAT_METAL=10, MAT_GLASS=20)
 	container_type = TRANSPARENT
 
 
-/obj/item/reagent_containers/syringe/Initialize(mapload, ammo_casing)
+/obj/item/reagent_containers/syringe/Initialize(mapload)
 	if(list_reagents && mode != SYRINGE_BROKEN) // Syringe starts in inject mode if its already got something inside.
 		mode = SYRINGE_INJECT
 	. = ..()
@@ -152,18 +152,16 @@
 				update_icon()
 
 
-/obj/item/reagent_containers/syringe/proc/convert_to_ammo(mob/living/user)
+/obj/item/reagent_containers/syringe/convert_to_ammo(mob/living/user)
 	if(ispath(ammo_casing) || QDELETED(ammo_casing))
 		ammo_casing = new initial(ammo_casing(src, src))
 
-	var/obj/item/ammo_casing/syringe/ammo = ammo_casing
-
 	if(user)
-		user.drop_transfer_item_to_loc(src, ammo.BB)
+		user.drop_transfer_item_to_loc(src, ammo_casing.BB)
 	else
-		forceMove(ammo.BB)
+		forceMove(ammo_casing.BB)
 
-	reagents.trans_to(ammo.BB, reagents.total_volume)
+	reagents.trans_to(ammo_casing.BB, reagents.total_volume)
 
 
 /obj/item/reagent_containers/syringe/update_icon_state()
@@ -262,10 +260,11 @@
 
 /obj/item/reagent_containers/syringe/tranquilizergun
 	name = "reinforced dart"
+	desc = "A reinforced dart."
 	icon_state = "r_dart"
 	container_type = REFILLABLE
 	mode = SYRINGE_BROKEN
-	ammo_casing = /obj/item/ammo_casing/syringe/piercing
+	ammo_casing = /obj/item/ammo_casing/caseless/syringe/piercing
 	volume = 25
 	list_reagents = list("capulettium" = 18, "perfluorodecalin" = 7)
 
@@ -275,5 +274,5 @@
 
 
 /obj/item/reagent_containers/syringe/tranquilizergun/lethal
-	ammo_casing = /obj/item/ammo_casing/syringe/piercing/lethal
+	ammo_casing = /obj/item/ammo_casing/caseless/syringe/piercing/lethal
 	list_reagents = list("beer2" = 15, "gibbis" = 5, "spidereggs" = 5)

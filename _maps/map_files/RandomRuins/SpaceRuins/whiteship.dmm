@@ -288,7 +288,7 @@
 	},
 /area/shuttle/abandoned)
 "fC" = (
-/obj/item/gun/syringe/rapidsyringe,
+/obj/item/gun/projectile/revolver/syringe/rapidsyringe,
 /obj/machinery/atmospherics/pipe/simple/hidden/scrubbers{
 	dir = 1
 	},

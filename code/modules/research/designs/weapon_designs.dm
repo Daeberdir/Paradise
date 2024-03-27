@@ -212,7 +212,7 @@
 	req_tech = list("combat" = 2, "biotech" = 3)
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 5000, MAT_GLASS = 1000)
-	build_path = /obj/item/gun/syringe/rapidsyringe
+	build_path = /obj/item/gun/projectile/revolver/syringe/rapidsyringe
 	category = list("Weapons")
 
 /datum/design/stunshell

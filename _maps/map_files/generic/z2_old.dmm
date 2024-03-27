@@ -7049,7 +7049,7 @@
 /obj/item/grenade/chem_grenade/large,
 /obj/item/grenade/chem_grenade/large,
 /obj/item/grenade/chem_grenade/large,
-/obj/item/gun/syringe/rapidsyringe,
+/obj/item/gun/projectile/revolver/syringe/rapidsyringe,
 /obj/structure/closet,
 /obj/item/gun/projectile/shotgun/sc_pump,
 /obj/item/ammo_casing/shotgun/dart,
@@ -8852,7 +8852,7 @@
 	},
 /area/centcom/zone1)
 "gIN" = (
-/obj/item/gun/syringe/syndicate,
+/obj/item/gun/projectile/revolver/syringe/syndicate,
 /obj/structure/table/wood,
 /turf/simulated/floor/indestructible{
 	icon_state = "floor"
@@ -17700,7 +17700,7 @@
 /obj/item/grenade/chem_grenade/large,
 /obj/item/grenade/chem_grenade/large,
 /obj/item/grenade/chem_grenade/large,
-/obj/item/gun/syringe/rapidsyringe,
+/obj/item/gun/projectile/revolver/syringe/rapidsyringe,
 /obj/item/reagent_containers/spray/chemsprayer,
 /obj/structure/closet,
 /obj/item/gun/projectile/shotgun/sc_pump,
@@ -25706,7 +25706,7 @@
 	},
 /area/centcom/specops)
 "stD" = (
-/obj/item/gun/syringe/rapidsyringe,
+/obj/item/gun/projectile/revolver/syringe/rapidsyringe,
 /obj/structure/table/wood,
 /turf/simulated/floor/indestructible{
 	icon_state = "floor"
@@ -28915,7 +28915,7 @@
 	},
 /area/centcom/specops)
 "uTd" = (
-/obj/item/gun/syringe/blowgun,
+/obj/item/gun/projectile/revolver/syringe/blowgun,
 /obj/structure/table/wood,
 /turf/simulated/floor/indestructible{
 	icon_state = "floor"
@@ -31455,7 +31455,7 @@
 	},
 /area/vox_station)
 "wCx" = (
-/obj/item/gun/syringe,
+/obj/item/gun/projectile/revolver/syringe,
 /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun,
 /obj/structure/table/wood,
 /turf/simulated/floor/indestructible{

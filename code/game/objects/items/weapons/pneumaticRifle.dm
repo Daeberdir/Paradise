@@ -1,5 +1,5 @@
-/obj/item/gun/pneumatic_rifle
-	name = "Pneumatic rifle"
+/obj/item/gun/projectile/revolver/pneumatic_rifle
+	name = "pneumatic rifle"
 	desc = "Oddly looking design purposed to fire syringes at long range. It requires to be holded in two hands for more accurate shooting."
 	w_class = WEIGHT_CLASS_BULKY
 	force = 8
@@ -7,13 +7,9 @@
 	icon = 'icons/obj/weapons/pneumaticRifle.dmi'
 	icon_state = "pneumaticRifle"
 	item_state = "pneumaticRifle"
-	lefthand_file = 'icons/mob/inhands/guns_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/guns_righthand.dmi'
 	fire_sound = 'sound/weapons/pneumatic_rifle.ogg'
 	armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 0, "acid" = 50)
 	var/obj/item/tank/internals/tank = null
-	var/list/syringes = list()
-	var/max_syringes = 1
 	var/gasPerShot = 0.24
 	var/isBelted = FALSE
 	var/beltCost = 10 //cable coils needed to make a strap
@@ -21,11 +17,11 @@
 	weapon_weight = WEAPON_HEAVY
 	can_holster = FALSE
 
-
+/*
 /obj/item/gun/pneumatic_rifle/Initialize(mapload)
 	. = ..()
-	chambered = new /obj/item/ammo_casing/syringe(src)
-
+	chambered = new /obj/item/ammo_casing/caseless/syringe(src)
+*/
 /obj/item/gun/pneumatic_rifle/Destroy()
 	QDEL_NULL(tank)
 	return ..()
@@ -78,7 +74,7 @@
 		else
 			to_chat(user, span_warning("[I] is too big for [src]."))
 			return
-	if(istype(I, /obj/item/reagent_containers/syringe))
+/*	if(istype(I, /obj/item/reagent_containers/syringe))
 		var/in_clip = length(syringes) + (chambered.BB ? 1 : 0)
 		if(in_clip < max_syringes)
 			if(!user.drop_transfer_item_to_loc(I, src))
@@ -88,10 +84,10 @@
 			process_chamber() // Chamber the syringe if none is already
 			return TRUE
 		else
-			to_chat(user, "<span class='notice'>[src] cannot hold more syringes.</span>")
+			to_chat(user, "<span class='notice'>[src] cannot hold more syringes.</span>")*/
 	else
 		return ..()
-
+/*
 /obj/item/gun/pneumatic_rifle/afterattack(atom/target, mob/living/carbon/human/user, flag, params)
 	. = ..()
 	if(target == loc)
@@ -132,13 +128,14 @@
 	syringes.Remove(S)
 	qdel(S)
 
+*/
 /obj/item/gun/pneumatic_rifle/afterattack(atom/target, mob/living/user, flag, params)
 	if(!tank)
 		to_chat(user, span_warning("[src] can't fire without a source of gas."))
 		return
-	if(!chambered.BB)
+/*	if(!chambered.BB)
 		to_chat(user, span_warning("[src] is not loaded."))
-		return
+		return*/
 	if(tank && tank.air_contents.total_moles() < gasPerShot)
 		to_chat(user, span_warning("[src] lets out a weak hiss and doesn't react!"))
 		playsound(loc, 'sound/effects/refill.ogg', 50, 1)

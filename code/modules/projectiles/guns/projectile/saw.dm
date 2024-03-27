@@ -110,7 +110,7 @@
 	icon_state = "a762-50"
 	origin_tech = "combat=2"
 	ammo_type = /obj/item/ammo_casing/mm556x45
-	caliber = "mm55645"
+	caliber = list("mm55645")
 	max_ammo = 50
 
 /obj/item/ammo_box/magazine/mm556x45/bleeding

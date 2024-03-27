@@ -16,7 +16,7 @@
 		/obj/item/gun/projectile/automatic/toy/pistol/riot,
 		/obj/item/soap/syndie,
 		/obj/item/storage/box/syndie_kit/dart_gun,
-		/obj/item/gun/syringe/rapidsyringe,
+		/obj/item/gun/projectile/revolver/syringe/rapidsyringe,
 		/obj/item/storage/backpack/duffel/syndie/x4,
 		// Mixed
 		/obj/item/storage/box/syndie_kit/emp,

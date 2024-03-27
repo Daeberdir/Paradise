@@ -5419,7 +5419,7 @@
 /obj/item/storage/box/syringes,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
-/obj/item/gun/syringe/syndicate,
+/obj/item/gun/projectile/revolver/syringe/syndicate,
 /obj/machinery/defibrillator_mount/loaded{
 	pixel_x = -30
 	},

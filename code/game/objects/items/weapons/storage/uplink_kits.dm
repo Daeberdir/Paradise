@@ -372,7 +372,7 @@ To apply, hold the injector a short distance away from the outer thigh before ap
 	name = "dart gun kit"
 
 /obj/item/storage/box/syndie_kit/dart_gun/populate_contents()
-	new /obj/item/gun/syringe/syndicate(src)
+	new /obj/item/gun/projectile/revolver/syringe/syndicate(src)
 	new /obj/item/reagent_containers/syringe/capulettium_plus(src)
 	new /obj/item/reagent_containers/syringe/sarin(src)
 	new /obj/item/reagent_containers/syringe/pancuronium(src)

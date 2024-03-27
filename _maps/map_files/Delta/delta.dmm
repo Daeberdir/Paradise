@@ -41565,13 +41565,13 @@
 /area/maintenance/fsmaint)
 "dXM" = (
 /obj/structure/table,
-/obj/item/gun/syringe{
+/obj/item/gun/projectile/revolver/syringe{
 	pixel_y = -2
 	},
-/obj/item/gun/syringe{
+/obj/item/gun/projectile/revolver/syringe{
 	pixel_y = 2
 	},
-/obj/item/gun/syringe{
+/obj/item/gun/projectile/revolver/syringe{
 	pixel_y = 6
 	},
 /turf/simulated/floor/plasteel{

@@ -61,7 +61,7 @@
 	origin_tech = "combat=6"
 	ammo_type = /obj/item/ammo_casing/point50
 	max_ammo = 5
-	caliber = ".50"
+	caliber = list(".50")
 
 /obj/item/ammo_box/magazine/sniper_rounds/update_icon_state()
 	if(ammo_count())
@@ -210,7 +210,7 @@
 	desc = "An extremely powerful round capable of inflicting massive damage on a target."
 	ammo_type = /obj/item/ammo_casing/compact
 	max_ammo = 4
-	caliber = ".50L"
+	caliber = list(".50L")
 
 /obj/item/ammo_casing/compact
 	desc = "A .50 caliber compact round casing."
@@ -261,7 +261,7 @@
 	icon_state = ".50mag"
 	ammo_type = /obj/item/ammo_casing/caseless/foam_dart/sniper/riot
 	max_ammo = 6
-	caliber = "foam_force_sniper"
+	caliber = list("foam_force_sniper")
 
 
 /obj/item/ammo_box/magazine/toy/sniper_rounds/update_icon_state()

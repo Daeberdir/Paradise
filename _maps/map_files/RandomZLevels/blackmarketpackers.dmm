@@ -2190,7 +2190,7 @@
 	tag = ""
 	},
 /obj/structure/alien/weeds,
-/obj/item/gun/syringe{
+/obj/item/gun/projectile/revolver/syringe{
 	pixel_y = 2
 	},
 /obj/item/storage/box/syringes,

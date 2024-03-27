@@ -1164,7 +1164,7 @@
 /obj/item/grenade/chem_grenade/large,
 /obj/item/grenade/chem_grenade/large,
 /obj/item/grenade/chem_grenade/large,
-/obj/item/gun/syringe/rapidsyringe,
+/obj/item/gun/projectile/revolver/syringe/rapidsyringe,
 /obj/item/reagent_containers/spray/chemsprayer,
 /obj/structure/closet,
 /obj/item/gun/projectile/shotgun/sc_pump,
@@ -1371,7 +1371,7 @@
 /area/holodeck/source_basketball)
 "nK" = (
 /obj/structure/table/wood,
-/obj/item/gun/syringe/blowgun,
+/obj/item/gun/projectile/revolver/syringe/blowgun,
 /turf/simulated/floor/wood,
 /area/admin)
 "nM" = (
@@ -2933,7 +2933,7 @@
 /area/holodeck/source_snowfield)
 "HR" = (
 /obj/structure/table/wood,
-/obj/item/gun/syringe/rapidsyringe,
+/obj/item/gun/projectile/revolver/syringe/rapidsyringe,
 /turf/simulated/floor/wood,
 /area/admin)
 "HZ" = (
@@ -3821,7 +3821,7 @@
 /area/admin)
 "Uv" = (
 /obj/structure/table/wood,
-/obj/item/gun/syringe,
+/obj/item/gun/projectile/revolver/syringe,
 /turf/simulated/floor/wood,
 /area/admin)
 "Uw" = (
@@ -3956,7 +3956,7 @@
 /turf/simulated/floor/wood,
 /area/admin)
 "VU" = (
-/obj/item/gun/syringe/syndicate,
+/obj/item/gun/projectile/revolver/syringe/syndicate,
 /obj/structure/table/wood,
 /turf/simulated/floor/plasteel{
 	dir = 6;

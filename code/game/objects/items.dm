@@ -1282,3 +1282,7 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 /obj/item/proc/get_throwforce()
 	var/datum/component/sharpening/sharpening = GetComponent(/datum/component/sharpening)
 	return initial(throwforce) + sharpening?.damage_increase
+
+
+/obj/item/proc/convert_to_ammo()
+	return

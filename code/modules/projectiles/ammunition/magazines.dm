@@ -10,7 +10,7 @@
 /obj/item/ammo_box/magazine/internal/cylinder
 	name = "revolver cylinder"
 	ammo_type = /obj/item/ammo_casing/a357
-	caliber = ".357"
+	caliber = list(".357")
 	max_ammo = 7
 
 
@@ -58,7 +58,7 @@
 /obj/item/ammo_box/magazine/internal/cylinder/rev38
 	name = "detective revolver cylinder"
 	ammo_type = /obj/item/ammo_casing/c38
-	caliber = ".38"
+	caliber = list(".38")
 	max_ammo = 6
 
 /obj/item/ammo_box/magazine/internal/cylinder/rev38/invisible
@@ -72,13 +72,13 @@
 /obj/item/ammo_box/magazine/internal/cylinder/rev762
 	name = "nagant revolver cylinder"
 	ammo_type = /obj/item/ammo_casing/n762
-	caliber = "7.62x38mm"
+	caliber = list("7.62x38mm")
 	max_ammo = 7
 
 /obj/item/ammo_box/magazine/internal/cylinder/rev36
 	name = ".36 revolver cylinder"
 	ammo_type = /obj/item/ammo_casing/c38/c36
-	caliber = ".36"
+	caliber = list(".36")
 	max_ammo = 6
 
 /obj/item/ammo_box/magazine/internal/cylinder/improvised
@@ -112,20 +112,20 @@
 	name = "cap gun revolver cylinder"
 	desc = "Oh god, this shouldn't be here!"
 	ammo_type = /obj/item/ammo_casing/cap
-	caliber = "cap"
+	caliber = list("cap")
 	max_ammo = 7
 
 /obj/item/ammo_box/magazine/internal/cylinder/ga12
 	name = ".12 revolver cylinder"
 	ammo_type = /obj/item/ammo_casing/shotgun
-	caliber = ".12"
+	caliber = list(".12")
 	max_ammo = 3
 
 // Shotgun internal mags
 /obj/item/ammo_box/magazine/internal/shot
 	name = "shotgun internal magazine"
 	ammo_type = /obj/item/ammo_casing/shotgun/beanbag
-	caliber = ".12"
+	caliber = list(".12")
 	max_ammo = 4
 	multiload = FALSE
 
@@ -178,29 +178,40 @@
 /obj/item/ammo_box/magazine/internal/grenadelauncher
 	name = "grenade launcher internal magazine"
 	ammo_type = /obj/item/ammo_casing/a40mm
-	caliber = "40mm"
+	caliber = list("40mm")
 	max_ammo = 1
 
 /obj/item/ammo_box/magazine/internal/cylinder/grenadelauncher/multi
 	ammo_type = /obj/item/ammo_casing/a40mm
 	max_ammo = 6
 
+
+/obj/item/ammo_box/magazine/internal/cylinder/syringe
+	ammo_type = null
+	caliber = list("syringe")
+	max_ammo = 1
+
+
+/obj/item/ammo_box/magazine/internal/cylinder/syringe/rapid
+	max_ammo = 6
+
+
 /obj/item/ammo_box/magazine/internal/speargun
 	name = "speargun internal magazine"
 	ammo_type = /obj/item/ammo_casing/caseless/magspear
-	caliber = "spear"
+	caliber = list("spear")
 	max_ammo = 1
 
 /obj/item/ammo_box/magazine/internal/rocketlauncher
 	name = "rocket launcher internal magazine"
 	ammo_type = /obj/item/ammo_casing/caseless/rocket
-	caliber = "84mm"
+	caliber = list("84mm")
 	max_ammo = 1
 
 /obj/item/ammo_box/magazine/internal/rus357
 	name = "russian revolver cylinder"
 	ammo_type = /obj/item/ammo_casing/a357
-	caliber = ".357"
+	caliber = list(".357")
 	max_ammo = 6
 	multiload = FALSE
 
@@ -213,7 +224,7 @@
 	name = "bolt action rifle internal magazine"
 	desc = "Oh god, this shouldn't be here!"
 	ammo_type = /obj/item/ammo_casing/a762
-	caliber = "7.62x54mm"
+	caliber = list("7.62x54mm")
 	max_ammo = 5
 	multiload = TRUE
 
@@ -223,7 +234,7 @@
 
 /obj/item/ammo_box/magazine/internal/shot/toy
 	ammo_type = /obj/item/ammo_casing/caseless/foam_dart
-	caliber = "foam_force"
+	caliber = list("foam_force")
 	max_ammo = 4
 
 /obj/item/ammo_box/magazine/internal/shot/toy/crossbow
@@ -246,7 +257,7 @@
 	icon_state = "9x19p"
 	origin_tech = "combat=2"
 	ammo_type = /obj/item/ammo_casing/c10mm
-	caliber = "10mm"
+	caliber = list("10mm")
 	max_ammo = 15
 	multiple_sprites = 2
 
@@ -275,7 +286,7 @@
 	name = "handgun magazine (.45)"
 	icon_state = "45"
 	ammo_type = /obj/item/ammo_casing/c45
-	caliber = ".45"
+	caliber = list(".45")
 	max_ammo = 8
 	multiple_sprites = 1
 
@@ -285,7 +296,7 @@
 	ammo_type = /obj/item/ammo_casing/rubber9mm
 	max_ammo = 8
 	multiple_sprites = 1
-	caliber = "9mm"
+	caliber = list("9mm")
 
 
 /obj/item/ammo_box/magazine/enforcer/update_overlays()
@@ -316,7 +327,7 @@
 	icon_state = "sp8mag"
 	ammo_type = /obj/item/ammo_casing/fortynr
 	max_ammo = 10
-	caliber = "40nr"
+	caliber = list("40nr")
 
 /obj/item/ammo_box/magazine/sp8/update_icon_state()
 	icon_state = "sp8mag-[round(ammo_count(),2)]"
@@ -325,7 +336,7 @@
 	name = "wt550 magazine (4.6x30mm)"
 	icon_state = "46x30mmt-20"
 	ammo_type = /obj/item/ammo_casing/c46x30mm
-	caliber = "4.6x30mm"
+	caliber = list("4.6x30mm")
 	max_ammo = 20
 
 /obj/item/ammo_box/magazine/wt550m9/update_icon_state()
@@ -347,7 +358,7 @@
 	name = "SP-91-RC magazine (9mm TE)"
 	icon_state = "9mm-te"
 	ammo_type = /obj/item/ammo_casing/c9mmte
-	caliber = "9mm TE"
+	caliber = list("9mm TE")
 	max_ammo = 20
 
 /obj/item/ammo_box/magazine/sp91rc/update_icon_state()
@@ -357,7 +368,7 @@
 	name = "uzi magazine (9mm)"
 	icon_state = "uzi9mm-32"
 	ammo_type = /obj/item/ammo_casing/c9mm
-	caliber = "9mm"
+	caliber = list("9mm")
 	max_ammo = 32
 
 /obj/item/ammo_box/magazine/uzim9mm/update_icon_state()
@@ -367,7 +378,7 @@
 	name = "SMG magazine (9mm)"
 	icon_state = "smg9mm"
 	ammo_type = /obj/item/ammo_casing/c9mm
-	caliber = "9mm"
+	caliber = list("9mm")
 	max_ammo = 21
 
 /obj/item/ammo_box/magazine/smgm9mm/ap
@@ -389,7 +400,7 @@
 	name = "SFG Magazine (9mm)"
 	icon_state = "sfg5"
 	ammo_type = /obj/item/ammo_casing/c9mm
-	caliber = "9mm"
+	caliber = list("9mm")
 	max_ammo = 30
 
 /obj/item/ammo_box/magazine/sfg9mm/update_icon_state()
@@ -399,7 +410,7 @@
 	name = "pistol magazine (9mm)"
 	icon_state = "9x19p-15"
 	ammo_type = /obj/item/ammo_casing/c9mm
-	caliber = "9mm"
+	caliber = list("9mm")
 	max_ammo = 15
 
 /obj/item/ammo_box/magazine/pistolm9mm/update_icon_state()
@@ -410,7 +421,7 @@
 	icon_state = "c20r45"
 	origin_tech = "combat=2"
 	ammo_type = /obj/item/ammo_casing/c45
-	caliber = ".45"
+	caliber = list(".45")
 	max_ammo = 20
 
 /obj/item/ammo_box/magazine/smgm45/update_icon_state()
@@ -420,7 +431,7 @@
 	name = "drum magazine (.45)"
 	icon_state = "drum45"
 	ammo_type = /obj/item/ammo_casing/c45
-	caliber = ".45"
+	caliber = list(".45")
 	max_ammo = 50
 
 /obj/item/ammo_box/magazine/m50
@@ -428,7 +439,7 @@
 	icon_state = "50ae"
 	origin_tech = "combat=2"
 	ammo_type = /obj/item/ammo_casing/a50
-	caliber = ".50ae"
+	caliber = list(".50ae")
 	max_ammo = 7
 	multiple_sprites = 1
 
@@ -436,7 +447,7 @@
 	name = "specialized magazine (.75)"
 	icon_state = "75"
 	ammo_type = /obj/item/ammo_casing/caseless/a75
-	caliber = ".75"
+	caliber = list(".75")
 	multiple_sprites = 2
 	max_ammo = 8
 
@@ -445,7 +456,7 @@
 	icon_state = "5.56m"
 	origin_tech = "combat=5"
 	ammo_type = /obj/item/ammo_casing/a556
-	caliber = "5.56mm"
+	caliber = list("5.56mm")
 	max_ammo = 30
 	multiple_sprites = 2
 
@@ -455,7 +466,7 @@
 	desc= "A universal magazine for an AK style rifle."
 	origin_tech = "combat=5;syndicate=1"
 	ammo_type = /obj/item/ammo_casing/a545
-	caliber = "5.45x39mm"
+	caliber = list("5.45x39mm")
 	max_ammo = 30
 	multiple_sprites = 2
 
@@ -465,7 +476,7 @@
 	desc= "An antique fusty magazine for an AK rifle."
 	origin_tech = "combat=4;syndicate=1"
 	ammo_type = /obj/item/ammo_casing/a545/fusty
-	caliber = "5.45x39mm"
+	caliber = list("5.45x39mm")
 	max_ammo = 30
 	multiple_sprites = 2
 
@@ -475,7 +486,7 @@
 	desc= "An antique drum for an PPSh submacnine."
 	origin_tech = "combat=3;syndicate=1"
 	ammo_type = /obj/item/ammo_casing/ftt762
-	caliber = "7.62x25mm"
+	caliber = list("7.62x25mm")
 	max_ammo = 71
 	multiple_sprites = 2
 
@@ -485,7 +496,7 @@
 	icon_state = "m12gbc"
 	ammo_type = /obj/item/ammo_casing/shotgun/buckshot/nuclear
 	origin_tech = "combat=3"
-	caliber = ".12"
+	caliber = list(".12")
 	max_ammo = 12
 	multiple_sprites = 2
 
@@ -545,7 +556,7 @@
 /obj/item/ammo_box/magazine/toy
 	name = "foam force META magazine"
 	ammo_type = /obj/item/ammo_casing/caseless/foam_dart
-	caliber = "foam_force"
+	caliber = list("foam_force")
 
 /obj/item/ammo_box/magazine/toy/smg
 	name = "foam force SMG magazine"
@@ -620,7 +631,7 @@
 	icon_state = "laser"
 	ammo_type = /obj/item/ammo_casing/laser
 	origin_tech = "combat=3"
-	caliber = "laser"
+	caliber = list("laser")
 	max_ammo = 20
 
 /obj/item/ammo_box/magazine/laser/update_icon_state()
@@ -632,7 +643,7 @@
 	icon_state = "lmag-12"
 	ammo_type = /obj/item/ammo_casing/laser
 	origin_tech = "combat=3"
-	caliber = "laser"
+	caliber = list("laser")
 	max_ammo = 12
 
 /obj/item/ammo_box/magazine/lr30mag/update_icon_state()
@@ -646,7 +657,7 @@
 	name = "M-52 magazine"
 	icon_state = "m52_ammo"
 	ammo_type = /obj/item/ammo_casing/mm556x45
-	caliber = "mm55645"
+	caliber = list("mm55645")
 	max_ammo = 24
 	multiple_sprites = 2
 
@@ -680,7 +691,7 @@
 	name = "C.A.T.S. magazine (12g)-U"
 	desc = "Похоже, этот магазин может принять в себя любые патроны 12-о калибра."
 	icon_state = "cats_mag"
-	caliber = ".12"
+	caliber = list(".12")
 	ammo_type = null
 
 /obj/item/ammo_box/magazine/cats12g/universal/large
@@ -693,7 +704,7 @@
 /obj/item/ammo_box/magazine/tranquilizer
 	name = "tranquilizer magazine"
 	desc = "Щирість."
-	ammo_type = /obj/item/ammo_casing/syringe/piercing
+	ammo_type = /obj/item/ammo_casing/caseless/syringe/piercing
 	caliber = list("syringe", "dart")
 	max_ammo = 8
 
@@ -705,4 +716,4 @@
 
 
 /obj/item/ammo_box/magazine/tranquilizer/lethal
-	ammo_type = /obj/item/ammo_casing/syringe/piercing/lethal
+	ammo_type = /obj/item/ammo_casing/caseless/syringe/piercing/lethal

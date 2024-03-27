@@ -144,7 +144,7 @@
 				/obj/item/ammo_box/magazine/m10mm = 4,
 				/obj/item/soap/syndie = 7,
 				/obj/item/stack/tape_roll/thick = 7,
-				/obj/item/gun/syringe/syndicate = 2,
+				/obj/item/gun/projectile/revolver/syringe/syndicate = 2,
 				/obj/item/suppressor = 4,
 				/obj/item/clothing/under/chameleon = 2,
 				/obj/item/stamp/chameleon = 2,
