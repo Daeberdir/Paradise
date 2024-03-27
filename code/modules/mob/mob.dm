@@ -273,6 +273,7 @@
 			hud_used.show_hud(hud_used.hud_version)
 
 /mob/setDir(new_dir)
+	var/old_dir = dir
 	if(forced_look)
 		if(isnum(forced_look))
 			dir = forced_look
@@ -280,6 +281,7 @@
 			var/atom/A = locateUID(forced_look)
 			if(istype(A))
 				dir = get_cardinal_dir(src, A)
+		SEND_SIGNAL(src, COMSIG_ATOM_DIR_CHANGE, old_dir, dir)
 		return
 	. = ..()
 
@@ -651,7 +653,7 @@
 	return
 
 /mob/proc/is_mechanical()
-	return mind && (mind.assigned_role == "Cyborg" || mind.assigned_role == "AI")
+	return mind && (mind.assigned_role == JOB_TITLE_CYBORG || mind.assigned_role == JOB_TITLE_AI)
 
 /mob/proc/is_ready()
 	return client && !!mind
@@ -863,40 +865,46 @@
 	set category = "Ghost"
 
 	if(jobban_isbanned(usr, ROLE_SENTIENT))
-		to_chat(usr, "<span class='warning'>You are banned from playing as sentient animals.</span>")
+		to_chat(usr, span_warning("You are banned from playing as sentient animals."))
 		return
 
-	if(!SSticker || SSticker.current_state < 3)
-		to_chat(src, "<span class='warning'>You can't respawn as an NPC before the game starts!</span>")
+	if(!SSticker || SSticker.current_state < GAME_STATE_PLAYING)
+		to_chat(src, span_warning("You can't respawn as an NPC before the game starts!"))
 		return
 
-	if(stat==2 || istype(usr, /mob/dead/observer)) // Always can respawn as NPC
-		var/list/creatures = list("Mouse")
-		for(var/mob/living/L in GLOB.alive_mob_list)
-			if(safe_respawn(L.type) && L.stat!=2)
-				if(!L.key)
-					creatures += L
-		var/picked = tgui_input_list(usr, "Please select an NPC to respawn as", "Respawn as NPC", creatures)
-		if(!picked)
-			return
-		if(picked == "Mouse")
-			GLOB.respawnable_list -= usr
-			become_mouse()
-//				spawn(5)
-//					GLOB.respawnable_list += usr
-		else if(istype(picked, /mob/living/simple_animal/borer))
-			var/mob/living/simple_animal/borer/B = picked
-			B.transfer_personality(usr.client)
-		else
-			var/mob/living/NPC = picked
-			if(istype(NPC) && !NPC.key)
-				GLOB.respawnable_list -= usr
-				NPC.key = key
-//					spawn(5)
-//						GLOB.respawnable_list += usr
-	else
-		to_chat(usr, "You are not dead or you have given up your right to be respawned!")
+	if(stat != DEAD && !isobserver(usr))
+		to_chat(usr, span_warning("You are not dead or you have given up your right to be respawned!"))
 		return
+
+	var/list/allowed_creatures = list()
+	for(var/mob/living/alive_mob as anything in GLOB.alive_mob_list)
+		if(!alive_mob.key && alive_mob.stat != DEAD && safe_respawn(alive_mob, TRUE))
+			allowed_creatures[++allowed_creatures.len] = "[alive_mob.name]" + " ([get_area_name(alive_mob, TRUE)])"
+			allowed_creatures["[alive_mob.name]" + " ([get_area_name(alive_mob, TRUE)])"] = alive_mob
+
+	allowed_creatures.Insert(1, "Mouse")
+
+	var/mob/living/picked = tgui_input_list(usr, "Please select an NPC to respawn as", "Respawn as NPC", allowed_creatures)
+	if(!picked)
+		return
+
+	if(picked == "Mouse")
+		become_mouse()
+		return
+
+	var/mob/living/picked_mob = allowed_creatures[picked]
+
+	if(QDELETED(picked_mob) || picked_mob.key || picked_mob.stat == DEAD)
+		to_chat(usr, span_warning("[capitalize(picked_mob)] is no longer available to respawn!"))
+		return
+
+	if(istype(picked_mob, /mob/living/simple_animal/borer))
+		var/mob/living/simple_animal/borer/borer = picked_mob
+		borer.transfer_personality(usr.client)
+		return
+
+	GLOB.respawnable_list -= usr
+	picked_mob.key = key
 
 
 /mob/proc/become_mouse()
@@ -907,15 +915,14 @@
 		return
 
 	//find a viable mouse candidate
-	var/list/found_vents = get_valid_vent_spawns(min_network_size = 0, station_levels_only = FALSE, z_level = z)
+	var/list/found_vents = get_valid_vent_spawns(min_network_size = 0)
 	if(length(found_vents))
+		GLOB.respawnable_list -= src
 		client.time_joined_as_mouse = world.time
 		var/obj/vent_found = pick(found_vents)
 		var/choosen_type = prob(90) ? /mob/living/simple_animal/mouse : /mob/living/simple_animal/mouse/rat
 		var/mob/living/simple_animal/mouse/host = new choosen_type(vent_found.loc)
 		host.ckey = src.ckey
-		if(istype(get_area(vent_found), /area/syndicate/unpowered/syndicate_space_base))
-			host.faction += "syndicate"
 		to_chat(host, "<span class='info'>You are now a mouse. Try to avoid interaction with players, and do not give hints away that you are more than a simple rodent.</span>")
 	else
 		to_chat(src, "<span class='warning'>Unable to find any unwelded vents to spawn mice at.</span>")
@@ -1209,8 +1216,11 @@
 /mob/proc/sync_lighting_plane_alpha()
 	if(hud_used)
 		var/obj/screen/plane_master/lighting/L = hud_used.plane_masters["[LIGHTING_PLANE]"]
+		var/obj/screen/plane_master/o_light_visual/vis = hud_used.plane_masters["[O_LIGHTING_VISUAL_PLANE]"]
 		if(L)
 			L.alpha = lighting_alpha
+		if(vis)
+			vis.alpha = lighting_alpha
 
 	sync_nightvision_screen() //Sync up the overlay used for nightvision to the amount of see_in_dark a mob has. This needs to be called everywhere sync_lighting_plane_alpha() is.
 
@@ -1218,9 +1228,10 @@
 	var/obj/screen/fullscreen/see_through_darkness/S = screens["see_through_darkness"]
 	if(S)
 		var/suffix = ""
-		switch(see_in_dark)
+		var/nighvision_coeff = nightvision
+		switch(nighvision_coeff)
 			if(3 to 8)
-				suffix = "_[see_in_dark]"
+				suffix = "_[nighvision_coeff]"
 			if(8 to INFINITY)
 				suffix = "_8"
 

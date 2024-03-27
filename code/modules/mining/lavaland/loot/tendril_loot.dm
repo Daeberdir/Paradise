@@ -230,13 +230,16 @@
 	var/obj/effect/wisp/wisp
 	var/sight_flags = SEE_MOBS
 	var/lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	light_system = MOVABLE_LIGHT
+	light_on = FALSE
+
 
 
 /obj/item/wisp_lantern/update_icon_state()
 	if(!wisp)
 		icon_state = "lantern"
 		return
-	icon_state = "lantern[wisp.loc == src ? "" : "-blue"]"
+	icon_state = "lantern[wisp.loc == src ? "-blue" : ""]"
 
 
 /obj/item/wisp_lantern/attack_self(mob/user)
@@ -249,9 +252,10 @@
 		RegisterSignal(user, COMSIG_MOB_UPDATE_SIGHT, PROC_REF(update_user_sight))
 
 		to_chat(user, "<span class='notice'>You release the wisp. It begins to bob around your head.</span>")
+		wisp.forceMove(user)
 		update_icon(UPDATE_ICON_STATE)
-		INVOKE_ASYNC(src, TYPE_PROC_REF(/atom/movable, orbit), user, 20)
-		set_light(0)
+		INVOKE_ASYNC(wisp, TYPE_PROC_REF(/atom/movable, orbit), user, 20)
+		set_light_on(FALSE)
 
 		user.update_sight()
 		to_chat(user, "<span class='notice'>The wisp enhances your vision.</span>")
@@ -263,7 +267,7 @@
 		to_chat(user, "<span class='notice'>You return the wisp to the lantern.</span>")
 		wisp.stop_orbit()
 		wisp.forceMove(src)
-		set_light(initial(light_range))
+		set_light_on(TRUE)
 
 		user.update_sight()
 		to_chat(user, "<span class='notice'>Your vision returns to normal.</span>")
@@ -274,6 +278,7 @@
 /obj/item/wisp_lantern/Initialize(mapload)
 	. = ..()
 	wisp = new(src)
+	update_icon(UPDATE_ICON_STATE)
 
 /obj/item/wisp_lantern/Destroy()
 	if(wisp)

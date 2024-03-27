@@ -244,6 +244,10 @@ GLOBAL_LIST_EMPTY(channel_to_radio_key)
 		else
 			first_piece.message = copytext_char(first_piece.message, 3)
 
+	//And only after everything is done, we hissin'
+	for(var/datum/multilingual_say_piece/piece as anything in message_pieces)
+		piece.message = handle_autohiss(piece.message, piece.speaking)
+
 	first_piece.message = trim_left(first_piece.message)
 	verb = say_quote(message, first_piece.speaking)
 
@@ -251,10 +255,16 @@ GLOBAL_LIST_EMPTY(channel_to_radio_key)
 		if(iscarbon(src))
 			var/mob/living/carbon/C = src
 			var/obj/item/organ/internal/vocal_cords/V = C.get_int_organ(/obj/item/organ/internal/vocal_cords)
-			if(V && V.can_speak_with())
-				C.say(V.handle_speech(message), sanitize = FALSE, ignore_speech_problems = TRUE, ignore_atmospherics = TRUE)
-				V.speak_with(message) //words come before actions
-		return TRUE
+			if(!V || !V.can_speak_with())
+				return TRUE
+
+			V.speak_with(message)
+			message_pieces = V.handle_speech(message_pieces)
+			if(!LAZYLEN(message_pieces))
+				return TRUE
+
+			ignore_speech_problems = TRUE
+			ignore_atmospherics = TRUE
 
 	if(is_muzzled())
 		var/obj/item/clothing/mask/muzzle/G = wear_mask

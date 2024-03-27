@@ -42,7 +42,7 @@
 /obj/machinery/atmospherics/unary/cryo_cell/power_change(forced = FALSE)
 	..()
 	if(stat & (BROKEN|NOPOWER))
-		set_light(0)
+		set_light_on(FALSE)
 	else
 		set_light(2)
 
@@ -104,6 +104,7 @@
 
 /obj/machinery/atmospherics/unary/cryo_cell/Destroy()
 	QDEL_NULL(beaker)
+	QDEL_NULL(occupant_overlay)
 	return ..()
 
 /obj/machinery/atmospherics/unary/cryo_cell/ex_act(severity)

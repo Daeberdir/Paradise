@@ -1,5 +1,5 @@
 /datum/species/grey
-	name = "Grey"
+	name = SPECIES_GREY
 	name_plural = "Greys"
 	icobase = 'icons/mob/human_races/r_grey.dmi'
 	deform = 'icons/mob/human_races/r_def_grey.dmi'
@@ -94,9 +94,9 @@
 /datum/species/grey/after_equip_job(datum/job/J, mob/living/carbon/human/H)
 	var/translator_pref = H.client.prefs.speciesprefs
 	if(translator_pref || ((ismindshielded(H) || J.is_command || J.supervisors == "the captain") && (WINGDINGS in H.mutations)))
-		if(J.title == "Mime")
+		if(J.title == JOB_TITLE_MIME)
 			return
-		if(J.title == "Clown")
+		if(J.title == JOB_TITLE_CLOWN)
 			var/obj/item/organ/internal/cyberimp/brain/speech_translator/clown/implant = new
 			implant.insert(H)
 		else

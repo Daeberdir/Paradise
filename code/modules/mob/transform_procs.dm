@@ -47,7 +47,7 @@
 
 	O.add_ai_verbs()
 
-	O.rename_self("AI",1)
+	O.rename_self(JOB_TITLE_AI,1)
 
 	O.tts_seed = tts_seed
 
@@ -93,7 +93,7 @@
 
 	if(mind)		//TODO
 		mind.transfer_to(O)
-		if(O.mind.assigned_role == "Cyborg")
+		if(O.mind.assigned_role == JOB_TITLE_CYBORG)
 			O.mind.set_original_mob(O)
 		else if(mind && mind.special_role)
 			O.mind.store_memory("In case you look at this after being borged, the objectives are only here until I find a way to make them not show up for you, as I can't simply delete them without screwing up round-end reporting. --NeoFite")
@@ -101,9 +101,9 @@
 		O.key = key
 
 	O.forceMove(loc)
-	O.job = "Cyborg"
+	O.job = JOB_TITLE_CYBORG
 
-	if(O.mind && O.mind.assigned_role == "Cyborg")
+	if(O.mind && O.mind.assigned_role == JOB_TITLE_CYBORG)
 		if(O.mind.role_alt_title == "Robot")
 			O.mmi = new /obj/item/mmi/robotic_brain(O)
 			if(O.mmi.brainmob)
@@ -184,6 +184,34 @@
 
 	qdel(src)
 
+/mob/living/carbon/human/proc/paize(name, bespai)
+	if(notransform)
+		return
+	for(var/obj/item/W in src)
+		drop_item_ground(W)
+	regenerate_icons()
+	notransform = TRUE
+	canmove = FALSE
+	icon = null
+	invisibility = INVISIBILITY_ABSTRACT
+	var/obj/item/paicard/card
+
+	if(bespai)
+		card = new /obj/item/paicard/syndicate(loc)
+
+	else
+		card = new /obj/item/paicard(loc)
+
+	var/mob/living/silicon/pai/pai = new(card)
+	pai.key = key
+	card.setPersonality(pai)
+	pai.name = name
+	pai.real_name = name
+	card.name = name
+
+	to_chat(pai, "<B>You have become a pAI! Your name is [pai.name].</B>")
+	pai.update_pipe_vision()
+	INVOKE_ASYNC(GLOBAL_PROC, /proc/qdel, src)
 
 /mob/proc/gorillize(gorilla_type = "Normal", message = TRUE)
 	if(notransform)
@@ -227,69 +255,57 @@
 	qdel(src)
 
 
-/mob/proc/safe_respawn(var/MP)
-	if(!MP)
-		return 0
+/mob/proc/safe_respawn(mob/living/passed_mob, check_station_level = TRUE)
+	. = FALSE
 
-	if(!GAMEMODE_IS_NUCLEAR)
-		if(ispath(MP, /mob/living/simple_animal/pet/cat/Syndi))
-			return 0
-	if(ispath(MP, /mob/living/simple_animal/pet/cat))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/pet/dog/security))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/pet/dog/corgi))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/crab))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/chicken))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/cow))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/parrot))
-		return 1
-	if(!GAMEMODE_IS_NUCLEAR)
-		if(ispath(MP, /mob/living/simple_animal/pet/dog/fox/Syndifox))
-			return 0
-	if(ispath(MP, /mob/living/simple_animal/pet/dog/fox/alisa))
-		return 0
-	if(ispath(MP, /mob/living/simple_animal/pet/dog/fox))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/chick))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/pet/dog/pug))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/butterfly))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/pet/penguin))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/pet/sloth))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/pig))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/cock))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/goose))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/turkey))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/mouse/hamster))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/mouse/rat))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/hostile/retaliate/poison/snake/rouge))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/possum))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/pet/slugcat))
-		return 1
-	if(ispath(MP, /mob/living/simple_animal/frog))
-		return 1
+	var/static/list/safe_respawn_typecache_nuclear = typecacheof(list(
+		/mob/living/simple_animal/pet/cat/Syndi,
+		/mob/living/simple_animal/pet/dog/fox/Syndifox,
+	))
+	if(is_type_in_typecache(passed_mob, safe_respawn_typecache_nuclear))
+		return GAMEMODE_IS_NUCLEAR
 
-	if(ispath(MP, /mob/living/simple_animal/borer) && !jobban_isbanned(src, ROLE_BORER) && !jobban_isbanned(src, "Syndicate"))
-		return 1
+	if(check_station_level && !is_admin(src) && !is_station_level(passed_mob.z))
+		return FALSE
 
-	if(ispath(MP, /mob/living/simple_animal/diona) && !jobban_isbanned(src, ROLE_NYMPH))
-		return 1
+	if(istype(passed_mob, /mob/living/simple_animal/borer) && !jobban_isbanned(src, ROLE_BORER) && !jobban_isbanned(src, ROLE_SYNDICATE))
+		return TRUE
 
-	return 0
+	if(isnymph(passed_mob) && !jobban_isbanned(src, ROLE_NYMPH))
+		return TRUE
+
+	// Whitelist typecache. Alphabetical order please!
+	var/static/list/safe_respawn_typecache_whitelist = typecacheof(list(
+		/mob/living/simple_animal/butterfly,
+		/mob/living/simple_animal/chick,
+		/mob/living/simple_animal/chicken,
+		/mob/living/simple_animal/cock,
+		/mob/living/simple_animal/cow,
+		/mob/living/simple_animal/crab,
+		/mob/living/simple_animal/frog,
+		/mob/living/simple_animal/goose,
+		/mob/living/simple_animal/hostile/gorilla/cargo_domestic,
+		/mob/living/simple_animal/hostile/retaliate/poison/snake/rouge,
+		/mob/living/simple_animal/mouse/hamster,
+		/mob/living/simple_animal/mouse/rat,
+		/mob/living/simple_animal/parrot,
+		/mob/living/simple_animal/pet/cat,
+		/mob/living/simple_animal/pet/dog/corgi,
+		/mob/living/simple_animal/pet/dog/fox,
+		/mob/living/simple_animal/pet/dog/pug,
+		/mob/living/simple_animal/pet/dog/security,
+		/mob/living/simple_animal/pet/penguin,
+		/mob/living/simple_animal/pet/sloth,
+		/mob/living/simple_animal/pet/slugcat,
+		/mob/living/simple_animal/pig,
+		/mob/living/simple_animal/possum,
+		/mob/living/simple_animal/turkey,
+	))
+
+	// Blacklist typecache.
+	var/static/list/safe_respawn_typecache_blacklist = typecacheof(list(
+		/mob/living/simple_animal/pet/dog/fox/alisa,
+	))
+
+	if(is_type_in_typecache(passed_mob, safe_respawn_typecache_whitelist) && !is_type_in_typecache(passed_mob, safe_respawn_typecache_blacklist))
+		return TRUE
