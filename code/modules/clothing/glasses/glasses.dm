@@ -389,7 +389,7 @@
 	desc = "Cheap plastic sunglasses. Wear thoze if yu are kool."
 	name = "Phirmel Soonglesas"
 	icon_state = "sunthermal"
-	item_state = "sunthermal"
+	item_state = "sunglasses"
 
 /obj/item/clothing/glasses/sunglasses/noir
 	name = "noir sunglasses"
@@ -546,7 +546,7 @@
 	name = "Thermal Sunglasses"
 	desc = "How does it even works?.."
 	icon_state = "sunthermal"
-	item_state = "sunthermal"
+	item_state = "sunglasses"
 	flash_protect = 1
 	tint = 1
 
