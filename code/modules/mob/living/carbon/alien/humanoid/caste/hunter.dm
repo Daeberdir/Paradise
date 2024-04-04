@@ -58,7 +58,7 @@
 	if(leaping) //Leap while you leap, so you can leap while you leap
 		return
 
-	if(lying)
+	if(lying_angle)
 		return
 
 	else //Maybe uses plasma in the future, although that wouldn't make any sense...
@@ -106,8 +106,3 @@
 			update_icons()
 			update_canmove()
 
-
-/mob/living/carbon/alien/humanoid/float(on)
-	if(leaping)
-		return
-	..()
