@@ -13,6 +13,7 @@
 	medhud.add_to_hud(src)
 	faction += "\ref[src]"
 	determine_move_and_pull_forces()
+	gravity_setup()
 	GLOB.mob_living_list += src
 
 /mob/living/Destroy()
@@ -571,7 +572,7 @@
 	SetDruggy(0)
 	SetHallucinate(0)
 	set_nutrition(NUTRITION_LEVEL_FED + 50)
-	set_bodytemperature(310)
+	set_bodytemperature(dna ? dna.species.body_temperature : BODYTEMP_NORMAL)
 	CureBlind()
 	CureNearsighted()
 	CureMute()
@@ -768,7 +769,7 @@
 		G.adjust_position()
 
 /mob/living/proc/makeTrail(turf/T)
-	if(!has_gravity(src))
+	if(!has_gravity())
 		return
 	var/blood_exists = 0
 
@@ -950,15 +951,54 @@
 /mob/living/proc/is_facehugged()
 	return FALSE
 
-/mob/living/update_gravity(has_gravity)
-	if(!SSticker)
-		return
-	if(has_gravity)
-		clear_alert("weightless")
-		REMOVE_TRAIT(src, TRAIT_MOVE_FLOATING, NO_GRAVITY_TRAIT)
+
+/mob/living/proc/update_gravity(gravity)
+	// Handle movespeed stuff
+	var/speed_change = max(0, gravity - STANDARD_GRAVITY)
+	if(speed_change)
+		add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/gravity, multiplicative_slowdown = speed_change)
 	else
-		throw_alert("weightless", /obj/screen/alert/weightless)
-		ADD_TRAIT(src, TRAIT_MOVE_FLOATING, NO_GRAVITY_TRAIT)
+		remove_movespeed_modifier(/datum/movespeed_modifier/gravity)
+
+	// Time to add/remove gravity alerts. sorry for the mess it's gotta be fast
+	var/obj/screen/alert/gravity_alert = LAZYACCESS(alerts, ALERT_GRAVITY)
+	switch(gravity)
+		if(-INFINITY to NEGATIVE_GRAVITY)
+			if(!istype(gravity_alert, /obj/screen/alert/negative))
+				throw_alert(ALERT_GRAVITY, /obj/screen/alert/negative)
+				ADD_TRAIT(src, TRAIT_MOVE_UPSIDE_DOWN, NEGATIVE_GRAVITY_TRAIT)
+				var/matrix/flipped_matrix = transform
+				flipped_matrix.b = -flipped_matrix.b
+				flipped_matrix.e = -flipped_matrix.e
+				animate(src, transform = flipped_matrix, pixel_y = pixel_y+4, time = 0.5 SECONDS, easing = EASE_OUT)
+				base_pixel_y += 4
+		if(NEGATIVE_GRAVITY + 0.01 to 0)
+			if(!istype(gravity_alert, /obj/screen/alert/weightless))
+				throw_alert(ALERT_GRAVITY, /obj/screen/alert/weightless)
+				ADD_TRAIT(src, TRAIT_MOVE_FLOATING, NO_GRAVITY_TRAIT)
+		if(0.01 to STANDARD_GRAVITY)
+			if(gravity_alert)
+				clear_alert(ALERT_GRAVITY)
+		if(STANDARD_GRAVITY + 0.01 to GRAVITY_DAMAGE_THRESHOLD - 0.01)
+			throw_alert(ALERT_GRAVITY, /obj/screen/alert/highgravity)
+		if(GRAVITY_DAMAGE_THRESHOLD to INFINITY)
+			throw_alert(ALERT_GRAVITY, /obj/screen/alert/veryhighgravity)
+
+	// If we had no gravity alert, or the same alert as before, go home
+	if(!gravity_alert || LAZYACCESS(alerts, ALERT_GRAVITY) == gravity_alert)
+		return
+
+	// By this point we know that we do not have the same alert as we used to
+	if(istype(gravity_alert, /obj/screen/alert/weightless))
+		REMOVE_TRAIT(src, TRAIT_MOVE_FLOATING, NO_GRAVITY_TRAIT)
+
+	else if(istype(gravity_alert, /obj/screen/alert/negative))
+		REMOVE_TRAIT(src, TRAIT_MOVE_UPSIDE_DOWN, NEGATIVE_GRAVITY_TRAIT)
+		var/matrix/flipped_matrix = transform
+		flipped_matrix.b = -flipped_matrix.b
+		flipped_matrix.e = -flipped_matrix.e
+		animate(src, transform = flipped_matrix, pixel_y = pixel_y-4, time = 0.5 SECONDS, easing = EASE_OUT)
+		base_pixel_y -= 4
 
 
 ///Proc to modify the value of num_legs and hook behavior associated to this event.
@@ -1074,7 +1114,7 @@
 		if(what && what == who.get_item_by_slot(where) && Adjacent(who))
 			if(!who.drop_item_ground(what, silent = silent))
 				return
-			if(silent)
+			if(silent && !QDELETED(what) && isturf(what.loc))
 				put_in_hands(what, silent = TRUE)
 			add_attack_logs(src, who, "Stripped of [what]")
 
@@ -1513,3 +1553,44 @@ GLOBAL_LIST_INIT(ventcrawl_machinery, list(/obj/machinery/atmospherics/unary/ven
 		to_chat(src, span_notice("Здесь что-то есть, но вы не видите — что именно."))
 		return TRUE
 	return FALSE
+
+/**
+  * Sets the mob's direction lock towards a given atom.
+  *
+  * Arguments:
+  * * a - The atom to face towards.
+  * * track - If TRUE, updates our direction relative to the atom when moving.
+  */
+/mob/living/proc/set_forced_look(atom/A, track = FALSE)
+	forced_look = track ? A.UID() : get_cardinal_dir(src, A)
+	add_movespeed_modifier(/datum/movespeed_modifier/forced_look)
+	to_chat(src, span_userdanger("You are now facing [track ? A : dir2text(forced_look)]. To cancel this, shift-middleclick yourself."))
+	throw_alert("direction_lock", /obj/screen/alert/direction_lock)
+
+/**
+  * Clears the mob's direction lock if enabled.
+  *
+  * Arguments:
+  * * quiet - Whether to display a chat message.
+  */
+/mob/living/proc/clear_forced_look(quiet = FALSE)
+	if(!forced_look)
+		return
+	forced_look = null
+	remove_movespeed_modifier(/datum/movespeed_modifier/forced_look)
+	if(!quiet)
+		to_chat(src, span_notice("Cancelled direction lock."))
+	clear_alert("direction_lock")
+
+/mob/living/setDir(new_dir)
+	var/old_dir = dir
+	if(forced_look)
+		if(isnum(forced_look))
+			dir = forced_look
+		else
+			var/atom/A = locateUID(forced_look)
+			if(istype(A))
+				dir = get_cardinal_dir(src, A)
+		SEND_SIGNAL(src, COMSIG_ATOM_DIR_CHANGE, old_dir, dir)
+		return
+	return ..()
