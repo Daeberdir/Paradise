@@ -18,13 +18,14 @@
 	density = 1 //Dense. To raise the heat.
 	opacity = 0
 
-	anchored = TRUE
+	move_resist = MOVE_FORCE_EXTREMELY_STRONG
+	move_force = MOVE_FORCE_VERY_STRONG
 	resistance_flags = ACID_PROOF
 
 	layer = 3.9
 	infra_luminosity = 15
 
-	var/mob/pilot	//There is only ever one pilot and he gets all the privledge
+	var/mob/living/pilot	//There is only ever one pilot and he gets all the privledge
 	var/list/mob/passengers = list() //passengers can't do anything and are variable in number
 	var/max_passengers = 0
 	var/obj/item/storage/internal/cargo_hold
@@ -139,7 +140,7 @@
 			oldposition = get_step(get_step(src, EAST), EAST)
 			oldloc = get_step(oldposition, NORTH)
 
-	if(!has_gravity(T))
+	if(!T.has_gravity(T))
 		new /obj/effect/particle_effect/ion_trails(oldposition, dir)
 		new /obj/effect/particle_effect/ion_trails(oldloc, dir)
 
@@ -255,6 +256,9 @@
 		playsound(src.loc, 'sound/weapons/slash.ogg', 50, 1, -1)
 		to_chat(user, "<span class='warning'>You slash at [src]!</span>")
 		visible_message("<span class='warning'>The [user] slashes at [src.name]'s armor!</span>")
+
+/obj/spacepod/attack_tk()
+	return
 
 /obj/spacepod/proc/deal_damage(damage)
 	var/oldhealth = health
@@ -881,7 +885,6 @@
 		user.forceMove(get_turf(src))
 		passengers -= user
 		to_chat(user, "<span class='notice'>You climb out of [src].</span>")
-	user.update_gravity(user.mob_has_gravity())
 
 /obj/spacepod/verb/lock_pod()
 	set name = "Lock Doors"
@@ -1074,7 +1077,8 @@
 		return 0
 	var/moveship = 1
 	if(battery && battery.charge >= 1 && health && empcounter == 0)
-		src.dir = direction
+		if(!(direction & (UP|DOWN)))
+			src.dir = direction
 		switch(direction)
 			if(NORTH)
 				if(inertia_dir == SOUTH)
@@ -1093,7 +1097,15 @@
 					inertia_dir = NONE
 					moveship = 0
 		if(moveship)
-			Move(get_step(src, direction), direction)
+			if(direction & (UP|DOWN))
+				var/turf/above = GET_TURF_ABOVE(loc)
+				if((direction & UP) && can_z_move(DOWN, above, z_move_flags = ZMOVE_FALL_FLAGS)) // going up and can fall down is bad.
+					return
+				if(!zMove(direction))
+					return
+				pilot.update_z(z) // after we moved
+			else
+				Move(get_step(src, direction), direction)
 			if(equipment_system.cargo_system)
 				for(var/turf/T in locs)
 					for(var/obj/item/I in T.contents)
@@ -1110,7 +1122,8 @@
 			to_chat(user, "<span class='warning'>The pod control interface isn't responding. The console indicates [empcounter] seconds before reboot.</span>")
 		else
 			to_chat(user, "<span class='warning'>Unknown error has occurred, yell at the coders.</span>")
-		return 0
+		next_move = world.time + move_delay * 10 // Don't make it spam
+		return FALSE
 	battery.charge = max(0, battery.charge - 1)
 	next_move = world.time + move_delay
 
