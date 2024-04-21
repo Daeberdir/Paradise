@@ -183,8 +183,18 @@
 // Intermediate steps for branching organ manipulation.
 /datum/surgery/intermediate/manipulate
 	requires_bodypart = TRUE
-
-	possible_locs = list(BODY_ZONE_CHEST, BODY_ZONE_HEAD, BODY_ZONE_PRECISE_GROIN, BODY_ZONE_PRECISE_EYES, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
+	possible_locs = list(
+		BODY_ZONE_CHEST,
+		BODY_ZONE_HEAD,
+		BODY_ZONE_PRECISE_GROIN,
+		BODY_ZONE_PRECISE_EYES,
+		BODY_ZONE_PRECISE_MOUTH,
+		BODY_ZONE_L_ARM,
+		BODY_ZONE_R_ARM,
+		BODY_ZONE_L_LEG,
+		BODY_ZONE_R_LEG,
+		BODY_ZONE_TAIL,
+	)
 
 // All these surgeries are necessary for slotting into proxy steps
 
@@ -298,7 +308,7 @@
 	var/any_organs_damaged = FALSE
 
 	for(var/obj/item/organ/internal/organ as anything in get_organ_list(target_zone, target, affected))
-		if(!organ.damage)
+		if(!organ.has_damage())
 			continue
 		any_organs_damaged = TRUE
 		var/can_treat_robotic = organ.is_robotic() && istype(tool, /obj/item/stack/nanopaste)
@@ -317,6 +327,7 @@
 			to_chat(user, "[organ] can't be treated with [tool_name].")
 
 	if(!any_organs_damaged)
+		to_chat(user, "There are no damaged organs in [affected ? affected.name : parse_zone(target_zone)].")
 		return SURGERY_BEGINSTEP_SKIP
 
 	if(affected)
@@ -337,12 +348,11 @@
 		if(treated_robotic || treated_organic)
 			if(organ.is_dead())
 				continue
-			if(organ.damage)
-				user.visible_message(
-					span_notice("[user] treats damage to [target]'s [organ.name] with [tool_name]."),
-					span_notice("You treat damage to [target]'s [organ.name] with [tool_name].")
-				)
-				organ.damage = 0
+			user.visible_message(
+				span_notice("[user] treats damage to [target]'s [organ.name] with [tool_name]."),
+				span_notice("You treat damage to [target]'s [organ.name] with [tool_name].")
+			)
+			organ.damage = 0
 			organ.surgeryize()
 
 	return SURGERY_STEP_CONTINUE
