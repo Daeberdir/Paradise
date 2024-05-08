@@ -159,15 +159,14 @@
 
 		I.item_state = initial(picked_item.item_state)
 		I.item_color = initial(picked_item.item_color)
-
-		I.icon_override = initial(picked_item.icon_override)
 		if(initial(picked_item.sprite_sheets))
-			// Species-related variables are lists, which can not be retrieved using initial(). As such, we need to instantiate the picked item.
+			// Sprites-related variables are lists, which can not be retrieved using initial(). As such, we need to instantiate the picked item.
 			var/obj/item/P = new picked_item(null)
 			I.sprite_sheets = P.sprite_sheets
+			I.onmob_sheets = P.onmob_sheets
 			qdel(P)
 
-		if(istype(I, /obj/item/clothing) && ispath(picked_item, /obj/item/clothing))
+		if(isclothing(I) && ispath(picked_item, /obj/item/clothing))
 			var/obj/item/clothing/CL = I
 			var/obj/item/clothing/PCL = picked_item
 			CL.flags_cover = initial(PCL.flags_cover)
@@ -238,12 +237,12 @@
 	armor = list("melee" = 10, "bullet" = 10, "laser" = 10, "energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 50, "acid" = 50)
 
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/clothing/species/vox/suit.dmi',
-		"Monkey" = 'icons/mob/clothing/species/monkey/suit.dmi',
-		"Farwa" = 'icons/mob/clothing/species/monkey/suit.dmi',
-		"Wolpin" = 'icons/mob/clothing/species/monkey/suit.dmi',
-		"Neara" = 'icons/mob/clothing/species/monkey/suit.dmi',
-		"Stok" = 'icons/mob/clothing/species/monkey/suit.dmi'
+		SPECIES_VOX = 'icons/mob/clothing/species/vox/suit.dmi',
+		SPECIES_MONKEY = 'icons/mob/clothing/species/monkey/suit.dmi',
+		SPECIES_FARWA = 'icons/mob/clothing/species/monkey/suit.dmi',
+		SPECIES_WOLPIN = 'icons/mob/clothing/species/monkey/suit.dmi',
+		SPECIES_NEARA = 'icons/mob/clothing/species/monkey/suit.dmi',
+		SPECIES_STOK = 'icons/mob/clothing/species/monkey/suit.dmi'
 	)
 
 	var/datum/action/item_action/chameleon/change/chameleon_action
@@ -277,14 +276,14 @@
 	armor = list("melee" = 10, "bullet" = 10, "laser" = 10, "energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 50, "acid" = 50)
 
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/clothing/species/vox/eyes.dmi',
-		"Drask" = 'icons/mob/clothing/species/drask/eyes.dmi',
-		"Grey" = 'icons/mob/clothing/species/grey/eyes.dmi',
-		"Monkey" = 'icons/mob/clothing/species/monkey/eyes.dmi',
-		"Farwa" = 'icons/mob/clothing/species/monkey/eyes.dmi',
-		"Wolpin" = 'icons/mob/clothing/species/monkey/eyes.dmi',
-		"Neara" = 'icons/mob/clothing/species/monkey/eyes.dmi',
-		"Stok" = 'icons/mob/clothing/species/monkey/eyes.dmi'
+		SPECIES_VOX = 'icons/mob/clothing/species/vox/eyes.dmi',
+		SPECIES_DRASK = 'icons/mob/clothing/species/drask/eyes.dmi',
+		SPECIES_GREY = 'icons/mob/clothing/species/grey/eyes.dmi',
+		SPECIES_MONKEY = 'icons/mob/clothing/species/monkey/eyes.dmi',
+		SPECIES_FARWA = 'icons/mob/clothing/species/monkey/eyes.dmi',
+		SPECIES_WOLPIN = 'icons/mob/clothing/species/monkey/eyes.dmi',
+		SPECIES_NEARA = 'icons/mob/clothing/species/monkey/eyes.dmi',
+		SPECIES_STOK = 'icons/mob/clothing/species/monkey/eyes.dmi'
 	)
 
 	var/datum/action/item_action/chameleon/change/chameleon_action
@@ -386,12 +385,12 @@
 	armor = list("melee" = 5, "bullet" = 5, "laser" = 5, "energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 50, "acid" = 50)
 
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/clothing/species/vox/head.dmi',
-		"Monkey" = 'icons/mob/clothing/species/monkey/head.dmi',
-		"Farwa" = 'icons/mob/clothing/species/monkey/head.dmi',
-		"Wolpin" = 'icons/mob/clothing/species/monkey/head.dmi',
-		"Neara" = 'icons/mob/clothing/species/monkey/head.dmi',
-		"Stok" = 'icons/mob/clothing/species/monkey/head.dmi'
+		SPECIES_VOX = 'icons/mob/clothing/species/vox/head.dmi',
+		SPECIES_MONKEY = 'icons/mob/clothing/species/monkey/head.dmi',
+		SPECIES_FARWA = 'icons/mob/clothing/species/monkey/head.dmi',
+		SPECIES_WOLPIN = 'icons/mob/clothing/species/monkey/head.dmi',
+		SPECIES_NEARA = 'icons/mob/clothing/species/monkey/head.dmi',
+		SPECIES_STOK = 'icons/mob/clothing/species/monkey/head.dmi'
 	)
 
 	var/datum/action/item_action/chameleon/change/chameleon_action
@@ -430,20 +429,20 @@
 	flags_cover = MASKCOVERSEYES | MASKCOVERSMOUTH
 
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/clothing/species/vox/mask.dmi',
-		"Unathi" = 'icons/mob/clothing/species/unathi/mask.dmi',
-		"Ash Walker" = 'icons/mob/clothing/species/unathi/mask.dmi',
-		"Ash Walker Shaman" = 'icons/mob/clothing/species/unathi/mask.dmi',
-		"Draconid" = 'icons/mob/clothing/species/unathi/mask.dmi',
-		"Tajaran" = 'icons/mob/clothing/species/tajaran/mask.dmi',
-		"Vulpkanin" = 'icons/mob/clothing/species/vulpkanin/mask.dmi',
-		"Drask" = 'icons/mob/clothing/species/drask/mask.dmi',
-		"Grey" = 'icons/mob/clothing/species/grey/mask.dmi',
-		"Monkey" = 'icons/mob/clothing/species/monkey/mask.dmi',
-		"Farwa" = 'icons/mob/clothing/species/monkey/mask.dmi',
-		"Wolpin" = 'icons/mob/clothing/species/monkey/mask.dmi',
-		"Neara" = 'icons/mob/clothing/species/monkey/mask.dmi',
-		"Stok" = 'icons/mob/clothing/species/monkey/mask.dmi'
+		SPECIES_VOX = 'icons/mob/clothing/species/vox/mask.dmi',
+		SPECIES_UNATHI = 'icons/mob/clothing/species/unathi/mask.dmi',
+		SPECIES_ASHWALKER_BASIC = 'icons/mob/clothing/species/unathi/mask.dmi',
+		SPECIES_ASHWALKER_SHAMAN = 'icons/mob/clothing/species/unathi/mask.dmi',
+		SPECIES_DRACONOID = 'icons/mob/clothing/species/unathi/mask.dmi',
+		SPECIES_TAJARAN = 'icons/mob/clothing/species/tajaran/mask.dmi',
+		SPECIES_VULPKANIN = 'icons/mob/clothing/species/vulpkanin/mask.dmi',
+		SPECIES_DRASK = 'icons/mob/clothing/species/drask/mask.dmi',
+		SPECIES_GREY = 'icons/mob/clothing/species/grey/mask.dmi',
+		SPECIES_MONKEY = 'icons/mob/clothing/species/monkey/mask.dmi',
+		SPECIES_FARWA = 'icons/mob/clothing/species/monkey/mask.dmi',
+		SPECIES_WOLPIN = 'icons/mob/clothing/species/monkey/mask.dmi',
+		SPECIES_NEARA = 'icons/mob/clothing/species/monkey/mask.dmi',
+		SPECIES_STOK = 'icons/mob/clothing/species/monkey/mask.dmi'
 	)
 
 	var/obj/item/voice_changer/voice_changer
@@ -516,7 +515,7 @@
 	name = "backpack"
 
 	sprite_sheets = list(
-		"Vox" = 'icons/mob/clothing/species/vox/back.dmi'
+		SPECIES_VOX = 'icons/mob/clothing/species/vox/back.dmi'
 	)
 
 	var/datum/action/item_action/chameleon/change/chameleon_action

@@ -13,12 +13,11 @@
 	var/id_tag = "default"
 	var/drive_range = 50 //this is mostly irrelevant since current mass drivers throw into space, but you could make a lower-range mass driver for interstation transport or something I guess.
 
-/obj/machinery/mass_driver/init_multitool_menu()
-	multitool_menu = new /datum/multitool_menu/idtag/mass_driver(src)
+	multitool_menu_type = /datum/multitool_menu/idtag/mass_driver
 
 /obj/machinery/mass_driver/multitool_act(mob/user, obj/item/I)
 	. = TRUE
-	multitool_menu.interact(user, I)
+	multitool_menu_interact(user, I)
 
 /obj/machinery/mass_driver/screwdriver_act(mob/user, obj/item/I)
 	. = TRUE
@@ -27,7 +26,7 @@
 	if(do_after(user, 30 * I.toolspeed * gettoolspeedmod(user), target = src))
 		var/obj/machinery/mass_driver_frame/F = new(get_turf(src))
 		F.dir = dir
-		F.anchored = TRUE
+		F.set_anchored(TRUE)
 		F.build = 4
 		F.update_icon()
 		qdel(src)
@@ -39,7 +38,7 @@
 	var/O_limit = 0
 	var/atom/target = get_edge_target_turf(src, dir)
 	for(var/atom/movable/O in loc)
-		if((!O.anchored && O.move_resist != INFINITY) || istype(O, /obj/mecha)) //Mechs need their launch platforms. Also checks if something is anchored or has move resist INFINITY, which should stop ghost flinging.
+		if((!O.anchored && O.move_resist != INFINITY) || ismecha(O)) //Mechs need their launch platforms. Also checks if something is anchored or has move resist INFINITY, which should stop ghost flinging.
 			O_limit++
 			if(O_limit >= 20)//so no more than 20 items are sent at a time, probably for counter-lag purposes
 				break
@@ -102,7 +101,7 @@
 				if(do_after(user, 10 * W.toolspeed * gettoolspeedmod(user), target = src) && (build == 0))
 					add_fingerprint(user)
 					to_chat(user, span_notice("You anchor \the [src]!"))
-					anchored = TRUE
+					set_anchored(TRUE)
 					build++
 				return 1
 			return
@@ -113,7 +112,7 @@
 				if(do_after(user, 10 * W.toolspeed * gettoolspeedmod(user), target = src) && (build == 1))
 					add_fingerprint(user)
 					build--
-					anchored = FALSE
+					set_anchored(FALSE)
 					to_chat(user, span_notice("You de-anchored \the [src]!"))
 				return 1
 		if(2) // Welded to the floor

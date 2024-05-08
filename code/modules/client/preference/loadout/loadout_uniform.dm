@@ -1,7 +1,7 @@
 // Uniform slot
 /datum/gear/uniform
 	subtype_path = /datum/gear/uniform
-	slot = slot_w_uniform
+	slot = ITEM_SLOT_CLOTH_INNER
 	sort_category = "Uniforms and Casual Dress"
 
 /datum/gear/uniform/suit
@@ -42,6 +42,10 @@
 	display_name = "USSP uniform"
 	path = /obj/item/clothing/under/soviet
 
+/datum/gear/uniform/suit/federal
+	display_name = "Solar Federation uniform"
+	path = /obj/item/clothing/under/solgov/civ
+
 /datum/gear/uniform/suit/kilt
 	display_name = "a kilt"
 	path = /obj/item/clothing/under/kilt
@@ -49,6 +53,10 @@
 /datum/gear/uniform/suit/executive
 	display_name = "executive suit"
 	path = /obj/item/clothing/under/suit_jacket/really_black
+
+/datum/gear/uniform/suit/amish_suit
+	display_name = "amish suit"
+	path = /obj/item/clothing/under/sl_suit
 
 /datum/gear/uniform/chaps
 	display_name = "chaps, select"
@@ -358,3 +366,4 @@
 	display_name = "track suit (blue)"
 	description = "A classic track suit. There is a small tag on the clothes that says \"Made in the USSP\"."
 	path = /obj/item/clothing/under/ussptracksuit_blue
+

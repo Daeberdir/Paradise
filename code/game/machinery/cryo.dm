@@ -22,10 +22,6 @@
 	/// A separate effect for the occupant, as you can't animate overlays reliably and constantly removing and adding overlays is spamming the subsystem.
 	var/obj/effect/occupant_overlay
 	var/obj/item/reagent_containers/glass/beaker
-	//if you don't want to dupe reagents
-	var/static/list/reagents_blacklist = list(
-		"stimulants"
-	)
 	/// Holds two bitflags, AUTO_EJECT_DEAD and AUTO_EJECT_HEALTHY. Used to determine if the cryo cell will auto-eject dead and/or completely health patients.
 	var/auto_eject_prefs = NONE
 
@@ -138,7 +134,7 @@
 		return
 	if(!ismob(O)) //humans only
 		return
-	if(istype(O, /mob/living/simple_animal) || istype(O, /mob/living/silicon)) //animals and robutts dont fit
+	if(isanimal(O) || istype(O, /mob/living/silicon)) //animals and robutts dont fit
 		return
 	if(!ishuman(user) && !isrobot(user)) //No ghosts or mice putting people into the sleeper
 		return
@@ -408,7 +404,7 @@
 			// Yes, this means you can get more bang for your buck with a beaker of SF vs a patch
 			// But it also means a giant beaker of SF won't heal people ridiculously fast 4 cheap
 			for(var/datum/reagent/reagent in beaker.reagents.reagent_list)
-				if(reagent.id in reagents_blacklist)
+				if(!reagent.can_synth) //prevents from dupe blacklisted reagents as for emagged odysseus
 					proportion = min(proportion, 1)
 					volume = 1
 			beaker.reagents.reaction(occupant, REAGENT_TOUCH, proportion)
@@ -440,14 +436,14 @@
 /obj/machinery/atmospherics/unary/cryo_cell/proc/go_out()
 	if(!occupant)
 		return
-	occupant.forceMove(get_step(loc, SOUTH))	//this doesn't account for walls or anything, but i don't forsee that being a problem.
-	if(occupant.bodytemperature < 261 && occupant.bodytemperature >= 70) //Patch by Aranclanos to stop people from taking burn damage after being ejected
-		occupant.bodytemperature = 261
+	var/turf/drop_loc = get_step(loc, SOUTH)	//this doesn't account for walls or anything, but i don't forsee that being a problem.
+	occupant.forceMove(drop_loc)
+	occupant.set_bodytemperature(occupant.dna ? occupant.dna.species.body_temperature : BODYTEMP_NORMAL)
 	occupant = null
 	update_icon(UPDATE_OVERLAYS)
 	// eject trash the occupant dropped
-	for(var/atom/movable/A in contents - component_parts - list(beaker))
-		A.forceMove(get_step(loc, SOUTH))
+	for(var/atom/movable/thing in (contents - component_parts - beaker))
+		thing.forceMove(drop_loc)
 
 /obj/machinery/atmospherics/unary/cryo_cell/force_eject_occupant(mob/target)
 	go_out()

@@ -8,6 +8,8 @@
 	/// Whether it shows up as an option to remove during surgery.
 	var/unremovable = FALSE
 	var/can_see_food = FALSE
+	light_system = MOVABLE_LIGHT
+	light_on = FALSE
 
 
 /obj/item/organ/internal/New(mob/living/carbon/holder)
@@ -39,7 +41,7 @@
 		if(!istype(parent))
 			stack_trace("[src] attempted to insert into a [parent_organ_zone], but [parent_organ_zone] wasn't an organ! [atom_loc_line(h_target)]")
 		else
-			LAZYADDOR(parent.internal_organs, src)
+			LAZYOR(parent.internal_organs, src)
 		h_target.update_int_organs()
 
 	loc = null
@@ -258,7 +260,7 @@
 		else if(light_count < 2 && obj_integrity < max_integrity) //Heal in the dark
 			obj_integrity++
 		if(obj_integrity <= 0)
-			visible_message("<span class='warning'>[src] collapses in on itself!</span>")
+			visible_message(span_warning("[src] collapses in on itself!"))
 			qdel(src)
 
 
@@ -376,7 +378,7 @@
 	if(!owner)
 		return
 
-	if(istype(owner, /mob/living/carbon/human))
+	if(ishuman(owner))
 		var/mob/living/carbon/human/H = owner
 		var/obj/item/organ/external/head/head_organ = H.get_organ(BODY_ZONE_HEAD)
 		if(!(head_organ.h_style == "Very Long Hair" || head_organ.h_style == "Mohawk"))

@@ -8,17 +8,6 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 	move_resist = null // Set in the Initialise depending on the item size. Unless it's overriden by a specific item
 	var/discrete = 0 // used in item_attack.dm to make an item not show an attack message to viewers
 
-	var/item_state = null
-	var/lefthand_file = 'icons/mob/inhands/items_lefthand.dmi'
-	var/righthand_file = 'icons/mob/inhands/items_righthand.dmi'
-
-	var/belt_icon = null
-
-	//Dimensions of the lefthand_file and righthand_file vars
-	//eg: 32x32 sprite, 64x64 sprite, etc.
-	var/inhand_x_dimension = 32
-	var/inhand_y_dimension = 32
-
 	max_integrity = 200
 
 	can_be_hit = FALSE
@@ -57,7 +46,10 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 	///Whether or not we use stealthy audio levels for this item's attack sounds
 	var/stealthy_audio = FALSE
 	var/w_class = WEIGHT_CLASS_NORMAL
-	var/slot_flags = 0		//This is used to determine on which slots an item can fit.
+	/// This is used to determine on which slots an item can fit.
+	var/slot_flags = NONE
+	/// Additional slot flags, mostly used by humans
+	var/slot_flags_2 = NONE
 	pass_flags = PASSTABLE
 	pressure_resistance = 4
 //	causeerrorheresoifixthis
@@ -132,14 +124,44 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 	/* Species-specific sprites, concept stolen from Paradise//vg/.
 	ex:
 	sprite_sheets = list(
-		"Tajaran" = 'icons/cat/are/bad'
+		SPECIES_TAJARAN = 'icons/cat/are/bad'
 		)
 	If index term exists and icon_override is not set, this sprite sheet will be used.
 	*/
+	///Sprite sheets to render species clothing, takes priority over "onmob_sheets" var, but only takes one dmi
 	var/list/sprite_sheets = null
 	var/list/sprite_sheets_inhand = null //Used to override inhand items. Use a single .dmi and suffix the icon states inside with _l and _r for each hand.
-	var/icon_override = null  //Used to override hardcoded clothing dmis in human clothing proc.
-	var/sprite_sheets_obj = null //Used to override hardcoded clothing inventory object dmis in human clothing proc.
+	var/sprite_sheets_obj = null //Used to override clothing inventory object dmis in human clothing proc.
+
+	///Sprite sheets used to render clothing, if none of sprite_sheets are used
+	var/list/onmob_sheets = list(
+		ITEM_SLOT_EAR_LEFT_STRING = DEFAULT_ICON_LEFT_EAR,
+		ITEM_SLOT_EAR_RIGHT_STRING = DEFAULT_ICON_RIGHT_EAR,
+		ITEM_SLOT_BELT_STRING = DEFAULT_ICON_BELT,
+		ITEM_SLOT_BACK_STRING = DEFAULT_ICON_BACK,
+		ITEM_SLOT_CLOTH_OUTER_STRING = DEFAULT_ICON_OUTER_SUIT,
+		ITEM_SLOT_CLOTH_INNER_STRING = DEFAULT_ICON_JUMPSUIT,
+		ITEM_SLOT_MASK_STRING = DEFAULT_ICON_WEAR_MASK,
+		ITEM_SLOT_HEAD_STRING = DEFAULT_ICON_HEAD,
+		ITEM_SLOT_FEET_STRING = DEFAULT_ICON_SHOES,
+		ITEM_SLOT_ID_STRING = DEFAULT_ICON_WEAR_ID,
+		ITEM_SLOT_NECK_STRING = DEFAULT_ICON_NECK,
+		ITEM_SLOT_EYES_STRING = DEFAULT_ICON_GLASSES,
+		ITEM_SLOT_GLOVES_STRING = DEFAULT_ICON_GLOVES,
+		ITEM_SLOT_SUITSTORE_STRING = DEFAULT_ICON_SUITSTORE,
+		ITEM_SLOT_HANDCUFFED_STRING = DEFAULT_ICON_HANDCUFFED,
+		ITEM_SLOT_LEGCUFFED_STRING = DEFAULT_ICON_LEGCUFFED,
+		ITEM_SLOT_ACCESSORY_STRING = DEFAULT_ICON_ACCESSORY,
+		ITEM_SLOT_COLLAR_STRING = DEFAULT_ICON_COLLAR
+	)
+	var/belt_icon = null
+	var/item_state = null
+	//Dimensions of the lefthand_file and righthand_file vars
+	//eg: 32x32 sprite, 64x64 sprite, etc.
+	var/inhand_x_dimension = 32
+	var/inhand_y_dimension = 32
+	var/lefthand_file = 'icons/mob/inhands/items_lefthand.dmi'
+	var/righthand_file = 'icons/mob/inhands/items_righthand.dmi'
 
 	//Tooltip vars
 	var/in_inventory = FALSE //is this item equipped into an inventory slot or hand of a mob?
@@ -188,7 +210,7 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 
 /obj/item/Initialize(mapload)
 	. = ..()
-	if(istype(loc, /obj/item/storage)) //marks all items in storage as being such
+	if(isstorage(loc)) //marks all items in storage as being such
 		in_storage = TRUE
 
 
@@ -215,6 +237,8 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 	if(ismob(loc))
 		var/mob/M = loc
 		M.drop_item_ground(src, TRUE)
+	else
+		remove_item_from_storage(get_turf(src))
 
 	//Reason behind why it's not QDEL_LIST: works badly with lazy removal in Destroy() of item_action
 	for(var/i in actions)
@@ -433,7 +457,7 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 // Due to storage type consolidation this should get used more now.
 // I have cleaned it up a little, but it could probably use more.  -Sayu
 /obj/item/attackby(obj/item/I, mob/user, params)
-	if(istype(I, /obj/item/storage))
+	if(isstorage(I))
 		var/obj/item/storage/S = I
 		if(S.use_to_pickup)
 			if(S.pickup_all_on_tile) //Mode is set to collect all items on a tile and we clicked on a valid one.
@@ -463,7 +487,7 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 				I.do_pickup_animation(user)
 				S.handle_item_insertion(src)
 	else if(istype(I, /obj/item/stack/tape_roll))
-		if(istype(src, /obj/item/storage)) //Don't tape the bag if we can put the duct tape inside it instead
+		if(isstorage(src)) //Don't tape the bag if we can put the duct tape inside it instead
 			var/obj/item/storage/bag = src
 			if(bag.can_be_inserted(I))
 				return ..()
@@ -477,7 +501,6 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 		if(TR.use(1))
 			to_chat(user, "<span class='notice'>You apply some tape to [src].</span>")
 			AddComponent(/datum/component/ducttape, src, user, x_offset, y_offset)
-			anchored = TRUE
 			user.transfer_fingerprints_to(src)
 		else
 			to_chat(user, "<span class='notice'>You don't have enough tape to do that!</span>")
@@ -486,10 +509,10 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 
 
 /obj/item/proc/hit_reaction(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0, attack_type = MELEE_ATTACK)
-	SEND_SIGNAL(src, COMSIG_ITEM_HIT_REACT, args)
-	if(prob(final_block_chance))
+	var/signal_result = (SEND_SIGNAL(src, COMSIG_ITEM_HIT_REACT, owner, hitby, damage, attack_type) & COMPONENT_BLOCK_SUCCESSFUL) + prob(final_block_chance)
+	if(signal_result != 0)
 		owner.visible_message(span_danger("[owner] blocks [attack_text] with [src]!"))
-		return TRUE
+		return signal_result
 	return FALSE
 
 
@@ -545,7 +568,7 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 /**
  * When item is officially left user
  */
-/obj/item/proc/dropped(mob/user, silent = FALSE)
+/obj/item/proc/dropped(mob/user, slot, silent = FALSE)
 	SHOULD_CALL_PARENT(TRUE)
 
 	// Remove any item actions we temporary gave out
@@ -554,9 +577,6 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 
 	if(flags & DROPDEL && !QDELETED(src))
 		qdel(src)
-
-	if((flags & NODROP) && !(initial(flags) & NODROP)) // Remove NODROP flag if it was not initial
-		flags &= ~NODROP
 
 	in_inventory = FALSE
 	mouse_opacity = initial(mouse_opacity)
@@ -652,14 +672,15 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 			if(islist(equip_sound) && length(equip_sound))
 				chosen_sound = pick(equip_sound)
 			playsound(src, chosen_sound, EQUIP_SOUND_VOLUME * USER_VOLUME(user, CHANNEL_INTERACTION_SOUNDS), channel = CHANNEL_INTERACTION_SOUNDS, ignore_walls = FALSE)
-		else if(slot == slot_l_store || slot == slot_l_store)
+		else if(slot & ITEM_SLOT_POCKETS)
 			playsound(src, 'sound/items/handling/generic_equip3.ogg', EQUIP_SOUND_VOLUME * USER_VOLUME(user, CHANNEL_INTERACTION_SOUNDS), channel = CHANNEL_INTERACTION_SOUNDS, ignore_walls = FALSE)
-		else if(pickup_sound && (slot == slot_l_hand || slot == slot_r_hand))
+		else if(pickup_sound && (slot & ITEM_SLOT_HANDS))
 			var/chosen_sound = pickup_sound
 			if(islist(pickup_sound) && length(pickup_sound))
 				chosen_sound = pick(pickup_sound)
 			playsound(src, chosen_sound, PICKUP_SOUND_VOLUME * USER_VOLUME(user, CHANNEL_INTERACTION_SOUNDS), channel = CHANNEL_INTERACTION_SOUNDS, ignore_walls = FALSE)
 
+	user.update_equipment_speed_mods()
 	SEND_SIGNAL(src, COMSIG_ITEM_EQUIPPED, user, slot)
 	return TRUE
 
@@ -724,8 +745,8 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 	//Checking for storage item in offhand, then belt, then backpack
 	var/list/possible = list( \
 		user.get_inactive_hand(), \
-		user.get_item_by_slot(slot_belt), \
-		user.get_item_by_slot(slot_back) \
+		user.get_item_by_slot(ITEM_SLOT_BELT), \
+		user.get_item_by_slot(ITEM_SLOT_BACK) \
 	)
 
 	for(var/obj/item/storage/container in possible)
@@ -762,9 +783,10 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
  * * 'slot' is the slot we are trying to equip to
  * * 'bypass_equip_delay_self' for whether we want to bypass the equip delay
  * * 'bypass_obscured' for whether we want to ignore clothing obscuration
+ * * 'bypass_incapacitated' wheter we are ignoring user's incapacitated status (uded only for hands currently)
  */
-/obj/item/proc/mob_can_equip(mob/M, slot, disable_warning = FALSE, bypass_equip_delay_self = FALSE, bypass_obscured = FALSE)
-	return M.can_equip(src, slot, disable_warning, bypass_equip_delay_self, bypass_obscured)
+/obj/item/proc/mob_can_equip(mob/M, slot, disable_warning = FALSE, bypass_equip_delay_self = FALSE, bypass_obscured = FALSE, bypass_incapacitated = FALSE)
+	return M.can_equip(src, slot, disable_warning, bypass_equip_delay_self, bypass_obscured, bypass_incapacitated)
 
 
 /obj/item/verb/verb_pickup()
@@ -830,7 +852,7 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 		to_chat(user, "<span class='danger'>You're going to need to remove that mask/helmet/glasses first!</span>")
 		return
 
-	if(istype(M, /mob/living/carbon/alien) || istype(M, /mob/living/simple_animal/slime))//Aliens don't have eyes./N     slimes also don't have eyes!
+	if(isalien(M) || isslime(M))//Aliens don't have eyes./N     slimes also don't have eyes!
 		to_chat(user, "<span class='warning'>You cannot locate any eyes on this creature!</span>")
 		return
 
@@ -953,7 +975,7 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 /obj/item/proc/remove_item_from_storage(atom/newLoc) //please use this if you're going to snowflake an item out of a obj/item/storage
 	if(!newLoc)
 		return FALSE
-	if(istype(loc,/obj/item/storage))
+	if(isstorage(loc))
 		var/obj/item/storage/S = loc
 		S.remove_from_storage(src,newLoc)
 		return TRUE
@@ -973,7 +995,8 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 	return TRUE
 
 
-/obj/item/proc/is_crutch() //Does an item prop up a human mob and allow them to stand if they are missing a leg/foot?
+/// Returns an effectiveness of an item as a crunch, which allow mobs to stand if they are missing a leg/foot?
+/obj/item/proc/is_crutch()
 	return 0
 
 
@@ -1026,7 +1049,7 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 	if(!user || user.incapacitated(ignore_lying = TRUE) || src == dropping)
 		return FALSE
 
-	if(loc && dropping.loc == loc && istype(loc, /obj/item/storage) && loc.Adjacent(user)) // Are we trying to swap two items in the storage?
+	if(loc && dropping.loc == loc && isstorage(loc) && loc.Adjacent(user)) // Are we trying to swap two items in the storage?
 		var/obj/item/storage/S = loc
 		S.swap_items(src, dropping, user)
 		return TRUE
@@ -1082,59 +1105,61 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 	var/slot = owner.get_slot_by_item(src)
 
 	switch(slot)
-		if(slot_wear_suit)
+		if(ITEM_SLOT_CLOTH_OUTER)
 			owner.wear_suit_update(src)
 
-		if(slot_w_uniform)
+		if(ITEM_SLOT_CLOTH_INNER)
 			owner.update_inv_w_uniform()
 
-		if(slot_gloves)
+		if(ITEM_SLOT_GLOVES)
 			owner.update_inv_gloves()
 
-		if(slot_neck)
+		if(ITEM_SLOT_NECK)
 			owner.update_inv_neck()
 
-		if(slot_glasses)
+		if(ITEM_SLOT_EYES)
 			owner.wear_glasses_update(src)
 
-		if(slot_head)
+		if(ITEM_SLOT_HEAD)
 			owner.update_head(src)
 
-		if(slot_l_ear, slot_r_ear)
+		if(ITEM_SLOT_EAR_LEFT, ITEM_SLOT_EAR_RIGHT)
 			owner.update_inv_ears()
 
-		if(slot_shoes)
+		if(ITEM_SLOT_FEET)
 			owner.update_inv_shoes()
 
-		if(slot_belt)
+		if(ITEM_SLOT_BELT)
 			owner.update_inv_belt()
 
-		if(slot_wear_mask)
+		if(ITEM_SLOT_MASK)
 			owner.wear_mask_update(src)
 
-		if(slot_wear_id)
+		if(ITEM_SLOT_ID)
 			if(ishuman(owner))
 				var/mob/living/carbon/human/h_owner = owner
 				h_owner.sec_hud_set_ID()
 			owner.update_inv_wear_id()
 
-		if(slot_wear_pda)
+		if(ITEM_SLOT_PDA)
 			owner.update_inv_wear_pda()
 
-		if(slot_l_store, slot_r_store)
+		if(ITEM_SLOT_POCKET_LEFT, ITEM_SLOT_POCKET_RIGHT)
 			owner.update_inv_pockets()
 
-		if(slot_s_store)
+		if(ITEM_SLOT_SUITSTORE)
 			owner.update_inv_s_store()
 
-		if(slot_back)
+		if(ITEM_SLOT_BACK)
 			owner.update_inv_back()
 
-		if(slot_l_hand)
+		if(ITEM_SLOT_HAND_LEFT)
 			owner.update_inv_l_hand()
 
-		if(slot_r_hand)
+		if(ITEM_SLOT_HAND_RIGHT)
 			owner.update_inv_r_hand()
+
+	owner.update_equipment_speed_mods()
 
 	if(update_buttons)
 		for(var/datum/action/action as anything in actions)
@@ -1286,3 +1311,9 @@ GLOBAL_DATUM_INIT(fire_overlay, /mutable_appearance, mutable_appearance('icons/g
 
 /obj/item/proc/convert_to_ammo()
 	return
+
+
+/// Called on [/datum/element/openspace_item_click_handler/proc/on_afterattack]. Check the relative file for information.
+/obj/item/proc/handle_openspace_click(turf/target, mob/user, proximity_flag, click_parameters)
+	stack_trace("Undefined handle_openspace_click() behaviour. Ascertain the openspace_item_click_handler element has been attached to the right item and that its proc override doesn't call parent.")
+

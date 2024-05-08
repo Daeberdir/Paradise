@@ -74,12 +74,11 @@
 
 
 /mob/living/carbon/proc/update_hands_HUD()
-	if(hud_used && hud_used.inv_slots[slot_l_hand] && hud_used.inv_slots[slot_r_hand])
-		var/obj/screen/inventory/hand/hand
-		hand = hud_used.inv_slots[slot_l_hand]
-		hand.update_icon(UPDATE_OVERLAYS)
-		hand = hud_used.inv_slots[slot_r_hand]
-		hand.update_icon(UPDATE_OVERLAYS)
+	if(!hud_used)
+		return
+	for(var/obj/screen/inventory/hand/hand_box as anything in hud_used.hand_slots)
+		hand_box.update_appearance()
+
 
 
 /**
@@ -150,11 +149,11 @@
 		qdel(new_value)
 		return
 
-	if(handcuffed || handcuffed == new_value || !has_organ_for_slot(slot_handcuffed))
+	if(handcuffed || handcuffed == new_value || !has_organ_for_slot(ITEM_SLOT_HANDCUFFED))
 		drop_item_ground(new_value)
 		return
 
-	equip_to_slot(new_value, slot_handcuffed)
+	equip_to_slot(new_value, ITEM_SLOT_HANDCUFFED)
 	. = TRUE
 
 
@@ -174,14 +173,14 @@
 		qdel(legcuffs)
 		return
 
-	if(legcuffed || legcuffed == legcuffs || !has_organ_for_slot(slot_legcuffed))
+	if(legcuffed || legcuffed == legcuffs || !has_organ_for_slot(ITEM_SLOT_LEGCUFFED))
 		if(qdel_if_cuffed)
 			qdel(legcuffs)
 		else
 			drop_item_ground(legcuffs)
 		return
 
-	equip_to_slot(legcuffs, slot_legcuffed)
+	equip_to_slot(legcuffs, ITEM_SLOT_LEGCUFFED)
 	. = TRUE
 
 
@@ -223,19 +222,19 @@
 	user.set_machine(src)
 
 	var/dat = {"<meta charset="UTF-8"><table>
-	<tr><td><B>Left Hand:</B></td><td><A href='?src=[UID()];item=[slot_l_hand]'>[(l_hand && !(l_hand.flags&ABSTRACT)) ? l_hand : "<font color=grey>Empty</font>"]</A></td></tr>
-	<tr><td><B>Right Hand:</B></td><td><A href='?src=[UID()];item=[slot_r_hand]'>[(r_hand && !(r_hand.flags&ABSTRACT)) ? r_hand : "<font color=grey>Empty</font>"]</A></td></tr>
+	<tr><td><B>Left Hand:</B></td><td><A href='?src=[UID()];item=[ITEM_SLOT_HAND_LEFT]'>[(l_hand && !(l_hand.flags&ABSTRACT)) ? l_hand : "<font color=grey>Empty</font>"]</A></td></tr>
+	<tr><td><B>Right Hand:</B></td><td><A href='?src=[UID()];item=[ITEM_SLOT_HAND_RIGHT]'>[(r_hand && !(r_hand.flags&ABSTRACT)) ? r_hand : "<font color=grey>Empty</font>"]</A></td></tr>
 	<tr><td>&nbsp;</td></tr>"}
 
-	dat += "<tr><td><B>Back:</B></td><td><A href='?src=[UID()];item=[slot_back]'>[(back && !(back.flags&ABSTRACT)) ? back : "<font color=grey>Empty</font>"]</A>"
+	dat += "<tr><td><B>Back:</B></td><td><A href='?src=[UID()];item=[ITEM_SLOT_BACK]'>[(back && !(back.flags&ABSTRACT)) ? back : "<font color=grey>Empty</font>"]</A>"
 	if(istype(wear_mask, /obj/item/clothing/mask) && istype(back, /obj/item/tank))
-		dat += "&nbsp;<A href='?src=[UID()];internal=[slot_back]'>[internal ? "Disable Internals" : "Set Internals"]</A>"
+		dat += "&nbsp;<A href='?src=[UID()];internal=[ITEM_SLOT_BACK]'>[internal ? "Disable Internals" : "Set Internals"]</A>"
 
 	dat += "</td></tr><tr><td>&nbsp;</td></tr>"
 
-	dat += "<tr><td><B>Head:</B></td><td><A href='?src=[UID()];item=[slot_head]'>[(head && !(head.flags&ABSTRACT)) ? head : "<font color=grey>Empty</font>"]</A></td></tr>"
+	dat += "<tr><td><B>Head:</B></td><td><A href='?src=[UID()];item=[ITEM_SLOT_HEAD]'>[(head && !(head.flags&ABSTRACT)) ? head : "<font color=grey>Empty</font>"]</A></td></tr>"
 
-	dat += "<tr><td><B>Mask:</B></td><td><A href='?src=[UID()];item=[slot_wear_mask]'>[(wear_mask && !(wear_mask.flags&ABSTRACT)) ? wear_mask : "<font color=grey>Empty</font>"]</A></td></tr>"
+	dat += "<tr><td><B>Mask:</B></td><td><A href='?src=[UID()];item=[ITEM_SLOT_MASK]'>[(wear_mask && !(wear_mask.flags&ABSTRACT)) ? wear_mask : "<font color=grey>Empty</font>"]</A></td></tr>"
 
 	if(istype(wear_mask, /obj/item/clothing/mask/muzzle))
 		var/obj/item/clothing/mask/muzzle/M = wear_mask
@@ -245,9 +244,9 @@
 		dat += "</td></tr><tr><td>&nbsp;</td></tr>"
 
 	if(handcuffed)
-		dat += "<tr><td><B>Handcuffed:</B> <A href='?src=[UID()];item=[slot_handcuffed]'>Remove</A></td></tr>"
+		dat += "<tr><td><B>Handcuffed:</B> <A href='?src=[UID()];item=[ITEM_SLOT_HANDCUFFED]'>Remove</A></td></tr>"
 	if(legcuffed)
-		dat += "<tr><td><A href='?src=[UID()];item=[slot_legcuffed]'>Legcuffed</A></td></tr>"
+		dat += "<tr><td><A href='?src=[UID()];item=[ITEM_SLOT_LEGCUFFED]'>Legcuffed</A></td></tr>"
 
 	dat += {"</table>
 	<A href='?src=[user.UID()];mach_close=mob\ref[src]'>Close</A>
@@ -341,7 +340,7 @@
 	if(incapacitated(ignore_lying = TRUE))
 		return FALSE
 
-	if(lying && !(I.flags & ABSTRACT))
+	if(lying_angle && !(I.flags & ABSTRACT))
 		return FALSE
 
 	if(hand_id == "HAND_LEFT" && !has_left_hand())
@@ -359,7 +358,7 @@
  * Just puts stuff on the floor for most mobs, since all mobs have hands but putting stuff in the AI/corgi/ghost hand is VERY BAD.
  *
  * Arguments
- * * 'force' overrides flag NODROP and clothing obscuration.
+ * * 'force' overrides TRAIT_NODROP and clothing obscuration.
  * * 'qdel_on_fail' qdels item if failed to pick in both hands.
  * * 'merge_stacks' set to `TRUE` to allow stack auto-merging even when both hands are full.
  * * 'ignore_anim' set to `TRUE` to prevent pick up animation.
@@ -380,7 +379,7 @@
 		I.pixel_y = initial(I.pixel_y)
 		I.layer = initial(I.layer)
 		I.plane = initial(I.plane)
-		I.dropped(src, silent)
+		I.dropped(src, null, silent)
 		return TRUE
 
 	// If the item is a stack and we're already holding a stack then merge
@@ -419,45 +418,45 @@
 	I.forceMove(drop_location())
 	I.layer = initial(I.layer)
 	I.plane = initial(I.plane)
-	I.dropped(src, silent)
+	I.dropped(src, null, silent)
 
 	return FALSE
 
 
-/mob/living/carbon/get_item_by_slot(slot_id)
-	switch(slot_id)
-		if(slot_back)
+/mob/living/carbon/get_item_by_slot(slot_flag)
+	switch(slot_flag)
+		if(ITEM_SLOT_BACK)
 			return back
-		if(slot_wear_mask)
+		if(ITEM_SLOT_MASK)
 			return wear_mask
-		if(slot_wear_suit)
+		if(ITEM_SLOT_CLOTH_OUTER)
 			return wear_suit
-		if(slot_l_hand)
+		if(ITEM_SLOT_HAND_LEFT)
 			return l_hand
-		if(slot_r_hand)
+		if(ITEM_SLOT_HAND_RIGHT)
 			return r_hand
-		if(slot_handcuffed)
+		if(ITEM_SLOT_HANDCUFFED)
 			return handcuffed
-		if(slot_legcuffed)
+		if(ITEM_SLOT_LEGCUFFED)
 			return legcuffed
 	return null
 
 
 /mob/living/carbon/get_slot_by_item(item)
 	if(item == back)
-		return slot_back
+		return ITEM_SLOT_BACK
 	if(item == wear_mask)
-		return slot_wear_mask
+		return ITEM_SLOT_MASK
 	if(item == wear_suit)
-		return slot_wear_suit
+		return ITEM_SLOT_CLOTH_OUTER
 	if(item == l_hand)
-		return slot_l_hand
+		return ITEM_SLOT_HAND_LEFT
 	if(item == r_hand)
-		return slot_r_hand
+		return ITEM_SLOT_HAND_RIGHT
 	if(item == handcuffed)
-		return slot_handcuffed
+		return ITEM_SLOT_HANDCUFFED
 	if(item == legcuffed)
-		return slot_legcuffed
+		return ITEM_SLOT_LEGCUFFED
 	return null
 
 
@@ -482,3 +481,9 @@
 	if(head)
 		items += head
 	return items
+
+
+/mob/living/carbon/update_equipment_speed_mods()
+	. = ..()
+	update_limbless_slowdown()	// in case we get crutches
+

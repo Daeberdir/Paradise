@@ -3,7 +3,6 @@
 	icon = 'icons/mob/pai.dmi'
 	icon_state = "repairbot"
 
-	robot_talk_understand = 0
 	emote_type = 2		// pAIs emotes are heard, not seen, so they can be seen through a container (eg. person)
 	mob_size = MOB_SIZE_TINY
 	pass_flags = PASSTABLE
@@ -90,7 +89,6 @@
 
 	var/current_pda_messaging = null
 	var/custom_sprite = 0
-	var/slowdown = 0
 
 	/// max chemicals and cooldown recovery for chemicals module
 	var/chemicals = 30
@@ -178,11 +176,6 @@
 /mob/living/silicon/pai/can_buckle()
 	return FALSE
 
-/mob/living/silicon/pai/movement_delay()
-	. = ..()
-	. += slowdown
-	. += 1 //A bit slower than humans, so they're easier to smash
-	. += CONFIG_GET(number/robot_delay)
 
 /mob/living/silicon/pai/update_icons()
 	if(stat == DEAD)
@@ -203,9 +196,6 @@
 	if(client.statpanel == "Status")
 		show_silenced()
 
-	if(proc_holder_list.len)//Generic list for proc_holder objects.
-		for(var/obj/effect/proc_holder/P in proc_holder_list)
-			statpanel("[P.panel]","",P)
 
 /mob/living/silicon/pai/blob_act()
 	if(stat != DEAD)
@@ -308,7 +298,7 @@
 	if(istype(card.loc, /mob))
 		var/mob/holder = card.loc
 		holder.drop_item_ground(card)
-	else if(istype(card.loc, /obj/item/pda))
+	else if(is_pda(card.loc))
 		var/obj/item/pda/holder = card.loc
 		holder.pai = null
 
@@ -600,7 +590,7 @@
 		icon_state = "[chassis]"
 		resting = 0
 	if(custom_sprite)
-		H.icon_override = 'icons/mob/custom_synthetic/custom_head.dmi'
+		H.onmob_sheets[ITEM_SLOT_HEAD_STRING] = 'icons/mob/custom_synthetic/custom_head.dmi'
 		H.lefthand_file = 'icons/mob/custom_synthetic/custom_lefthand.dmi'
 		H.righthand_file = 'icons/mob/custom_synthetic/custom_righthand.dmi'
 		H.item_state = "[icon_state]_hand"

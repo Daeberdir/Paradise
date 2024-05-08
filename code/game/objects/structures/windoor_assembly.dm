@@ -21,7 +21,7 @@
 	pass_flags_self = PASSGLASS
 	obj_flags = BLOCKS_CONSTRUCTION_DIR
 	var/ini_dir
-	var/obj/item/airlock_electronics/electronics
+	var/obj/item/access_control/electronics
 	var/created_name
 
 	//Vars to help with the icon's name
@@ -73,7 +73,7 @@
 				return FALSE
 
 
-/obj/structure/windoor_assembly/CanAtmosPass(turf/T)
+/obj/structure/windoor_assembly/CanAtmosPass(turf/T, vertical)
 	if(get_dir(loc, T) == dir)
 		return !density
 	else
@@ -133,7 +133,10 @@
 
 		if("02")
 			//Adding airlock electronics for access. Step 6 complete.
-			if(istype(W, /obj/item/airlock_electronics))
+			if(istype(W, /obj/item/access_control))
+				var/obj/item/access_control/control = W
+				if(control.emagged)
+					return
 				if(electronics)
 					to_chat(user, "<span class='notice'>There's already [electronics] inside!")
 					return
@@ -148,7 +151,7 @@
 					electronics = W
 					state = "03"
 					name = "[(src.secure) ? "secure" : ""] near finished windoor assembly"
-			else if(istype(W, /obj/item/pen))
+			else if(is_pen(W))
 				var/t = rename_interactive(user, W)
 				if(!isnull(t))
 					add_fingerprint(user)
@@ -201,13 +204,14 @@
 				windoor.base_state = "right"
 		windoor.setDir(dir)
 		windoor.density = FALSE
-		windoor.unres_sides = electronics.unres_access_from
 
+		windoor.unres_sides = electronics.unres_access_from
 		windoor.req_access = electronics.selected_accesses
 		windoor.check_one_access = electronics.one_access
-		windoor.electronics = src.electronics
+		windoor.electronics = electronics
 		electronics.forceMove(windoor)
 		electronics = null
+
 		if(created_name)
 			windoor.name = created_name
 		qdel(src)
@@ -264,14 +268,14 @@
 				to_chat(user, "<span class='warning'>There is already a windoor in that location!</span>")
 				return
 		to_chat(user, "<span class='notice'>You tighten bolts on [src].</span>")
-		anchored = TRUE
+		set_anchored(TRUE)
 		name = "[(src.secure) ? "secure" : ""]  anchored windoor assembly"
 	else	//Unwrenching an unsecure assembly un-anchors it. Step 4 undone
 		user.visible_message("<span class='notice'>[user] begin loosening the bolts on [src]...</span>", "<span class='notice'>You begin loosening the bolts on [src]...</span>")
 		if(!I.use_tool(src, user, 40, volume = I.tool_volume) || !anchored || state != "01")
 			return
 		to_chat(user, "<span class='notice'>You loosen bolts on [src].</span>")
-		anchored = FALSE
+		set_anchored(FALSE)
 		name = "[(src.secure) ? "secure" : ""] windoor assembly"
 	update_icon(UPDATE_ICON_STATE)
 

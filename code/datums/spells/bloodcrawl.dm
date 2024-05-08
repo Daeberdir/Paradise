@@ -57,7 +57,12 @@
 	name = "blood crawl"
 	desc = "You are unable to hold anything while in this form."
 	icon = 'icons/effects/blood.dmi'
-	flags = NODROP|ABSTRACT
+	flags = ABSTRACT
+
+
+/obj/item/bloodcrawl/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NODROP, ABSTRACT_ITEM_TRAIT)
 
 
 /obj/effect/dummy/slaughter //Can't use the wizard one, blocked by jaunt/slow
@@ -232,9 +237,8 @@
 
 /obj/effect/proc_holder/spell/bloodcrawl/proc/post_phase_out(atom/exit_point, mob/living/user)
 	if(isslaughterdemon(user))
-		var/mob/living/simple_animal/demon/slaughter/demon = user
-		demon.speed = 0
-		demon.boost = world.time + 6 SECONDS
+		user.add_movespeed_modifier(/datum/movespeed_modifier/slaughter_boost)
+		addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/slaughter_boost), 6 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE)
 	user.color = exit_point.color
 	addtimer(VARSET_CALLBACK(user, color, null), 6 SECONDS)
 

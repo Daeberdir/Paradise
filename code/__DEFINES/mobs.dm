@@ -1,12 +1,13 @@
 ///////////////////ORGAN DEFINES///////////////////
 
 // Organ defines.
-#define ORGAN_BROKEN	(1<<0)
-#define ORGAN_ROBOT		(1<<1)
-#define ORGAN_SPLINTED	(1<<2)
-#define ORGAN_DEAD		(1<<3)
-#define ORGAN_MUTATED	(1<<4)
-#define ORGAN_INT_BLEED	(1<<5)
+#define ORGAN_BROKEN		(1<<0)
+#define ORGAN_ROBOT			(1<<1)
+#define ORGAN_SPLINTED		(1<<2)
+#define ORGAN_DEAD			(1<<3)
+#define ORGAN_MUTATED		(1<<4)
+#define ORGAN_INT_BLEED		(1<<5)
+#define ORGAN_DISFIGURED	(1<<6)
 
 #define PROCESS_ACCURACY 10
 
@@ -332,7 +333,7 @@
 
 #define isexternalorgan(A)		(istype((A), /obj/item/organ/external))
 
-#define hasorgans(A)	(ishuman(A))
+#define hasorgans(A)	(iscarbon(A))
 
 #define is_admin(user)	(check_rights(R_ADMIN, 0, (user)) != 0)
 
@@ -358,3 +359,14 @@
 #define EYE_BLUR_TO_FILTER_SIZE_MULTIPLIER 0.1
 
 #define FIRE_DMI (issmall(src) ? 'icons/mob/clothing/species/monkey/OnFire.dmi' : 'icons/mob/OnFire.dmi')
+
+
+// Body position defines.
+/// Mob is standing up, usually associated with lying_angle value of 0.
+#define STANDING_UP 0
+/// Mob is lying down, usually associated with lying_angle values of 90 or 270.
+#define LYING_DOWN 1
+
+///How much a mob's sprite should be moved when they're lying down
+#define PIXEL_Y_OFFSET_LYING -6
+

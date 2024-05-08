@@ -4,8 +4,10 @@
 	gender = PLURAL
 	icon = 'icons/obj/items.dmi'
 	icon_state = "handcuff"
+	item_state = "legcuff"
 	flags = CONDUCT
 	throwforce = 0
+	slot_flags = ITEM_SLOT_LEGCUFFED
 	w_class = WEIGHT_CLASS_NORMAL
 	origin_tech = "engineering=3;combat=3"
 	slowdown = 7
@@ -70,7 +72,7 @@
 		to_chat(user, span_notice("You sneak [IED] underneath the pressure plate and connect the trigger wire."))
 		desc = "A trap used to catch bears and other legged creatures. [span_warning("There is an IED hooked up to it.")]"
 
-	if(istype(I, /obj/item/assembly/signaler))
+	if(issignaler(I))
 		if(IED)
 			to_chat(user, span_warning("This beartrap already has an IED hooked up to it!"))
 			return
@@ -117,7 +119,7 @@
 		return
 
 	var/mob/living/moving_thing = AM
-	if(moving_thing.flying)
+	if(moving_thing.movement_type & MOVETYPES_NOT_TOUCHING_GROUND)
 		return
 
 	armed = FALSE
@@ -137,7 +139,7 @@
 
 	if(ishuman(moving_thing))
 		var/mob/living/carbon/human/moving_human = moving_thing
-		if(moving_human.lying)
+		if(moving_human.lying_angle)
 			moving_human.apply_damage(trap_damage, BRUTE, BODY_ZONE_CHEST)
 		else
 			moving_human.apply_damage(trap_damage, BRUTE, (pick(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)))
@@ -272,7 +274,7 @@
 		return TRUE	//abort
 
 	var/mob/living/carbon/target = hit_atom
-	if(target.legcuffed || !target.has_organ_for_slot(slot_legcuffed))
+	if(target.legcuffed || !target.has_organ_for_slot(ITEM_SLOT_LEGCUFFED))
 		return TRUE
 
 	var/datum/antagonist/vampire/vamp = target.mind?.has_antag_datum(/datum/antagonist/vampire)
@@ -326,11 +328,11 @@
 	reusable = FALSE
 
 
-/obj/item/restraints/legcuffs/bola/sinew/dropped(mob/living/carbon/user, silent = FALSE)
+/obj/item/restraints/legcuffs/bola/sinew/dropped(mob/living/carbon/user, slot, silent = FALSE)
 	. = ..()
 
-	if(!istype(user) || user.legcuffed != src)
-		return
+	if(!istype(user) || slot != ITEM_SLOT_LEGCUFFED)
+		return .
 
 	user.apply_damage(10, BRUTE, (pick(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)))
 	new /obj/item/restraints/handcuffs/sinew(user.loc)

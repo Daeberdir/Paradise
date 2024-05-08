@@ -200,12 +200,12 @@
 
 	underlays.Cut()
 
-	if(panel_overlay && panel_open)
-		. += panel_overlay
-
 	if((stat & NOPOWER) || force_no_power_icon_state)
 		if(broken_overlay && (stat & BROKEN))
 			. += broken_overlay
+
+		if(panel_overlay && panel_open)
+			. += panel_overlay
 		return
 
 	if(stat & BROKEN)
@@ -213,25 +213,31 @@
 			. += broken_overlay
 		if(broken_lightmask_overlay)
 			underlays += emissive_appearance(icon, broken_lightmask_overlay)
-	else
-		if(screen_overlay)
-			. += screen_overlay
+		if(panel_overlay && panel_open)
+			. += panel_overlay
+		return
 
-		var/lightmask_used = FALSE
-		if(vend_overlay && (flick_sequence & FLICK_VEND))
-			. += vend_overlay
-			if(vend_lightmask)
-				lightmask_used = TRUE
-				. += vend_lightmask
+	if(screen_overlay)
+		. += screen_overlay
 
-		else if(deny_overlay && (flick_sequence & FLICK_DENY))
-			. +=  deny_overlay
-			if(deny_lightmask)
-				lightmask_used = TRUE
-				. += deny_lightmask
+	var/lightmask_used = FALSE
+	if(vend_overlay && (flick_sequence & FLICK_VEND))
+		. += vend_overlay
+		if(vend_lightmask)
+			lightmask_used = TRUE
+			. += vend_lightmask
 
-		if(!lightmask_used && lightmask_overlay)
-			underlays += emissive_appearance(icon, lightmask_overlay)
+	else if(deny_overlay && (flick_sequence & FLICK_DENY))
+		. +=  deny_overlay
+		if(deny_lightmask)
+			lightmask_used = TRUE
+			. += deny_lightmask
+
+	if(!lightmask_used && lightmask_overlay)
+		underlays += emissive_appearance(icon, lightmask_overlay)
+
+	if(panel_overlay && panel_open)
+		. += panel_overlay
 
 
 /obj/machinery/vending/power_change(forced = FALSE)
@@ -1141,6 +1147,12 @@
 		/obj/item/storage/box/crayfish_bucket = 5,
 	)
 
+	contraband = list(
+		/obj/item/poster/cheng = 5,
+		/obj/item/storage/box/mr_cheng = 3,
+		/obj/item/clothing/head/rice_hat = 3,
+	)
+
 	prices = list(
 		/obj/item/reagent_containers/food/snacks/chinese/chowmein = 50,
 		/obj/item/reagent_containers/food/snacks/chinese/tao = 50,
@@ -1149,6 +1161,7 @@
 		/obj/item/reagent_containers/food/snacks/chinese/rice = 50,
 		/obj/item/reagent_containers/food/snacks/fortunecookie = 50,
 		/obj/item/storage/box/crayfish_bucket = 250,
+		/obj/item/storage/box/mr_cheng = 200,
 	)
 
 	refill_canister = /obj/item/vending_refill/chinese
@@ -1744,9 +1757,9 @@
 					/obj/item/clothing/under/jester = 1,
 					/obj/item/clothing/head/jester = 1,
 					/obj/item/clothing/under/pennywise = 1,
-					/obj/item/clothing/mask/gas/pennywise = 1,
+					/obj/item/clothing/mask/gas/clown_hat/pennywise = 1,
 					/obj/item/clothing/head/rockso = 1,
-					/obj/item/clothing/mask/gas/rockso = 1,
+					/obj/item/clothing/mask/gas/clown_hat/rockso = 1,
 					/obj/item/clothing/under/rockso = 1,
 					/obj/item/clothing/under/pants/camo = 1,
 					/obj/item/clothing/mask/bandana = 1,
@@ -1898,7 +1911,7 @@
 	deny_overlay = "engivend_deny"
 
 	req_access = list(11,24) // Engineers and atmos techs can use this
-	products = list(/obj/item/clothing/glasses/meson = 2,/obj/item/multitool = 4,/obj/item/airlock_electronics = 10,/obj/item/firelock_electronics = 10,/obj/item/firealarm_electronics = 10,/obj/item/apc_electronics = 10,/obj/item/airalarm_electronics = 10,/obj/item/stock_parts/cell/high = 10,/obj/item/camera_assembly = 10)
+	products = list(/obj/item/clothing/glasses/meson = 2,/obj/item/multitool = 4,/obj/item/airlock_electronics = 10,/obj/item/firelock_electronics = 10,/obj/item/firealarm_electronics = 10,/obj/item/apc_electronics = 10,/obj/item/airalarm_electronics = 10,/obj/item/access_control = 10,/obj/item/assembly/control/airlock = 10,/obj/item/stock_parts/cell/high = 10,/obj/item/camera_assembly = 10)
 	contraband = list(/obj/item/stock_parts/cell/potato = 3)
 	premium = list(/obj/item/storage/belt/utility = 3)
 	refill_canister = /obj/item/vending_refill/engivend
@@ -2117,7 +2130,7 @@
 
 //don't forget to change the refill size if you change the machine's contents!
 /obj/machinery/vending/clothing
-	name = "\improper  ClothesMate" //renamed to make the slogan rhyme
+	name = "\improper ClothesMate" //renamed to make the slogan rhyme
 	desc = "A vending machine for clothing."
 
 	icon_state = "clothes_off"
@@ -2285,6 +2298,8 @@
 		/obj/item/toy/pet_rock = 5,
 		/obj/item/pet_carrier/normal = 3,
 		/obj/item/pet_carrier = 5,
+		/obj/item/reagent_containers/food/condiment/animalfeed = 5,
+		/obj/item/reagent_containers/glass/pet_bowl = 3,
 	)
 
 	prices = list(
@@ -2303,6 +2318,8 @@
 		/obj/item/toy/pet_rock = 100,
 		/obj/item/pet_carrier/normal = 250,
 		/obj/item/pet_carrier = 100,
+		/obj/item/reagent_containers/food/condiment/animalfeed = 100,
+		/obj/item/reagent_containers/glass/pet_bowl = 50,
 	)
 
 	contraband = list(/obj/item/fish_eggs/babycarp = 5)

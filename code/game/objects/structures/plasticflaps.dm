@@ -27,14 +27,14 @@
 		if(!I.use_tool(src, user, 180, volume = I.tool_volume) || state != PLASTIC_FLAPS_NORMAL)
 			return
 		state = PLASTIC_FLAPS_DETACHED
-		anchored = FALSE
+		set_anchored(FALSE)
 		to_chat(user, "<span class='notice'>You unscrew [src] from the floor.</span>")
 	else if(state == PLASTIC_FLAPS_DETACHED)
 		user.visible_message("<span class='warning'>[user] starts screwing [src] to the floor.</span>", "<span class='notice'>You start to screw [src] to the floor...</span>", "You hear rustling noises.")
 		if(!I.use_tool(src, user, 40, volume = I.tool_volume) || state != PLASTIC_FLAPS_DETACHED)
 			return
 		state = PLASTIC_FLAPS_NORMAL
-		anchored = TRUE
+		set_anchored(TRUE)
 		to_chat(user, "<span class='notice'>You screw [src] to the floor.</span>")
 
 /obj/structure/plasticflaps/welder_act(mob/user, obj/item/I)
@@ -78,7 +78,7 @@
 		if(istype(living_mover.buckled, /mob/living/simple_animal/bot/mulebot)) // mulebot passenger gets a free pass.
 			return TRUE
 
-		if(!living_mover.lying && !living_mover.ventcrawler && living_mover.mob_size != MOB_SIZE_TINY)	//If your not laying down, or a ventcrawler or a small creature, no pass.
+		if(!living_mover.lying_angle && !living_mover.ventcrawler && living_mover.mob_size != MOB_SIZE_TINY)	//If your not laying down, or a ventcrawler or a small creature, no pass.
 			return FALSE
 
 
@@ -114,5 +114,5 @@
 	. = ..()
 	T.air_update_turf(TRUE)
 
-/obj/structure/plasticflaps/mining/CanAtmosPass(turf/T)
+/obj/structure/plasticflaps/mining/CanAtmosPass(turf/T, vertical)
 	return FALSE

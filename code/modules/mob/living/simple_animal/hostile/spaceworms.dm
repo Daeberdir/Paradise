@@ -51,6 +51,12 @@
 	var/atom/currentlyEating //what the worm is currently eating
 	var/plasmaPoopPotential = 5 //this mainly exists for the name
 
+
+/mob/living/simple_animal/hostile/spaceWorm/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NO_FLOATING_ANIM, INNATE_TRAIT)
+
+
 /mob/living/simple_animal/hostile/spaceWorm/Process_Spacemove(var/check_drift = 0)
 	return 1 //space worms can flyyyyyy
 
@@ -152,10 +158,10 @@
 		return //Trying to eat part of self.
 
 	if(istype(noms, /turf))
-		if(istype(noms, /turf/simulated/wall))
+		if(iswallturf(noms))
 			W = noms
 			nomDelay *= 2
-			if(istype(W, /turf/simulated/wall/r_wall))
+			if(isreinforcedwallturf(W))
 				nomDelay *= 2
 		else
 			return
@@ -177,7 +183,7 @@
 				src.visible_message("<span class='userdanger'>\the [src] eats \the [noms]!</span>","<span class='notice'>You eat \the [noms]!</span>","<span class='userdanger'>You hear gnashing.</span>") //inform everyone what the fucking worm is doing.
 				if(ismob(noms))
 					var/mob/M = noms //typecast because noms isn't movable
-					M.loc = src //because just setting a mob loc to null breaks the camera and such
+					M.forceMove(src) //because just setting a mob loc to null breaks the camera and such
 		else
 			currentlyEating = null
 	else
@@ -329,11 +335,6 @@
 		for(var/atom/movable/stomachContent in contents)
 			contents -= stomachContent
 			stomachContent.loc = T
-
-
-//Looks weird otherwise.
-/mob/living/simple_animal/hostile/spaceWorm/float(on)
-	return
 
 
 //Jiggle the whole worm forwards towards the next segment

@@ -50,7 +50,7 @@
 /obj/item/assembly/prox_sensor/HasProximity(atom/movable/AM)
 	if(!isobj(AM) && !isliving(AM))
 		return
-	if(istype(AM, /obj/effect))
+	if(iseffect(AM))
 		return
 	if(AM.move_speed < 12)
 		sense(AM)
@@ -77,7 +77,7 @@
 		time = 10
 
 
-/obj/item/assembly/prox_sensor/dropped(mob/user, silent = FALSE)
+/obj/item/assembly/prox_sensor/dropped(mob/user, slot, silent = FALSE)
 	. = ..()
 	INVOKE_ASYNC(src, PROC_REF(sense), user)
 

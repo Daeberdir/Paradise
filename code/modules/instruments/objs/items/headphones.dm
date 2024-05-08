@@ -3,6 +3,7 @@
 	desc = "Unce unce unce unce."
 	icon_state = "headphones0"
 	item_state = "headphones0"
+	slot_flags_2 = ITEM_FLAG_TWOEARS
 	actions_types = list(/datum/action/item_action/change_headphones_song)
 	var/datum/song/headphones/song
 	var/on = FALSE
@@ -50,7 +51,7 @@
 
 
 /obj/item/clothing/ears/headphones/item_action_slot_check(slot)
-	if(slot == slot_l_ear || slot == slot_r_ear)
+	if(slot & ITEM_SLOT_EARS)
 		return TRUE
 
 

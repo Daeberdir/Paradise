@@ -167,6 +167,10 @@
 	/// Book DRM. If this var is TRUE, it cannot be scanned and re-uploaded
 	var/has_drm = FALSE
 
+/obj/item/book/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/falling_hazard, damage = 5, hardhat_safety = TRUE, crushes = FALSE, impact_sound = drop_sound)
+
 /obj/item/book/examine(mob/user)
 	. = ..()
 	if(user.is_literate())
@@ -210,7 +214,7 @@
 		else
 			to_chat(user, "<span class='notice'>There's already something in [title]!</span>")
 			return 1
-	if(istype(W, /obj/item/pen))
+	if(is_pen(W))
 		if(unique)
 			to_chat(user, "These pages don't seem to take the ink well. Looks like you can't modify it.")
 			return 1

@@ -209,7 +209,7 @@
 				else
 					Robot.mmi = new /obj/item/mmi/robotic_brain(new_mob)
 					Robot.mmi.brainmob.timeofhostdeath = M.timeofdeath
-					Robot.mmi.brainmob.stat = CONSCIOUS
+					Robot.mmi.brainmob.set_stat(CONSCIOUS)
 					Robot.mmi.update_appearance(UPDATE_ICON_STATE|UPDATE_NAME)
 				Robot.lawupdate = FALSE
 				Robot.disconnect_from_ai()
@@ -360,7 +360,7 @@
 				prisoner.forceMove(statue)
 				qdel(target)
 		else
-			if(istype(target, /obj/item/gun))
+			if(isgun(target))
 				new /mob/living/simple_animal/hostile/mimic/copy/ranged(target.loc, target, firer)
 			else
 				new /mob/living/simple_animal/hostile/mimic/copy(target.loc, target, firer)

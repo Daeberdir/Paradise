@@ -42,7 +42,7 @@
 
 	var/rev_cooldown = 0
 
-	var/list/spell_list = list() // Wizard mode & "Give Spell" badmin button.
+	var/list/spell_list
 	var/datum/martial_art/martial_art
 	var/list/known_martial_arts = list()
 
@@ -85,7 +85,7 @@
 
 	var/ambition_limit = 6 //Лимит амбиций
 
-	var/list/curses = list()
+	var/list/curses
 
 
 /datum/mind/New(new_key)
@@ -174,6 +174,8 @@
 	if(martial_art)
 		for(var/datum/martial_art/MA in known_martial_arts)
 			MA.remove(current)
+			if(old_current)
+				MA.remove_verbs(old_current)
 			if(!MA.temporary)
 				MA.teach(current)
 
@@ -1007,7 +1009,9 @@
 						if("protect")
 							description = "Protect"
 						if("steal brain")
-							description = "Steal the brain of"
+							var/mob/living/target = new_target
+							var/obj/item/organ/internal/brains = target.get_organ_slot(INTERNAL_ORGAN_BRAIN)
+							description = "Steal the [brains ? brains.name : "brain"] of"
 						if("prevent from escape")
 							description = "Prevent from escaping alive or free"
 						if("pain hunter")
@@ -1107,7 +1111,7 @@
 					//Выдача бомбы
 					var/obj/item/grenade/plastic/c4/ninja/charge = new
 					var/mob/living/carbon/human/bomber = current
-					bomber.equip_or_collect(charge, slot_l_store)
+					bomber.equip_or_collect(charge, ITEM_SLOT_POCKET_LEFT)
 					charge.detonation_objective = bomb_objective
 
 			if("set up")
@@ -2845,7 +2849,7 @@
 		SSticker.mode.forge_syndicate_objectives(src)
 		SSticker.mode.greet_syndicate(src)
 
-		current.loc = get_turf(locate("landmark*Syndicate-Spawn"))
+		current.forceMove(get_turf(locate("landmark*Syndicate-Spawn")))
 
 		var/mob/living/carbon/human/H = current
 		qdel(H.belt)
@@ -2875,10 +2879,10 @@
 		assigned_role = SPECIAL_ROLE_WIZARD
 		//ticker.mode.learn_basic_spells(current)
 		if(!GLOB.wizardstart.len)
-			current.loc = pick(GLOB.latejoin)
+			current.forceMove(pick(GLOB.latejoin))
 			to_chat(current, "HOT INSERTION, GO GO GO")
 		else
-			current.loc = pick(GLOB.wizardstart)
+			current.forceMove(pick(GLOB.wizardstart))
 
 		SSticker.mode.equip_wizard(current)
 		for(var/obj/item/spellbook/S in current.contents)
@@ -2899,10 +2903,10 @@
 	add_antag_datum(ninja_datum)
 
 	if(!length(GLOB.ninjastart))
-		current.loc = pick(GLOB.latejoin)
+		current.forceMove(pick(GLOB.latejoin))
 		to_chat(current, "HOT INSERTION, GO GO GO")
 	else
-		current.loc = pick(GLOB.ninjastart)
+		current.forceMove(pick(GLOB.ninjastart))
 
 	//"generic" only, we don't want to spawn other antag's
 	ninja_datum.make_objectives_generate_antags(NINJA_TYPE_GENERIC, custom_objective)
@@ -2969,17 +2973,22 @@
 				L = agent_landmarks[team]
 		H.forceMove(L.loc)
 
-/datum/mind/proc/AddSpell(obj/effect/proc_holder/spell/S)
-	spell_list += S
-	S.action.Grant(current)
 
-/datum/mind/proc/RemoveSpell(obj/effect/proc_holder/spell/spell) //To remove a specific spell from a mind
-	if(!spell)
+/datum/mind/proc/AddSpell(obj/effect/proc_holder/spell/spell)
+	if(!istype(spell))
 		return
-	for(var/obj/effect/proc_holder/spell/S in spell_list)
-		if(istype(S, spell))
-			qdel(S)
-			spell_list -= S
+	LAZYADD(spell_list, spell)
+	spell.action.Grant(current)
+
+
+/datum/mind/proc/RemoveSpell(obj/effect/proc_holder/spell/instance_or_path) //To remove a specific spell from a mind
+	if(!ispath(instance_or_path))
+		instance_or_path = instance_or_path.type
+	for(var/obj/effect/proc_holder/spell/spell as anything in spell_list)
+		if(spell.type == instance_or_path)
+			LAZYREMOVE(spell_list, spell)
+			qdel(spell)
+
 
 /datum/mind/proc/transfer_actions(mob/living/new_character, mob/living/old_current)
 	if(old_current && old_current.actions)
@@ -2988,21 +2997,25 @@
 				A.Grant(new_character)
 	transfer_mindbound_actions(new_character)
 
-/datum/mind/proc/transfer_mindbound_actions(mob/living/new_character)
-	for(var/X in spell_list)
-		var/obj/effect/proc_holder/spell/S = X
-		S.action.Grant(new_character)
 
-/datum/mind/proc/disrupt_spells(delay, list/exceptions = New())
-	for(var/X in spell_list)
-		var/obj/effect/proc_holder/spell/S = X
-		for(var/type in exceptions)
-			if(istype(S, type))
-				continue
-		S.cooldown_handler?.recharge_duration = delay
-		spawn(0)
-			S.cooldown_handler?.start_recharge()
-		S.updateButtonIcon()
+/datum/mind/proc/transfer_mindbound_actions(mob/living/new_character)
+	for(var/obj/effect/proc_holder/spell/spell as anything in spell_list)
+		spell.action.Grant(new_character)
+
+
+/datum/mind/proc/disrupt_spells(delay, list/exceptions)
+	for(var/obj/effect/proc_holder/spell/spell as anything in spell_list)
+		var/exception = FALSE
+		for(var/typepath in exceptions)
+			if(istype(spell, typepath))
+				exception = TRUE
+				break
+		if(exception)
+			continue
+		if(spell.cooldown_handler)
+			spell.cooldown_handler.recharge_duration = delay
+			INVOKE_ASYNC(spell.cooldown_handler, TYPE_PROC_REF(/datum/spell_cooldown, start_recharge))
+		spell.updateButtonIcon()
 
 /datum/mind/proc/get_ghost(even_if_they_cant_reenter)
 	for(var/mob/dead/observer/G in GLOB.dead_mob_list)

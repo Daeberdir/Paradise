@@ -19,6 +19,7 @@
 	var/compromised_integrity = FALSE
 	var/mob/camera/blob/overmind
 	creates_cover = TRUE
+	obj_flags = BLOCK_Z_OUT_DOWN // stops blob mobs from falling on multiz.
 
 /obj/structure/blob/Initialize(mapload)
 	. = ..()
@@ -54,7 +55,7 @@
 	. = ..()
 	return checkpass(mover, PASSBLOB)
 
-/obj/structure/blob/CanAtmosPass(turf/T)
+/obj/structure/blob/CanAtmosPass(turf/T, vertical)
 	return !atmosblock
 
 
@@ -126,7 +127,7 @@
 /obj/structure/blob/proc/expand(var/turf/T = null, var/prob = 1, var/a_color)
 	if(prob && !prob(obj_integrity))
 		return
-	if(istype(T, /turf/space) && prob(75)) 	return
+	if(isspaceturf(T) && prob(75)) 	return
 	if(!T)
 		var/list/dirs = list(1,2,4,8)
 		for(var/i = 1 to 4)

@@ -10,7 +10,7 @@
 	var/datum/powernet/wire_powernet = powernet
 
 	var/turf/cable_turf = get_turf(src)
-	if(cable_turf.transparent_floor || cable_turf.intact)
+	if((cable_turf.transparent_floor == TURF_TRANSPARENT) || cable_turf.intact)
 		to_chat(ninja, span_danger("You can't interact with something that's under the floor!"))
 		return INVALID_DRAIN
 	if(wire_powernet.avail <= 0 || wire_powernet.load <= 0)	// Если в проводах нет тока, то и начать сосать его мы не можем!
@@ -23,7 +23,7 @@
 			drained = min(drain, delayed_surplus())
 			add_delayedload(drained)
 			for(var/obj/machinery/power/terminal/affected_terminal in wire_powernet.nodes)
-				if(istype(affected_terminal.master, /obj/machinery/power/apc))
+				if(isapc(affected_terminal.master))
 					var/obj/machinery/power/apc/affected_apc = affected_terminal.master
 					if(affected_apc.operating && affected_apc.cell && affected_apc.cell.charge > 0)
 						affected_apc.cell.use(10)

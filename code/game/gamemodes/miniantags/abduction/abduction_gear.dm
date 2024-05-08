@@ -30,10 +30,15 @@
 	stealth_armor = getArmor(arglist(stealth_armor))
 	combat_armor = getArmor(arglist(combat_armor))
 
+
 /obj/item/clothing/suit/armor/abductor/vest/proc/toggle_nodrop()
-	flags ^= NODROP
+	var/prev_has = HAS_TRAIT_FROM(src, TRAIT_NODROP, ABDUCTOR_VEST_TRAIT)
+	if(prev_has)
+		REMOVE_TRAIT(src, TRAIT_NODROP, ABDUCTOR_VEST_TRAIT)
+	else
+		ADD_TRAIT(src, TRAIT_NODROP, ABDUCTOR_VEST_TRAIT)
 	if(ismob(loc))
-		to_chat(loc, "<span class='notice'>Your vest is now [flags & NODROP ? "locked" : "unlocked"].</span>")
+		to_chat(loc, span_notice("Your vest is now [prev_has ? "unlocked" : "locked"]."))
 
 
 /obj/item/clothing/suit/armor/abductor/vest/update_icon_state()
@@ -62,8 +67,8 @@
 		A.UpdateButtonIcon()
 
 /obj/item/clothing/suit/armor/abductor/vest/item_action_slot_check(slot, mob/user)
-	if(slot == slot_wear_suit) //we only give the mob the ability to activate the vest if he's actually wearing it.
-		return 1
+	if(slot == ITEM_SLOT_CLOTH_OUTER) //we only give the mob the ability to activate the vest if he's actually wearing it.
+		return TRUE
 
 /obj/item/clothing/suit/armor/abductor/vest/proc/SetDisguise(datum/icon_snapshot/entry)
 	disguise = entry
@@ -286,7 +291,7 @@
 	var/list/all_items = M.GetAllContents()
 
 	for(var/obj/I in all_items)
-		if(istype(I, /obj/item/radio))
+		if(isradio(I))
 			var/obj/item/radio/R = I
 			R.listening = 0 // Prevents the radio from buzzing due to the EMP, preserving possible stealthiness.
 			R.emp_act(1)
@@ -427,7 +432,7 @@ Congratulations! You are now trained for invasive xenobiology research!"}
 	icon = 'icons/obj/abductor.dmi'
 	icon_state = "wonderprodStun"
 	item_state = "wonderprod"
-	slot_flags = SLOT_BELT
+	slot_flags = ITEM_SLOT_BELT
 	origin_tech = "materials=4;combat=4;biotech=7;abductor=4"
 	force = 7
 	w_class = WEIGHT_CLASS_NORMAL
@@ -532,7 +537,7 @@ Congratulations! You are now trained for invasive xenobiology research!"}
 		add_attack_logs(user, L, "Put to sleep with [src]")
 	else
 		L.AdjustDrowsy(2 SECONDS)
-		to_chat(user, "<span class='warning'>Sleep inducement works fully only on stunned specimens! </span>")
+		to_chat(user, "<span class='warning'>Sleep inducement works fully only on stunned specimens!</span>")
 		L.visible_message("<span class='danger'>[user] tried to induce sleep in [L] with [src]!</span>", \
 							"<span class='userdanger'>You suddenly feel drowsy!</span>")
 
@@ -588,7 +593,7 @@ Congratulations! You are now trained for invasive xenobiology research!"}
 	desc = "energy discharge"
 	flags = DROPDEL
 
-/obj/item/restraints/handcuffs/energy/used/dropped(mob/user, silent = FALSE)
+/obj/item/restraints/handcuffs/energy/used/dropped(mob/user, slot, silent = FALSE)
 	user.visible_message("<span class='danger'>[src] restraining [user] breaks in a discharge of energy!</span>", \
 							"<span class='userdanger'>[src] restraining [user] breaks in a discharge of energy!</span>")
 	do_sparks(4, 0, user.loc)
@@ -694,8 +699,7 @@ Congratulations! You are now trained for invasive xenobiology research!"}
 	item_state = "alienhelmet"
 	blockTracking = 1
 	origin_tech = "materials=7;magnets=4;abductor=3"
-	flags = BLOCKHAIR
-	flags_inv = HIDEMASK|HIDEHEADSETS|HIDEGLASSES|HIDENAME
+	flags_inv = HIDEMASK|HIDEHEADSETS|HIDEGLASSES|HIDENAME|HIDEHAIR
 	flags_cover = HEADCOVERSMOUTH|HEADCOVERSEYES
 
 // Operating Table / Beds / Lockers

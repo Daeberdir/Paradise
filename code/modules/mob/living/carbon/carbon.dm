@@ -47,7 +47,7 @@
 			if(m_intent == MOVE_INTENT_RUN)
 				adjust_nutrition(-(hunger_drain * 0.1))
 		if((FAT in mutations) && m_intent == MOVE_INTENT_RUN && bodytemperature <= 360)
-			bodytemperature += 2
+			adjust_bodytemperature(2)
 
 		// Moving around increases germ_level faster
 		if(germ_level < GERM_LEVEL_MOVE_CAP && prob(8))
@@ -70,7 +70,7 @@
 			if(I && I.force)
 				var/d = rand(round(I.force / 4), I.force)
 
-				if(istype(src, /mob/living/carbon/human))
+				if(ishuman(src))
 					var/mob/living/carbon/human/H = src
 					var/obj/item/organ/external/organ = H.get_organ(BODY_ZONE_CHEST)
 					if(istype(organ))
@@ -209,7 +209,7 @@
 			if(player_logged)
 				M.visible_message("<span class='notice'>[M] встряхива[pluralize_ru(M.gender,"ет","ют")] [src.name], но он[genderize_ru(src.gender,"","а","о","и")] не отвечает. Вероятно у [genderize_ru(src.gender,"него","неё","этого","них")] SSD.", \
 				"<span class='notice'>Вы трясете [src.name], но он[genderize_ru(src.gender,"","а","о","и")] не отвечает. Вероятно у [genderize_ru(src.gender,"него","неё","этого","них")] SSD.</span>")
-			if(lying) // /vg/: For hugs. This is how update_icon figgers it out, anyway.  - N3X15
+			if(lying_angle) // /vg/: For hugs. This is how update_icon figgers it out, anyway.  - N3X15
 				add_attack_logs(M, src, "Shaked", ATKLOG_ALL)
 				if(ishuman(src))
 					var/mob/living/carbon/human/H = src
@@ -525,7 +525,7 @@
 
 	var/obj/item/I = get_active_hand()
 
-	if(!I || I.override_throw(src, target) || (I.flags & NODROP))
+	if(!I || I.override_throw(src, target) || HAS_TRAIT(I, TRAIT_NODROP))
 		throw_mode_off()
 		return
 
@@ -651,10 +651,10 @@
 
 
 /mob/living/carbon/proc/slip(description, weaken, tilesSlipped, walkSafely, slipAny, grav_ignore = FALSE, slipVerb = "поскользнулись")
-	if(flying || buckled || (walkSafely && m_intent == MOVE_INTENT_WALK))
+	if((movement_type & MOVETYPES_NOT_TOUCHING_GROUND) || buckled || (walkSafely && m_intent == MOVE_INTENT_WALK))
 		return FALSE
 
-	if((lying) && (!(tilesSlipped)))
+	if(lying_angle && !tilesSlipped)
 		return FALSE
 
 	if(ishuman(src))
@@ -666,7 +666,7 @@
 			var/obj/item/clothing/shoes/magboots/humanmagboots = H.shoes
 			if((T.wet == TURF_WET_LUBE||TURF_WET_PERMAFROST) && humanmagboots.magpulse && humanmagboots.lubeprotection)
 				return FALSE
-		if(!has_gravity(H) && !grav_ignore)
+		if(!H.has_gravity() && !grav_ignore)
 			if(istype(H.shoes, /obj/item/clothing/shoes/magboots)) //Only for magboots and lube slip (no grav && no lubeprotection)
 				var/obj/item/clothing/shoes/magboots/humanmagboots = H.shoes
 				if(!((T.wet == TURF_WET_LUBE||TURF_WET_PERMAFROST) && humanmagboots.magpulse))
@@ -890,7 +890,7 @@ so that different stomachs can handle things in different ways VB*/
 /mob/living/carbon/get_pull_push_speed_modifier(current_delay)
 	if(!canmove)
 		return pull_push_speed_modifier * 1.2
-	var/average_delay = (movement_delay(restrained() ? FALSE : TRUE) + current_delay) / 2
+	var/average_delay = (cached_multiplicative_slowdown + current_delay) / 2
 	return current_delay > average_delay ? pull_push_speed_modifier : (average_delay / current_delay)
 
 
@@ -901,3 +901,14 @@ so that different stomachs can handle things in different ways VB*/
 			if(R.shock_reduction)
 				shock_reduction += R.shock_reduction
 	return shock_reduction
+
+
+/mob/living/carbon/toggle_move_intent()
+	if(legcuffed)
+		to_chat(src, span_notice("Ваши ноги скованы! Вы не можете бежать, пока не снимете [legcuffed]!"))
+		m_intent = MOVE_INTENT_WALK	//Just incase
+		hud_used?.move_intent.icon_state = "walking"
+		update_move_intent_slowdown()
+		return
+	return ..()
+

@@ -71,7 +71,7 @@
 			B.brainmob = null
 			brainmob.container = src
 			brainmob.forceMove(src)
-			brainmob.stat = CONSCIOUS
+			brainmob.set_stat(CONSCIOUS)
 			brainmob.see_invisible = initial(brainmob.see_invisible)
 			GLOB.respawnable_list -= brainmob
 			GLOB.dead_mob_list -= brainmob//Update dem lists
@@ -253,12 +253,12 @@
 // Also neatly handles basically every case where a brain
 // is inserted or removed from an MMI
 /obj/item/mmi/Entered(atom/movable/A)
-	if(radio && istype(A, /mob/living/carbon/brain))
+	if(radio && isbrain(A))
 		radio_action.Grant(A)
 
 /obj/item/mmi/Exited(atom/movable/A)
 	..()
-	if(radio && istype(A, /mob/living/carbon/brain))
+	if(radio && isbrain(A))
 		radio_action.Remove(A)
 
 /obj/item/mmi/syndie

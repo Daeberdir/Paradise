@@ -63,7 +63,7 @@
 		return !opacity
 
 
-/obj/structure/mineral_door/CanAtmosPass(turf/T)
+/obj/structure/mineral_door/CanAtmosPass(turf/T, vertical)
 	return !density
 
 /obj/structure/mineral_door/proc/TryToSwitchState(atom/user)
@@ -82,7 +82,7 @@
 			else
 				add_fingerprint(user)
 				SwitchState()
-	else if(istype(user, /obj/mecha))
+	else if(ismecha(user))
 		SwitchState()
 
 /obj/structure/mineral_door/proc/SwitchState()

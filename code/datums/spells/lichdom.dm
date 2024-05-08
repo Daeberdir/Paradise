@@ -101,7 +101,7 @@
 		to_chat(user, span_warning("You must hold an item you wish to make your phylactery..."))
 		return
 
-	if((item.flags & ABSTRACT) || (item.flags & NODROP))
+	if((item.flags & ABSTRACT) || HAS_TRAIT(item, TRAIT_NODROP))
 		to_chat(user, span_warning("[item.name] can not be used for the ritual..."))
 		return
 
@@ -148,8 +148,8 @@
 
 
 /obj/effect/proc_holder/spell/lichdom/proc/equip_lich(mob/living/carbon/human/user)
-		user.equip_to_slot_or_del(new /obj/item/clothing/suit/wizrobe/black(user), slot_wear_suit)
-		user.equip_to_slot_or_del(new /obj/item/clothing/head/wizard/black(user), slot_head)
-		user.equip_to_slot_or_del(new /obj/item/clothing/shoes/sandal(user), slot_shoes)
-		user.equip_to_slot_or_del(new /obj/item/clothing/under/color/black(user), slot_w_uniform)
+		user.equip_to_slot_or_del(new /obj/item/clothing/suit/wizrobe/black(user), ITEM_SLOT_CLOTH_OUTER)
+		user.equip_to_slot_or_del(new /obj/item/clothing/head/wizard/black(user), ITEM_SLOT_HEAD)
+		user.equip_to_slot_or_del(new /obj/item/clothing/shoes/sandal(user), ITEM_SLOT_FEET)
+		user.equip_to_slot_or_del(new /obj/item/clothing/under/color/black(user), ITEM_SLOT_CLOTH_INNER)
 

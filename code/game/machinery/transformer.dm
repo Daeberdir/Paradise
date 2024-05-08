@@ -39,12 +39,12 @@
 
 	// Get the turf 1 tile to the EAST.
 	var/turf/east = locate(T.x + 1, T.y, T.z)
-	if(istype(east, /turf/simulated/floor))
+	if(isfloorturf(east))
 		new /obj/machinery/conveyor/auto(east, WEST)
 
 	// Get the turf 1 tile to the WEST.
 	var/turf/west = locate(T.x - 1, T.y, T.z)
-	if(istype(west, /turf/simulated/floor))
+	if(isfloorturf(west))
 		new /obj/machinery/conveyor/auto(west, WEST)
 
 /obj/machinery/transformer/power_change(forced = FALSE)
@@ -79,7 +79,7 @@
 	var/mob/living/carbon/human/H = moving_atom
 	var/move_dir = get_dir(loc, H.loc)
 
-	if((transform_standing || H.lying) && move_dir == acceptdir)
+	if((transform_standing || H.lying_angle) && move_dir == acceptdir)
 		H.forceMove(drop_location())
 		do_transform(H)
 
@@ -168,12 +168,12 @@
 
 		// Get the turf 2 tiles to the EAST.
 		var/turf/east2 = locate(T.x + 2, T.y, T.z)
-		if(istype(east2, /turf/simulated/floor))
+		if(isfloorturf(east2))
 			new /obj/machinery/conveyor/auto(east2, EAST)
 
 		// Get the turf 2 tiles to the WEST.
 		var/turf/west2 = locate(T.x - 2, T.y, T.z)
-		if(istype(west2, /turf/simulated/floor))
+		if(isfloorturf(west2))
 			new /obj/machinery/conveyor/auto(west2, EAST)
 
 /obj/machinery/transformer/xray/power_change(forced = FALSE)
@@ -199,7 +199,7 @@
 		var/mob/living/carbon/human/H = moving_atom
 		var/move_dir = get_dir(loc, H.loc)
 
-		if(H.lying && move_dir == acceptdir)
+		if(H.lying_angle && move_dir == acceptdir)
 			H.forceMove(drop_location())
 			irradiate(H)
 
@@ -233,7 +233,7 @@
 		sleep(30)
 
 /obj/machinery/transformer/xray/proc/scan_rec(obj/item/I)
-	if(istype(I, /obj/item/gun))
+	if(isgun(I))
 		return TRUE
 	if(istype(I, /obj/item/transfer_valve))
 		return TRUE

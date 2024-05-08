@@ -6,7 +6,7 @@
 	icon_state = "waterbackpack"
 	item_state = "waterbackpack"
 	w_class = WEIGHT_CLASS_BULKY
-	slot_flags = SLOT_BACK
+	slot_flags = ITEM_SLOT_BACK
 	slowdown = 1
 	actions_types = list(/datum/action/item_action/toggle_mister)
 	max_integrity = 200
@@ -26,13 +26,13 @@
 	toggle_mister()
 
 /obj/item/watertank/item_action_slot_check(slot, mob/user)
-	if(slot == slot_back)
-		return 1
+	if(slot == ITEM_SLOT_BACK)
+		return TRUE
 
 /obj/item/watertank/verb/toggle_mister()
 	set name = "Toggle Mister"
 	set category = "Object"
-	if(usr.get_item_by_slot(slot_back) != src)
+	if(usr.get_item_by_slot(ITEM_SLOT_BACK) != src)
 		to_chat(usr, "<span class='notice'>The watertank needs to be on your back to use.</span>")
 		return
 	if(usr.incapacitated())
@@ -61,7 +61,7 @@
 /obj/item/watertank/equipped(mob/user, slot, initial)
 	. = ..()
 
-	if(slot != slot_back)
+	if(slot != ITEM_SLOT_BACK)
 		remove_noz()
 
 /obj/item/watertank/proc/remove_noz()
@@ -116,8 +116,8 @@
 		loc = tank
 	return
 
-/obj/item/reagent_containers/spray/mister/dropped(mob/user, silent = FALSE)
-	..()
+/obj/item/reagent_containers/spray/mister/dropped(mob/user, slot, silent = FALSE)
+	. = ..()
 	to_chat(user, "<span class='notice'>The mister snaps back onto the watertank.</span>")
 	tank.on = 0
 	loc = tank
@@ -204,7 +204,7 @@
 			icon_state = "waterbackpackatmos"
 
 
-/obj/item/watertank/atmos/dropped(mob/user, silent = FALSE)
+/obj/item/watertank/atmos/dropped(mob/user, slot, silent = FALSE)
 	. = ..()
 	if(!noz)
 		return
@@ -225,7 +225,6 @@
 	precision = 1
 	cooling_power = 5
 	w_class = WEIGHT_CLASS_HUGE
-	flags = NODROP //Necessary to ensure that the nozzle and tank never seperate
 	var/obj/item/watertank/atmos/tank
 	var/nozzle_mode = NONE
 	var/metal_synthesis_cooldown = 0
@@ -239,6 +238,11 @@
 		reagents = tank.reagents
 		max_water = tank.volume
 		loc = tank
+
+
+/obj/item/extinguisher/mini/nozzle/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NODROP, INNATE_TRAIT)
 
 
 /obj/item/extinguisher/mini/nozzle/Move()
@@ -264,8 +268,8 @@
 	tank.update_icon(UPDATE_ICON_STATE)
 
 
-/obj/item/extinguisher/mini/nozzle/dropped(mob/user, silent = FALSE)
-	..()
+/obj/item/extinguisher/mini/nozzle/dropped(mob/user, slot, silent = FALSE)
+	. = ..()
 	to_chat(user, "<span class='notice'>The nozzle snaps back onto the tank!</span>")
 	tank.on = 0
 	loc = tank

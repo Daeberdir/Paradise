@@ -9,6 +9,7 @@
 	density = TRUE //This will prevent hostile mobs from pathing into chasms, while the canpass override will still let it function like an open turf
 	layer = 1.7
 	intact = 0
+	explosion_vertical_block = 0
 	var/static/list/falling_atoms = list() //Atoms currently falling into the chasm
 	var/static/list/forbidden_types = typecacheof(list(
 		/obj/singularity,
@@ -44,11 +45,8 @@
 	START_PROCESSING(SSprocessing, src)
 	drop_stuff(AM)
 
-/turf/simulated/floor/chasm/CanPathfindPass(obj/item/card/id/ID, to_dir, caller, no_id = FALSE)
-	if(!isliving(caller))
-		return TRUE
-	var/mob/living/L = caller
-	return (L.flying || ismegafauna(caller))
+/turf/simulated/floor/chasm/CanPathfindPass(obj/item/card/id/ID, to_dir, atom/movable/caller, no_id = FALSE)
+	return ((caller.movement_type & MOVETYPES_NOT_TOUCHING_GROUND) || ismegafauna(caller))
 
 /turf/simulated/floor/chasm/process()
 	if(!drop_stuff())
@@ -56,7 +54,7 @@
 
 /turf/simulated/floor/chasm/Initialize()
 	. = ..()
-	drop_z = level_name_to_num(MAIN_STATION)
+	drop_z = level_name_to_num(EMPTY_AREA)
 
 /turf/simulated/floor/chasm/ex_act()
 	return
@@ -112,7 +110,7 @@
 				new /obj/structure/lattice/catwalk/fireproof(src)
 	if(istype(C, /obj/item/twohanded/fishingrod))
 		var/obj/item/twohanded/fishingrod/rod = C
-		if(!rod.wielded)
+		if(!HAS_TRAIT(rod, TRAIT_WIELDED))
 			to_chat(user, span_warning("You need to wield the rod in both hands before you can fish in the chasm!"))
 			return
 		user.visible_message(span_warning("[user] throws a fishing rod into the chasm and tries to catch something!"),
@@ -120,10 +118,11 @@
 							 span_notice("You hear the sound of a fishing rod."))
 		playsound(rod, 'sound/effects/fishing_rod_throw.ogg', 30)
 		if(do_after(user, 6 SECONDS, target = src))
-			if(!rod.wielded)
+			if(!HAS_TRAIT(rod, TRAIT_WIELDED))
 				return
-			var/atom/parent = src
-			var/list/fishing_contents = parent.GetAllContents()
+			var/list/fishing_contents = list()
+			for(var/turf/simulated/floor/chasm/chasm in range(4, src))
+				fishing_contents += chasm.GetAllContents()
 			if(!length(fishing_contents))
 				to_chat(user, span_warning("There's nothing here!"))
 				return
@@ -132,6 +131,7 @@
 				M.forceMove(get_turf(user))
 				UnregisterSignal(M, COMSIG_LIVING_REVIVE)
 				found = TRUE
+				break
 			if(found)
 				to_chat(user, span_warning("You reel in something!"))
 				playsound(rod, 'sound/effects/fishing_rod_catch.ogg', 30)
@@ -161,17 +161,20 @@
 		return FALSE
 	if(!isliving(AM) && !isobj(AM))
 		return FALSE
+	if(iseffect(AM))
+		return FALSE
 	if(!AM.simulated || is_type_in_typecache(AM, forbidden_types) || AM.throwing)
 		return FALSE
 	//Flies right over the chasm
+	if(AM.movement_type & MOVETYPES_NOT_TOUCHING_GROUND)
+		return FALSE
 	if(isliving(AM))
 		var/mob/living/M = AM
-		if(M.flying || M.floating || M.incorporeal_move)
+		if(M.incorporeal_move)
 			return FALSE
 	if(ishuman(AM))
 		var/mob/living/carbon/human/H = AM
-		if(istype(H.belt, /obj/item/wormhole_jaunter))
-			var/obj/item/wormhole_jaunter/J = H.belt
+		for(var/obj/item/wormhole_jaunter/J in H.GetAllContents())
 			//To freak out any bystanders
 			visible_message(span_boldwarning("[H] falls into [src]!"))
 			J.chasm_react(H)
@@ -331,10 +334,10 @@
 		playsound(ourturf, 'sound/effects/bang.ogg', 50, TRUE)
 		ourturf.visible_message(span_boldwarning("[escapee] busts through [ourturf], leaping out of the chasm below!"))
 		ourturf.ChangeTurf(ourturf.baseturf)
-	escapee.flying = TRUE
+	ADD_TRAIT(escapee, TRAIT_MOVE_FLYING, CHASM_TRAIT) //Otherwise they instantly fall back in
 	escapee.forceMove(ourturf)
 	escapee.throw_at(get_edge_target_turf(ourturf, pick(GLOB.alldirs)), rand(2, 10), rand(2, 10))
-	escapee.flying = FALSE
+	REMOVE_TRAIT(escapee, TRAIT_MOVE_FLYING, CHASM_TRAIT)
 	escapee.Sleeping(20 SECONDS)
 	UnregisterSignal(escapee, COMSIG_LIVING_REVIVE)
 

@@ -139,14 +139,12 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 
 	aiPDA = new/obj/item/pda/silicon/ai(src)
 	rename_character(null, pickedName)
-	anchored = TRUE
+	set_anchored(TRUE)
 	canmove = FALSE
 	density = 1
 	loc = loc
 
 	holo_icon = getHologramIcon(icon('icons/mob/ai.dmi',"holo1"))
-
-	proc_holder_list = new()
 
 	if(B?.clock)
 		ratvar_act()
@@ -617,9 +615,9 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 		return // stop
 
 	if(anchored)
-		anchored = FALSE
+		set_anchored(FALSE)
 	else
-		anchored = TRUE
+		set_anchored(TRUE)
 
 	to_chat(src, "[anchored ? "<b>You are now anchored.</b>" : "<b>You are now unanchored.</b>"]")
 
@@ -817,7 +815,7 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 	. = ..()
 	if(.)
 		if(!A && isturf(loc) && eyeobj)
-			client.eye = eyeobj
+			client.set_eye(eyeobj)
 			client.perspective = MOB_PERSPECTIVE
 			eyeobj.get_remote_view_fullscreens(src)
 
@@ -1177,7 +1175,7 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 		to_chat(src, "Camera lights deactivated.")
 
 		for(var/obj/machinery/camera/C in lit_cameras)
-			C.set_light_on(FALSE)
+			C.set_light(l_on = FALSE)
 			lit_cameras = list()
 
 		return
@@ -1239,9 +1237,9 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 
 	for(var/obj/machinery/camera/C in remove)
 		lit_cameras -= C //Removed from list before turning off the light so that it doesn't check the AI looking away.
-		C.Togglelight(0)
+		C.Togglelight(FALSE)
 	for(var/obj/machinery/camera/C in add)
-		C.Togglelight(1)
+		C.Togglelight(TRUE)
 		lit_cameras |= C
 
 
@@ -1253,7 +1251,7 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 				user.visible_message("<span class='notice'>\The [user] decides not to unbolt \the [src].</span>")
 				return
 			user.visible_message("<span class='notice'>\The [user] finishes unfastening \the [src]!</span>")
-			anchored = FALSE
+			set_anchored(FALSE)
 			return
 		else
 			user.visible_message("<span class='notice'>\The [user] starts to bolt \the [src] to the plating...</span>")
@@ -1261,7 +1259,7 @@ GLOBAL_LIST_INIT(ai_verbs_default, list(
 				user.visible_message("<span class='notice'>\The [user] decides not to bolt \the [src].</span>")
 				return
 			user.visible_message("<span class='notice'>\The [user] finishes fastening down \the [src]!</span>")
-			anchored = TRUE
+			set_anchored(TRUE)
 			return
 	else
 		return ..()

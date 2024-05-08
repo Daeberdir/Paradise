@@ -23,7 +23,7 @@
 	if(propelled)
 		return 0
 
-	if(!Process_Spacemove(direction) || !has_gravity(src.loc) || !isturf(loc))
+	if(!Process_Spacemove(direction) || !has_gravity(loc) || !isturf(loc))
 		return 0
 
 	if(world.time < move_delay)
@@ -38,7 +38,7 @@
 			return 0
 
 		var/mob/living/thedriver = user
-		var/mob_delay = thedriver.movement_delay()
+		var/mob_delay = thedriver.cached_multiplicative_slowdown
 		if(mob_delay > 0)
 			calculated_move_delay += mob_delay
 
@@ -93,7 +93,7 @@
 		occupant.Weaken(12 SECONDS)
 		occupant.Stuttering(12 SECONDS)
 		playsound(src.loc, 'sound/weapons/punch1.ogg', 50, 1, -1)
-		if(istype(A, /mob/living))
+		if(isliving(A))
 			var/mob/living/victim = A
 			victim.Weaken(12 SECONDS)
 			victim.Stuttering(12 SECONDS)
@@ -112,7 +112,7 @@
 	if(propelled)
 		return 0
 
-	if(!Process_Spacemove(direction) || !has_gravity(src.loc) || !isturf(loc))	//bikes in space.
+	if(!Process_Spacemove(direction) || !has_gravity(loc) || !isturf(loc))	//bikes in space.
 		return 0
 
 	if(world.time < move_delay)
@@ -128,7 +128,7 @@
 			return 0
 
 		var/mob/living/thedriver = user
-		var/mob_delay = thedriver.movement_delay()
+		var/mob_delay = thedriver.cached_multiplicative_slowdown
 		if(mob_delay > 0)
 			calculated_move_delay += mob_delay
 

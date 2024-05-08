@@ -398,7 +398,7 @@
 
 
 /mob/living/simple_animal/bot/attackby(obj/item/W, mob/user, params)
-	if(W.GetID() || ispda(W))
+	if(W.GetID() || is_pda(W))
 		if(bot_core.allowed(user) && !open && !emagged)
 			locked = !locked
 			to_chat(user, "Controls are now [locked ? "locked." : "unlocked."]")
@@ -501,7 +501,7 @@
 	pulse2.icon = 'icons/effects/effects.dmi'
 	pulse2.icon_state = "empdisable"
 	pulse2.name = "emp sparks"
-	pulse2.anchored = TRUE
+	pulse2.set_anchored(TRUE)
 	pulse2.dir = pick(GLOB.cardinal)
 	QDEL_IN(pulse2, 10)
 
@@ -1356,13 +1356,13 @@ Pass the desired type path itself, declaring a temporary var beforehand is not r
 
 /obj/effect/proc_holder/spell/bot_speed/cast(list/targets, mob/user = usr)
 	for(var/mob/living/simple_animal/bot/bot in targets)
-		bot.speed = 0.1
+		bot.set_varspeed(0.1)
 		addtimer(CALLBACK(bot, TYPE_PROC_REF(/mob/living/simple_animal/bot, reset_speed)), 45 SECONDS)
 
 
 /mob/living/simple_animal/bot/proc/reset_speed()
 	if(QDELETED(src))
 		return
-	speed = initial(speed)
+	set_varspeed(initial(speed))
 	to_chat(src, span_notice("Now you are moving at your normal speed."))
 

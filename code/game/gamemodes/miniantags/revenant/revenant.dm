@@ -34,7 +34,6 @@
 	status_flags = 0
 	wander = 0
 	density = 0
-	flying = TRUE
 	move_resist = INFINITY
 	mob_size = MOB_SIZE_TINY
 	pass_flags = PASSTABLE | PASSGRILLE | PASSMOB
@@ -56,6 +55,12 @@
 	var/draining = 0 //If the revenant is draining someone.
 	var/list/drained_mobs = list() //Cannot harvest the same mob twice
 	var/perfectsouls = 0 //How many perfect, regen-cap increasing souls the revenant has.
+
+
+/mob/living/simple_animal/revenant/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NO_FLOATING_ANIM, INNATE_TRAIT)
+	AddElement(/datum/element/simple_flying)
 
 
 /mob/living/simple_animal/revenant/Life(seconds, times_fired)
@@ -245,7 +250,7 @@
 	if(!src)
 		return
 	var/turf/T = get_turf(src)
-	if(istype(T, /turf/simulated/wall))
+	if(iswallturf(T))
 		to_chat(src, "<span class='revenwarning'>You cannot use abilities from inside of a wall.</span>")
 		return 0
 	if(src.inhibited)
@@ -428,7 +433,7 @@
 
 	var/key_of_revenant
 	message_admins("Revenant ectoplasm was left undestroyed for [reform_time/10] seconds and is reforming into a new revenant.")
-	loc = get_turf(src) //In case it's in a backpack or someone's hand
+	forceMove_turf() //In case it's in a backpack or someone's hand
 	var/mob/living/simple_animal/revenant/new_revenant = new(get_turf(src))
 
 	if(client_to_revive)

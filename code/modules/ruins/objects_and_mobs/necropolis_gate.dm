@@ -285,14 +285,14 @@ GLOBAL_DATUM(necropolis_gate, /obj/structure/necropolis_gate/legion_gate)
 	if(!islava(T) && !ischasm(T)) //nothing to sink or fall into
 		return
 	var/obj/item/I
-	if(istype(AM, /obj/item))
+	if(isitem(AM))
 		I = AM
 	var/mob/living/L
 	if(isliving(AM))
 		L = AM
 	switch(fall_on_cross)
 		if(COLLAPSE_ON_CROSS, DESTROY_ON_CROSS)
-			if((I && I.w_class >= WEIGHT_CLASS_BULKY) || (L && !(L.flying) && L.mob_size >= MOB_SIZE_HUMAN)) //too heavy! too big! aaah!
+			if((I && I.w_class >= WEIGHT_CLASS_BULKY) || (L && !(L.movement_type & MOVETYPES_NOT_TOUCHING_GROUND) && L.mob_size >= MOB_SIZE_HUMAN)) //too heavy! too big! aaah!
 				collapse()
 		if(UNIQUE_EFFECT)
 			crossed_effect(AM)

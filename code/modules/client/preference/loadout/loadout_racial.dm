@@ -7,13 +7,12 @@
 	display_name = "embroidered veil"
 	description = "A common traditional nano-fiber veil worn by many Tajaran, It is rare and offensive to see it on other races."
 	path = /obj/item/clothing/glasses/tajblind
-	slot = slot_glasses
+	slot = ITEM_SLOT_EYES
 
 /datum/gear/racial/taj/bot
 	display_name = "veil, blooming"
 	description = "A common traditional nano-fiber veil worn by many Tajaran, It is rare and offensive to see it on other races. This one has an in-built botanical HUD."
 	path = /obj/item/clothing/glasses/hud/hydroponic/tajblind
-	slot = slot_glasses
 	allowed_roles = list(JOB_TITLE_BOTANIST)
 
 /datum/gear/racial/taj/sec
@@ -73,7 +72,7 @@
 /datum/gear/racial/footwraps
 	display_name = "cloth footwraps, select"
 	path = /obj/item/clothing/shoes/footwraps
-	slot = slot_shoes
+	slot = ITEM_SLOT_FEET
 
 /datum/gear/racial/footwraps/New()
 	..()

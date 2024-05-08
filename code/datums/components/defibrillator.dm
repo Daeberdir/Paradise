@@ -241,7 +241,7 @@
 	// Run through some quick failure states after shocking.
 	var/time_dead = world.time - target.timeofdeath
 
-	if(time_dead > DEFIB_TIME_LIMIT)
+	if((time_dead > DEFIB_TIME_LIMIT) || !target.get_organ_slot(INTERNAL_ORGAN_HEART))
 		user.visible_message(span_boldnotice("[defib_ref] buzzes: Resuscitation failed - Heart tissue damage beyond point of no return for defibrillation."))
 		defib_success = FALSE
 	else if(target.getBruteLoss() >= 180 || target.getFireLoss() >= 180 || target.getCloneLoss() >= 180)
@@ -277,7 +277,7 @@
 		if(time_dead > DEFIB_TIME_LOSS && defib_time_brain_damage > target.getBrainLoss())
 			target.setBrainLoss(defib_time_brain_damage)
 
-		target.update_revive()
+		target.update_revive(TRUE, TRUE)
 		target.KnockOut()
 		target.Paralyse(12 SECONDS)
 		target.emote("gasp")

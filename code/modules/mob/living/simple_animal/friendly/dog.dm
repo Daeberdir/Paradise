@@ -182,7 +182,7 @@
 		switch(remove_from)
 			if("head")
 				if(inventory_head)
-					if(inventory_head.flags & NODROP)
+					if(HAS_TRAIT(inventory_head, TRAIT_NODROP))
 						to_chat(usr, "<span class='warning'>\The [inventory_head] is stuck too hard to [src] for you to remove!</span>")
 						return
 					drop_item_ground(inventory_head)
@@ -195,7 +195,7 @@
 					return
 			if("back")
 				if(inventory_back)
-					if(inventory_back.flags & NODROP)
+					if(HAS_TRAIT(inventory_back, TRAIT_NODROP))
 						to_chat(usr, "<span class='warning'>\The [inventory_head] is stuck too hard to [src] for you to remove!</span>")
 						return
 					drop_item_ground(inventory_back)
@@ -788,7 +788,7 @@
 	if(istype(I, /obj/item/stack/nanopaste))
 		var/obj/item/stack/nanopaste/N = I
 		N.use(1)
-		if(diseases?.len)
+		if(LAZYLEN(diseases))
 			CureAllDiseases()
 			visible_message("<span class='notice'>[name] looks happy! </span>")
 			chasetail()

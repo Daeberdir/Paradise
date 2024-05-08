@@ -101,10 +101,10 @@
 
 
 /obj/item/storage/MouseDrop(atom/over_object, src_location, over_location, src_control, over_control, params)
-	if(!ishuman(usr))
+	if(!isliving(usr))
 		return FALSE
 
-	var/mob/living/carbon/human/user = usr
+	var/mob/living/user = usr
 
 	// Stops inventory actions in a mech, while ventcrawling and while being incapacitated
 	if(ismecha(user.loc) || is_ventcrawling(user) || user.incapacitated(FALSE, TRUE, TRUE))
@@ -114,7 +114,7 @@
 		open(user)
 		return FALSE
 
-	if((!istype(src, /obj/item/storage/lockbox) && (istype(over_object, /obj/structure/table) || istype(over_object, /turf/simulated/floor)) \
+	if((!istype(src, /obj/item/storage/lockbox) && (istype(over_object, /obj/structure/table) || isfloorturf(over_object)) \
 		&& length(contents) && loc == user && !user.incapacitated() && user.Adjacent(over_object)))
 
 		if(alert(user, "Empty [src] onto [over_object]?", "Confirm", "Yes", "No") != "Yes")
@@ -154,7 +154,7 @@
 		L += S.return_inv()
 	for(var/obj/item/gift/G in src)
 		L += G.gift
-		if(istype(G.gift, /obj/item/storage))
+		if(isstorage(G.gift))
 			L += G.gift:return_inv()
 	for(var/obj/item/folder/F in src)
 		L += F.contents
@@ -179,7 +179,7 @@
 	user.client.screen += closer
 	user.client.screen += contents
 	user.s_active = src
-	LAZYADDOR(mobs_viewing, user)
+	LAZYOR(mobs_viewing, user)
 
 /obj/item/storage/proc/hide_from(mob/user)
 	LAZYREMOVE(mobs_viewing, user) // Remove clientless mobs too
@@ -371,13 +371,13 @@
 			to_chat(usr, "<span class='notice'>[src] is full, make some space.</span>")
 		return FALSE
 
-	if(W.w_class >= w_class && (istype(W, /obj/item/storage)))
+	if(W.w_class >= w_class && (isstorage(W)))
 		if(!istype(src, /obj/item/storage/backpack/holding))	//bohs should be able to hold backpacks again. The override for putting a boh in a boh is in backpack.dm.
 			if(!stop_messages)
 				to_chat(usr, "<span class='notice'>[src] cannot hold [W] as it's a storage item of the same size.</span>")
 			return FALSE //To prevent the stacking of same sized storage items.
 
-	if(W.flags & NODROP) //SHOULD be handled in unEquip, but better safe than sorry.
+	if(HAS_TRAIT(W, TRAIT_NODROP)) //SHOULD be handled in unEquip, but better safe than sorry.
 		to_chat(usr, "<span class='notice'>\the [W] is stuck to your hand, you can't put it in \the [src]</span>")
 		return FALSE
 
@@ -421,7 +421,6 @@
 	if(usr)
 		if(usr.client && usr.s_active != src)
 			usr.client.screen -= W
-		W.dropped(usr)
 		add_fingerprint(usr)
 
 		if(!prevent_warning && !istype(W, /obj/item/gun/energy/kinetic_accelerator/crossbow))
@@ -449,22 +448,14 @@
 	if(!istype(W))
 		return FALSE
 
-	if(istype(src, /obj/item/storage/fancy))
-		var/obj/item/storage/fancy/F = src
-		F.update_icon()
-
 	for(var/_M in mobs_viewing)
 		var/mob/M = _M
 		if((M.s_active == src) && M.client)
 			M.client.screen -= W
 
 	if(new_location)
-		var/is_on_mob = get(loc, /mob)
-		if(is_on_mob)
-			W.dropped(usr)
-
 		if(ismob(new_location) || get(new_location, /mob))
-			if(usr && !is_on_mob && CONFIG_GET(flag/item_animations_enabled))
+			if(usr && !get(loc, /mob) && CONFIG_GET(flag/item_animations_enabled))
 				W.loc = get_turf(src)	// This bullshit is required since /image/ registered in turf contents only
 				W.pixel_x = pixel_x
 				W.pixel_y = pixel_y
@@ -476,6 +467,9 @@
 		else
 			W.layer = initial(W.layer)
 			W.plane = initial(W.plane)
+			W.mouse_opacity = initial(W.mouse_opacity)
+			W.in_inventory = FALSE
+			W.remove_outline()
 
 		W.forceMove(new_location)
 
@@ -639,7 +633,7 @@
 	while(cur_atom && !(cur_atom in container.contents))
 		if(isarea(cur_atom))
 			return -1
-		if(istype(cur_atom.loc, /obj/item/storage))
+		if(isstorage(cur_atom.loc))
 			depth++
 		cur_atom = cur_atom.loc
 
@@ -657,7 +651,7 @@
 	while(cur_atom && !isturf(cur_atom))
 		if(isarea(cur_atom))
 			return -1
-		if(istype(cur_atom.loc, /obj/item/storage))
+		if(isstorage(cur_atom.loc))
 			depth++
 		cur_atom = cur_atom.loc
 

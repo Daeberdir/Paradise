@@ -4,10 +4,11 @@
 	interface_icon = 'icons/obj/chemical.dmi'
 	interface_icon_state = "beakerlarge"
 
-	difficultly_flags = (QUEST_DIFFICULTY_EASY)
+	difficultly_flags = (QUEST_DIFFICULTY_EASY|QUEST_DIFFICULTY_NORMAL)
 
 	var/list/required_reagents = list()
-	var/list/repeated_reagents = list("antiburn_stimulant" = list("volume" = 5, "reward" = 110),
+	var/list/repeated_reagents = list(
+			"antiburn_stimulant" = list("volume" = 5, "reward" = 110),
 			"synthflesh" = list("volume" = 50, "reward" = 75),
 			"rezadone" = list("volume" = 30, "reward" = 80),
 			"sterilizine" = list("volume" = 50, "reward" = 50),
@@ -21,8 +22,12 @@
 			"glycerol" = list("volume" = 30, "reward" = 110),
 			"weak_omnizine" = list("volume" = 30, "reward" = 45),
 			"super_hairgrownium" = list("volume" = 15, "reward" = 110),
+			"pyrosium" = list("volume" = 30, "reward" = 45),
+			"hairgrownium" = list("volume" = 25, "reward" = 70),
+			"itching_powder" = list("volume" = 30, "reward" = 60),
 		)
-	var/list/unique_reagents = list("strange_reagent" = list("volume" = 15, "reward" = 80),
+	var/list/unique_reagents = list(
+			"strange_reagent" = list("volume" = 15, "reward" = 80),
 			"fomepizole" = list("volume" = 20, "reward" = 60),
 	  		"synaptizine" = list("volume" = 50, "reward" = 150),
 			"hair_dye" = list("volume" = 10, "reward" = 110),
@@ -31,8 +36,14 @@
 			"moonlin" = list("volume" = 40, "reward" = 75),
 			"tirizene" = list("volume" = 40, "reward" = 90),
 			"bath_salts" = list("volume" = 10, "reward" = 120),
-			"growthserum" = list("volume" = 15, "reward" = 55)
-			)
+			"capulettium_plus" = list("volume" = 15, "reward" = 90),
+			"facid" = list("volume" = 15, "reward" = 90),
+			"growthserum" = list("volume" = 15, "reward" = 55),
+			"minttoxin" = list("volume" = 15, "reward" = 90),
+			"sarin" = list("volume" = 10, "reward" = 90),
+			"initropidril" = list("volume" = 5, "reward" = 110),
+			"rotatium" = list("volume" = 15, "reward" = 55),
+		)
 
 /datum/cargo_quest/reagents/add_goal(difficultly)
 	var/list/possible_reagents_list = repeated_reagents.Copy() + unique_reagents.Copy()
@@ -79,22 +90,22 @@
 		"amnesia" = list("volume" = 30,"reward" = 80),
 		"threemileisland" = list("volume" = 30,"reward" = 80),
 		"neurotoxin" = list("volume" = 30,"reward" = 80),
-		"rainbow_sky" = list("volume" = 30,"reward" = 100),
+		"rainbow_sky" = list("volume" = 30,"reward" = 160),
 		"sbiten" = list("volume" = 30,"reward" = 60),
 		"singulo" = list("volume" = 30,"reward" = 80),
 		"suicider" = list("volume" = 30,"reward" = 60),
-		"moonlight_skuma" = list("volume" = 30,"reward" = 60),
-		"blue_moondrin" = list("volume" = 30,"reward" = 60),
-		"red_moondrin" = list("volume" = 30,"reward" = 100),
+		"moonlight_skuma" = list("volume" = 30,"reward" = 120),
+		"blue_moondrin" = list("volume" = 30,"reward" = 120),
+		"red_moondrin" = list("volume" = 30,"reward" = 200),
 		"nagasaki" = list("volume" = 30,"reward" = 60),
 		"alcomender" = list("volume" = 30,"reward" = 80),
 		"milk_plus" = list("volume" = 30,"reward" = 60),
 		"teslasingylo" = list("volume" = 30,"reward" = 140),
-		"telegol" = list("volume" = 30,"reward" = 140),
+		"telegol" = list("volume" = 30,"reward" = 280),
 		"inabox" = list("volume" = 30,"reward" = 20),
 		"monako" = list("volume" = 30,"reward" = 40),
 		"slime_drink" = list("volume" = 30,"reward" = 40),
-		"restart" = list("volume" = 30,"reward" = 140),
+		"restart" = list("volume" = 30,"reward" = 180),
 		"gibbfloats" = list("volume" = 30,"reward" = 40),
 		"nuka_cola" = list("volume" = 30,"reward" = 60),
 		"pumpkin_latte" = list("volume" = 30,"reward" = 40),

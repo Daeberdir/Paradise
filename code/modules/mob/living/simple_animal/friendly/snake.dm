@@ -81,8 +81,8 @@
 	speak_chance = 5
 	speak = list("Шшш", "Тсс!", "Тц тц тц!", "ШШшшШШшшШ!")
 	speak_emote = list("hisses")
-	emote_hear = list("Зевает", "Шипит", "Дурачится", "Толкается")
-	emote_see = list("Высовывает язык", "Кружится", "Трясёт хвостом")
+	emote_hear = list("зевает", "шипит", "дурачится", "толкается")
+	emote_see = list("высовывает язык", "кружится", "трясёт хвостом")
 	tts_seed = "Ladyvashj"
 	health = 20
 	maxHealth = 20
@@ -201,7 +201,7 @@
 		switch(remove_from)
 			if("head")
 				if(inventory_head)
-					if(inventory_head.flags & NODROP)
+					if(HAS_TRAIT(inventory_head, TRAIT_NODROP))
 						to_chat(usr, "<span class='warning'>\The [inventory_head] is stuck too hard to [src] for you to remove!</span>")
 						return
 					drop_item_ground(inventory_head)
@@ -293,8 +293,8 @@
 	// BYOND/DM doesn't support the use of initial on lists.
 	speak = list("Шшш", "Тсс!", "Тц тц тц!", "ШШшшШШшшШ!")
 	speak_emote = list("hisses")
-	emote_hear = list("Зевает", "Шипит", "Дурачится", "Толкается")
-	emote_see = list("Высовывает язык", "Кружится", "Трясёт хвостом")
+	emote_hear = list("зевает", "шипит", "дурачится", "толкается")
+	emote_see = list("высовывает язык", "кружится", "трясёт хвостом")
 
 ///Этот код скопирован с кода для корги и обнуляет показатели которые ему даёт риг. Если когда нибудь змейке дадут риг, раскомментируете///
 /*

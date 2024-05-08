@@ -35,7 +35,7 @@
 			inuse = 0
 			return
 
-		if(user != H && H.a_intent != INTENT_HELP && !H.lying)
+		if(user != H && H.a_intent != INTENT_HELP && !H.lying_angle)
 			user.visible_message("<span class='danger'>\The [user] tries to take a swab sample from \the [H], but they move away.</span>")
 			inuse = 0
 			return
@@ -94,7 +94,7 @@
 	if(!proximity || istype(A, /obj/machinery/dnaforensics))
 		return
 
-	if(istype(A,/mob/living))
+	if(isliving(A))
 		return
 
 	if(is_used())
@@ -108,7 +108,7 @@
 		var/list/choices = list()
 		if(A.blood_DNA)
 			choices |= "Blood"
-		if(istype(A, /obj/item/clothing))
+		if(isclothing(A))
 			choices |= "Gunshot Residue"
 
 		var/choice

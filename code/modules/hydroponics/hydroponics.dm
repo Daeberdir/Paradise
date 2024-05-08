@@ -122,7 +122,7 @@
 	if(!istype(user) || user.incapacitated())
 		to_chat(user, "<span class='warning'>You can't do that right now!</span>")
 		return
-	if(wrenchable && !user.lying && Adjacent(user))
+	if(wrenchable && !user.incapacitated() && Adjacent(user))
 		toggle_lid(user)
 
 /obj/machinery/hydroponics/proc/toggle_lid(mob/living/user)
@@ -777,7 +777,7 @@
 		var/irrigate = 0	//How am I supposed to irrigate pill contents?
 		var/transfer_amount
 
-		if(istype(reagent_source, /obj/item/reagent_containers/food/snacks) || istype(reagent_source, /obj/item/reagent_containers/food/pill))
+		if(istype(reagent_source, /obj/item/reagent_containers/food/snacks) || ispill(reagent_source))
 			visi_msg="[user] composts [reagent_source], spreading it through [target]"
 			transfer_amount = reagent_source.reagents.total_volume
 		else
@@ -816,7 +816,7 @@
 			S.my_atom = H
 
 			reagent_source.reagents.trans_to(S,split)
-			if(istype(reagent_source, /obj/item/reagent_containers/food/snacks) || istype(reagent_source, /obj/item/reagent_containers/food/pill))
+			if(istype(reagent_source, /obj/item/reagent_containers/food/snacks) || ispill(reagent_source))
 				qdel(reagent_source)
 
 			H.applyChemicals(S, user)
@@ -873,7 +873,7 @@
 			to_chat(user, "<span class='warning'>This plot is completely devoid of weeds! It doesn't need uprooting.</span>")
 
 	else if(istype(O, /obj/item/storage/bag/plants))
-		attack_hand(user)
+		attempt_harvest(user)
 		var/obj/item/storage/bag/plants/S = O
 		for(var/obj/item/reagent_containers/food/snacks/grown/G in locate(user.x,user.y,user.z))
 			if(!S.can_be_inserted(G))
@@ -933,7 +933,7 @@
 			if(I.use_tool(src, user, 20, volume = I.tool_volume))
 				if(anchored)
 					return
-				anchored = TRUE
+				set_anchored(TRUE)
 				user.visible_message("[user] wrenches [src] into place.", \
 									"<span class='notice'>You wrench [src] in place.</span>")
 		else if(anchored)
@@ -942,13 +942,11 @@
 			if(I.use_tool(src, user, 20, volume = I.tool_volume))
 				if(!anchored)
 					return
-				anchored = FALSE
+				set_anchored(FALSE)
 				user.visible_message("[user] unwrenches [src].", \
 									"<span class='notice'>You unwrench [src].</span>")
 
-/obj/machinery/hydroponics/attack_hand(mob/user)
-	if(issilicon(user)) //How does AI know what plant is?
-		return
+/obj/machinery/hydroponics/proc/attempt_harvest(mob/user)
 	if(lid_closed)
 		to_chat(user, "<span class='warning'>You can't reach the plant through the cover.</span>")
 		return
@@ -965,6 +963,12 @@
 		plant_hud_set_health()
 	else
 		examine(user)
+
+/obj/machinery/hydroponics/attack_hand(mob/user)
+	if(issilicon(user) && !istype(user.get_active_hand(), /obj/item/gripper))
+		return
+
+	attempt_harvest(user)
 
 /obj/machinery/hydroponics/proc/update_tray(mob/user = usr)
 	harvest = 0

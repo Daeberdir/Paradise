@@ -608,7 +608,7 @@
 			chargecount = 0
 			update_icon()
 
-	else if(W.GetID() || ispda(W))			// trying to unlock the interface with an ID card
+	else if(W.GetID() || is_pda(W))			// trying to unlock the interface with an ID card
 		add_fingerprint(user)
 		togglelock(user)
 
@@ -670,7 +670,7 @@
 
 	else if(istype(W, /obj/item/mounted/frame/apc_frame) && opened)
 		if(!(stat & BROKEN || opened== APC_COVER_OFF || obj_integrity < max_integrity)) // There is nothing to repair
-			to_chat(user, "<span class='warning'>You found no reason for repairing this APC</span>")
+			to_chat(user, "<span class='warning'>You found no reason for repairing this APC.</span>")
 			return
 		if(!(stat & BROKEN) && opened== APC_COVER_OFF) // Cover is the only thing broken, we do not need to remove elctronicks to replace cover
 			user.visible_message("[user.name] replaces missing APC's cover.",\
@@ -960,7 +960,7 @@
 
 	add_fingerprint(user)
 
-	if(usr == user && opened && !issilicon(user))
+	if(usr == user && opened && (!issilicon(user) || istype(user.get_active_hand(), /obj/item/gripper)))
 		if(cell)
 			user.visible_message("<span class='warning'>[user.name] removes [cell] from [src]!", "You remove the [cell].</span>")
 			cell.forceMove_turf()
@@ -1005,7 +1005,7 @@
 	if(malfai == (malf.parent || malf))
 		if(occupier == malf)
 			return APC_MALF_SHUNTED_HERE
-		else if(istype(malf.loc, /obj/machinery/power/apc))
+		else if(isapc(malf.loc))
 			return APC_MALF_SHUNTED_OTHER
 		else
 			return APC_MALF_HACKED
@@ -1242,7 +1242,7 @@
 /obj/machinery/power/apc/proc/malfoccupy(mob/living/silicon/ai/malf)
 	if(!istype(malf))
 		return
-	if(istype(malf.loc, /obj/machinery/power/apc)) // Already in an APC
+	if(isapc(malf.loc)) // Already in an APC
 		to_chat(malf, "<span class='warning'>You must evacuate your current APC first!</span>")
 		return
 	if(!malf.can_shunt)
