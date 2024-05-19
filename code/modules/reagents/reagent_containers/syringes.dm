@@ -82,7 +82,7 @@
 					target.visible_message("<span class='danger'>[user] is trying to take a blood sample from [target]!</span>", \
 									"<span class='userdanger'>[user] is trying to take a blood sample from [target]!</span>")
 					busy = TRUE
-					if(!do_mob(user, target))
+					if(!do_after(user, 3 SECONDS, target, NONE))
 						busy = FALSE
 						return
 					if(reagents.holder_full())
@@ -128,7 +128,7 @@
 				if(L != user)
 					L.visible_message("<span class='danger'>[user] is trying to inject [L]!</span>", \
 											"<span class='userdanger'>[user] is trying to inject you!</span>")
-					if(!do_mob(user, L))
+					if(!do_after(user, 3 SECONDS, L, NONE))
 						return
 					if(!reagents.total_volume)
 						return
@@ -190,7 +190,7 @@
 			if(SYRINGE_INJECT)
 				injoverlay = "inject"
 		. += injoverlay
-		update_equipped_item()
+		update_equipped_item(update_speedmods = FALSE)
 
 
 /obj/item/reagent_containers/syringe/antiviral
