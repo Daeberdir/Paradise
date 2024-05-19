@@ -18,15 +18,15 @@
 	can_holster = FALSE
 
 /*
-/obj/item/gun/pneumatic_rifle/Initialize(mapload)
+/obj/item/gun/projectile/revolver/pneumatic_rifle/Initialize(mapload)
 	. = ..()
 	chambered = new /obj/item/ammo_casing/caseless/syringe(src)
 */
-/obj/item/gun/pneumatic_rifle/Destroy()
+/obj/item/gun/projectile/revolver/pneumatic_rifle/Destroy()
 	QDEL_NULL(tank)
 	return ..()
 
-/obj/item/gun/pneumatic_rifle/examine(mob/user)
+/obj/item/gun/projectile/revolver/pneumatic_rifle/examine(mob/user)
 	. = ..()
 	if(!in_range(user, src))
 		. += span_notice(">You'll need to get closer to see any more.")
@@ -38,7 +38,7 @@
 		if(isBelted)
 			. += span_notice("It has a strap, now you can hold [src] on your back.")
 
-/obj/item/gun/pneumatic_rifle/screwdriver_act(mob/living/user, obj/item/I)
+/obj/item/gun/projectile/revolver/pneumatic_rifle/screwdriver_act(mob/living/user, obj/item/I)
 	. = TRUE
 	if(!I.use_tool(src, user, 0, volume = I.tool_volume))
 		return
@@ -47,7 +47,7 @@
 	else
 		to_chat(user, span_notice("There is no tank inside!"))
 
-/obj/item/gun/pneumatic_rifle/attackby(obj/item/I, mob/user, params)
+/obj/item/gun/projectile/revolver/pneumatic_rifle/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/analyzer))
 		return
 	if(istype(I, /obj/item/stack/cable_coil))
@@ -88,12 +88,12 @@
 	else
 		return ..()
 /*
-/obj/item/gun/pneumatic_rifle/afterattack(atom/target, mob/living/carbon/human/user, flag, params)
+/obj/item/gun/projectile/revolver/pneumatic_rifle/afterattack(atom/target, mob/living/carbon/human/user, flag, params)
 	. = ..()
 	if(target == loc)
 		return
 
-/obj/item/gun/pneumatic_rifle/attack_self(mob/living/user)
+/obj/item/gun/projectile/revolver/pneumatic_rifle/attack_self(mob/living/user)
 	if(!length(syringes) && !chambered.BB)
 		to_chat(user, "<span class='notice'>[src] is empty.</span>")
 		return FALSE
@@ -113,7 +113,7 @@
 	to_chat(user, "<span class='notice'>You unload [S] from \the [src]!</span>")
 	return TRUE
 
-/obj/item/gun/pneumatic_rifle/process_chamber()
+/obj/item/gun/projectile/revolver/pneumatic_rifle/process_chamber()
 	if(!length(syringes) || chambered.BB)
 		return
 
@@ -129,7 +129,7 @@
 	qdel(S)
 
 */
-/obj/item/gun/pneumatic_rifle/afterattack(atom/target, mob/living/user, flag, params)
+/obj/item/gun/projectile/revolver/pneumatic_rifle/afterattack(atom/target, mob/living/user, flag, params)
 	if(!tank)
 		to_chat(user, span_warning("[src] can't fire without a source of gas."))
 		return
@@ -143,11 +143,11 @@
 	tank.air_contents.remove(gasPerShot)
 	..()
 
-/obj/item/gun/pneumatic_rifle/return_analyzable_air()
+/obj/item/gun/projectile/revolver/pneumatic_rifle/return_analyzable_air()
 	if(tank)
 		return tank.return_analyzable_air()
 
-/obj/item/gun/pneumatic_rifle/proc/updateTank(obj/item/tank/thetank, removing = 0, mob/living/carbon/human/user)
+/obj/item/gun/projectile/revolver/pneumatic_rifle/proc/updateTank(obj/item/tank/thetank, removing = 0, mob/living/carbon/human/user)
 	if(removing)
 		if(!tank)
 			return
@@ -167,7 +167,7 @@
 
 /datum/crafting_recipe/pneumatic_rifle
 	name = "Pneumatic Rifle"
-	result = /obj/item/gun/pneumatic_rifle
+	result = /obj/item/gun/projectile/revolver/pneumatic_rifle
 	tools = list(TOOL_SCREWDRIVER)
 	reqs = list(/obj/item/c_tube = 3,
 				/obj/item/weaponcrafting/receiver = 1,
@@ -179,7 +179,7 @@
 	subcategory = CAT_WEAPON
 
 
-/obj/item/gun/pneumatic_rifle/update_overlays()
+/obj/item/gun/projectile/revolver/pneumatic_rifle/update_overlays()
 	. = ..()
 	if(tank)
 		. +=  "[tank.icon_state]"
