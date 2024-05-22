@@ -482,7 +482,7 @@
 		gun_light.set_light_on(FALSE)
 
 	update_icon(UPDATE_OVERLAYS)
-	update_equipped_item()
+	update_equipped_item(update_speedmods = FALSE)
 
 
 /obj/item/gun/proc/clear_bayonet()
@@ -511,7 +511,7 @@
 /obj/item/gun/AltClick(mob/user)
 	if(!unique_reskin || current_skin || loc != user)
 		return ..()
-	if(user.incapacitated())
+	if(user.incapacitated() || HAS_TRAIT(user, TRAIT_HANDS_BLOCKED))
 		to_chat(user, span_warning("You can't do that right now!"))
 		return ..()
 	reskin_gun(user)
@@ -530,7 +530,7 @@
 		current_skin = skin_options[choice]
 		to_chat(user, "Your gun is now skinned as [choice]. Say hello to your new friend.")
 		update_icon()
-		update_equipped_item()
+		update_equipped_item(update_speedmods = FALSE)
 
 
 /obj/item/gun/proc/reskin_radial_check(mob/living/carbon/human/user)
@@ -555,7 +555,7 @@
 
 	semicd = 1
 
-	if(!do_mob(user, target, 120) || user.zone_selected != "mouth")
+	if(!do_after(user, 12 SECONDS, target, NONE) || user.zone_selected != BODY_ZONE_PRECISE_MOUTH)
 		if(user)
 			if(user == target)
 				user.visible_message("<span class='notice'>[user] decided life was worth living.</span>")
