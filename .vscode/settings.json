@@ -1,5 +1,10 @@
 {
 	"workbench.editorAssociations": {
 		"*.dmi": "dmiEditor.dmiEditor"
-	}
+	},
+	"dreammaker.byondPath": [
+		"D:\\Games\\BYOND\\bin\\byond.exe"
+	],
+	"dreammaker.autoUpdate": true,
+	"dreammaker.reparseOnSave": true
 }
