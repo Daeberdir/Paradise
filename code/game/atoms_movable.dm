@@ -433,8 +433,8 @@
 					setDir(first_step_dir)
 				else if(!inertia_moving)
 					newtonian_move(direct)
-				if(client_mobs_in_contents)
-					update_parallax_contents()
+			if(client_mobs_in_contents) // We're done moving, update our parallax now
+				update_parallax_contents()
 			moving_diagonally = NONE
 			return .
 
@@ -469,7 +469,10 @@
 
 	if(!inertia_moving && momentum_change)
 		newtonian_move(Dir)
-	if(!moving_diagonally && client_mobs_in_contents)
+	// If we ain't moving diagonally right now, update our parallax
+	// We don't do this all the time because diag movements should trigger one call to this, not two
+	// Waste of cpu time, and it fucks the animate
+	if (!moving_diagonally && client_mobs_in_contents)
 		update_parallax_contents()
 
 	SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, OldLoc, Dir, Forced)
@@ -564,11 +567,9 @@
 			if(is_multi_tile && isturf(destination))
 				var/list/new_locs = block(
 					destination,
-					locate(
-						min(world.maxx, destination.x + ROUND_UP(bound_width / 32)),
-						min(world.maxy, destination.y + ROUND_UP(bound_height / 32)),
-						destination.z
-					)
+					min(world.maxx, destination.x + ROUND_UP(bound_width / 32)),
+					min(world.maxy, destination.y + ROUND_UP(bound_height / 32)),
+					destination.z
 				)
 				if(old_area && old_area != destarea)
 					old_area.Exited(src, movement_dir)
