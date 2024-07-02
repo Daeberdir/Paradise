@@ -753,7 +753,7 @@
 	},
 /obj/item/storage/box/syndie_kit/bioterror,
 /obj/item/storage/box/syndie_kit/bioterror,
-/obj/item/gun/syringe/rapidsyringe,
+/obj/item/gun/projectile/revolver/syringe/rapidsyringe,
 /obj/effect/turf_decal/bot,
 /turf/simulated/floor/indestructible/plating{
 	icon_state = "dark";

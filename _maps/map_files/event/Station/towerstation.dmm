@@ -27385,7 +27385,7 @@
 	pixel_x = 3;
 	pixel_y = 3
 	},
-/obj/item/gun/syringe,
+/obj/item/gun/projectile/revolver/syringe,
 /obj/item/storage/belt/medical,
 /obj/item/storage/belt/medical,
 /obj/item/clothing/glasses/hud/health,
