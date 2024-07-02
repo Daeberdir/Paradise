@@ -89,7 +89,7 @@
 	var/list/embedded_objects
 
 	/// Whether bodypart has an open incision from surgery
-	var/open = 0
+	var/open = ORGAN_CLOSED
 	/// Whether bodypart needs to be opened with a saw to access the internal organs. Can be a string with encasing description
 	var/encased = FALSE
 	/// Reference to item hidden in this bodypart after cavity surgery
@@ -105,14 +105,14 @@
 	light_on = FALSE
 
 
-/obj/item/organ/external/New(mob/living/carbon/holder)
+/obj/item/organ/external/New(mob/living/carbon/holder, special = ORGAN_MANIPULATION_NOEFFECT)
 	..()
 
 	if(dna?.species)
 		icobase = dna.species.icobase
 		deform = dna.species.deform
 	if(ishuman(holder))
-		replaced(holder)
+		replaced(holder, special)
 		sync_colour_to_human(holder)
 		properly_attached = TRUE
 
@@ -162,12 +162,12 @@
 	QDEL_NULL(hidden)
 
 	if(owner && !owner.has_embedded_objects())
-		owner.clear_alert("embeddedobject")
+		owner.clear_alert(ALERT_EMBEDDED)
 
 	return ..()
 
 
-/obj/item/organ/external/replaced(mob/living/carbon/human/target)
+/obj/item/organ/external/replaced(mob/living/carbon/human/target, special = ORGAN_MANIPULATION_DEFAULT)
 	owner = target
 
 	forceMove(owner)
@@ -175,7 +175,7 @@
 		SEND_SIGNAL(owner, COMSIG_CARBON_GAIN_ORGAN, src)
 
 	if(LAZYLEN(embedded_objects))
-		owner.throw_alert("embeddedobject", /obj/screen/alert/embeddedobject)
+		owner.throw_alert(ALERT_EMBEDDED, /atom/movable/screen/alert/embeddedobject)
 
 	if(!ishuman(owner))
 		return
@@ -187,7 +187,7 @@
 	owner.bodyparts |= src
 
 	for(var/atom/movable/thing in src)
-		thing.attempt_become_organ(src, owner)
+		thing.attempt_become_organ(src, owner, special)
 
 	if(parent_organ_zone)
 		parent = owner.bodyparts_by_name[parent_organ_zone]
@@ -236,10 +236,10 @@
 		qdel(src)
 
 
-/obj/item/organ/external/attempt_become_organ(obj/item/organ/external/parent, mob/living/carbon/human/target)
+/obj/item/organ/external/attempt_become_organ(obj/item/organ/external/parent, mob/living/carbon/human/target, special = ORGAN_MANIPULATION_DEFAULT)
 	if(parent_organ_zone != parent.limb_zone)
 		return FALSE
-	replaced(target)
+	replaced(target, special)
 	return TRUE
 
 
@@ -714,7 +714,7 @@ Note that amputating the affected organ does in fact remove the infection from t
 	if(I.sharp)
 		add_fingerprint(user)
 		if(!length(contents))
-			to_chat(user, span_warning("There is nothing left inside [src]!"))
+			user.balloon_alert(user, "внутри ничего нет!")
 			return
 
 		playsound(loc, 'sound/weapons/slice.ogg', 50, TRUE, -1)
@@ -1147,7 +1147,7 @@ Note that amputating the affected organ does in fact remove the infection from t
 		thing.forceMove(drop_loc)
 		.++
 	if(clear_alert && owner && !owner.has_embedded_objects())
-		owner.clear_alert("embeddedobject")
+		owner.clear_alert(ALERT_EMBEDDED)
 	return .
 
 
@@ -1157,7 +1157,7 @@ Note that amputating the affected organ does in fact remove the infection from t
 	LAZYREMOVE(embedded_objects, thing)
 	thing.forceMove(drop_loc ? drop_loc : drop_location())
 	if(clear_alert && owner && !owner.has_embedded_objects())
-		owner.clear_alert("embeddedobject")
+		owner.clear_alert(ALERT_EMBEDDED)
 	return TRUE
 
 
@@ -1165,7 +1165,7 @@ Note that amputating the affected organ does in fact remove the infection from t
 	LAZYOR(embedded_objects, thing)
 	thing.forceMove(src)
 	if(throw_alert)
-		owner?.throw_alert("embeddedobject", /obj/screen/alert/embeddedobject)
+		owner?.throw_alert(ALERT_EMBEDDED, /atom/movable/screen/alert/embeddedobject)
 
 
 #undef LIMB_SHARP_THRESH_INT_DMG

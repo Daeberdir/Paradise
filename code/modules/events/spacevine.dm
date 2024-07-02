@@ -165,7 +165,7 @@
 	process_mutation(holder)
 
 /datum/spacevine_mutation/space_covering/on_spread(obj/structure/spacevine/holder, turf/target)
-	if(target.type == /turf/space && !locate(/obj/structure/spacevine) in target)
+	if(isspaceturf(target) && !(locate(/obj/structure/spacevine) in target) && !is_location_within_transition_boundaries(target))
 		holder.master.spawn_spacevine_piece(target, holder)
 		. = TRUE
 
@@ -187,7 +187,7 @@
 	quality = MINOR_NEGATIVE
 
 /datum/spacevine_mutation/bluespace/on_spread(obj/structure/spacevine/holder, turf/target)
-	if(holder.energy > 1 && !locate(/obj/structure/spacevine) in target)
+	if(holder.energy > 1 && !(locate(/obj/structure/spacevine) in target) && !is_location_within_transition_boundaries(target))
 		// Lose bluespace upon piercing a single tile, and drop it from our own mutations too
 		// Representing a loss in "high potential"
 		// also conveniently prevents this from spreading too crazily
@@ -459,7 +459,7 @@
 			qdel(master)
 	master = null
 	mutations.Cut()
-	set_opacity(0)
+	set_opacity(FALSE)
 	if(has_buckled_mobs())
 		unbuckle_all_mobs(force = TRUE)
 	return ..()
@@ -546,7 +546,7 @@
 
 /obj/structure/spacevine_controller/New(loc, list/muts, potency, production)
 	color = "#ffffff"
-	spawn_spacevine_piece(loc, , muts)
+	spawn_spacevine_piece(loc, null, muts)
 	START_PROCESSING(SSobj, src)
 	init_subtypes(/datum/spacevine_mutation/, mutations_list)
 	if(potency != null && potency > 0)
@@ -641,7 +641,7 @@
 	if(!energy)
 		icon_state = pick("Med1", "Med2", "Med3")
 		energy = 1
-		set_opacity(1)
+		set_opacity(TRUE)
 	else
 		icon_state = pick("Hvy1", "Hvy2", "Hvy3")
 		energy = 2
@@ -672,17 +672,17 @@
 	for(var/datum/spacevine_mutation/SM in mutations)
 		spread_search |= SM.on_search(src)
 	while(dir_list.len)
-		var/direction = pick(dir_list)
-		dir_list -= direction
-		var/turf/stepturf = get_step(src,direction)
+		var/direction = pick_n_take(dir_list)
+		var/turf/stepturf = get_step(src, direction)
+		if(!stepturf)
+			continue
 		var/spread_success = FALSE
 		for(var/datum/spacevine_mutation/SM in mutations)
 			spread_success |= SM.on_spread(src, stepturf) // If this returns 1, spreading succeeded
 		if(!locate(/obj/structure/spacevine, stepturf))
 			// snowflake for space turf, but space turf is super common and a big deal
-			if(!isspaceturf(stepturf) && stepturf.Enter(src))
-				if(master)
-					master.spawn_spacevine_piece(stepturf, src)
+			if(!isspaceturf(stepturf) && stepturf.Enter(src) && is_location_within_transition_boundaries(stepturf))
+				master?.spawn_spacevine_piece(stepturf, src)
 				spread_success = TRUE
 		if(spread_success || !spread_search)
 			break
