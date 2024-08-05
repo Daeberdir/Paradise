@@ -3,7 +3,7 @@
 	desc = "You sit in this. Either by will or force."
 	icon = 'icons/obj/chairs.dmi'
 	icon_state = "chair"
-	layer = OBJ_LAYER
+	layer = BELOW_OBJ_LAYER
 	can_buckle = TRUE
 	buckle_lying = 0 // you sit in a chair, not lay
 	resistance_flags = NONE
@@ -107,7 +107,7 @@
 	if(has_buckled_mobs() && dir == NORTH)
 		layer = ABOVE_MOB_LAYER
 	else
-		layer = OBJ_LAYER
+		layer = initial(layer)
 
 
 /obj/structure/chair/post_buckle_mob(mob/living/target)
@@ -143,14 +143,6 @@
 
 /obj/structure/chair/AltClick(mob/living/user)
 	rotate(user)
-
-
-/obj/structure/chair/verb/rotate_chair()
-	set name = "Rotate Chair"
-	set category = "Object"
-	set src in oview(1)
-
-	rotate(usr)
 
 
 // CHAIR TYPES

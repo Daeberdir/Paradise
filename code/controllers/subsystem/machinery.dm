@@ -21,6 +21,7 @@ SUBSYSTEM_DEF(machines)
 /datum/controller/subsystem/machines/Initialize()
 	makepowernets()
 	fire()
+	return SS_INIT_SUCCESS
 
 
 /datum/controller/subsystem/machines/proc/makepowernets()
@@ -29,9 +30,7 @@ SUBSYSTEM_DEF(machines)
 	powernets.Cut()
 
 	for(var/obj/structure/cable/PC in GLOB.cable_list)
-		if(istype(PC, /obj/structure/cable/multiz))
-			PC.mergeConnectedNetworksOnTurf()
-		else if(!PC.powernet)
+		if(!PC.powernet)
 			var/datum/powernet/NewPN = new()
 			NewPN.add_cable(PC)
 			propagate_network(PC,PC.powernet)

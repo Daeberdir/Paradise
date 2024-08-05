@@ -217,11 +217,11 @@
 		return
 	if(prob(severity) && istype(crosser) && !isvineimmune(crosser))
 		to_chat(crosser, "<span class='alert'>You accidently touch the vine and feel a strange sensation.</span>")
-		crosser.adjustToxLoss(5)
+		crosser.apply_damage(5, TOX)
 
 /datum/spacevine_mutation/toxicity/on_eat(obj/structure/spacevine/holder, mob/living/eater)
 	if(!isvineimmune(eater))
-		eater.adjustToxLoss(5)
+		eater.apply_damage(5, TOX)
 
 /datum/spacevine_mutation/explosive  //OH SHIT IT CAN CHAINREACT RUN!!!
 	name = "explosive"
@@ -423,26 +423,14 @@
 	var/obj/structure/spacevine_controller/master = null
 	var/list/mutations = list()
 
+
 /obj/structure/spacevine/Initialize(mapload)
 	. = ..()
 	color = "#ffffff"
-
-/obj/structure/spacevine/examine(mob/user)
-	. = ..()
-	var/text = "This one is a"
-	if(mutations.len)
-		for(var/A in mutations)
-			var/datum/spacevine_mutation/SM = A
-			text += " [SM.name]"
-	else
-		text += " normal"
-	text += " vine."
-	. += "<span class='notice'>[text]</span>"
-
-/obj/structure/spacevine/proc/wither()
-	for(var/datum/spacevine_mutation/SM in mutations)
-		SM.on_death(src)
-	qdel(src)
+	var/static/list/loc_connections = list(
+		COMSIG_ATOM_ENTERED = PROC_REF(on_entered),
+	)
+	AddElement(/datum/element/connect_loc, loc_connections)
 
 
 /obj/structure/spacevine/Destroy()
@@ -463,6 +451,26 @@
 	if(has_buckled_mobs())
 		unbuckle_all_mobs(force = TRUE)
 	return ..()
+
+
+/obj/structure/spacevine/examine(mob/user)
+	. = ..()
+	var/text = "This one is a"
+	if(mutations.len)
+		for(var/A in mutations)
+			var/datum/spacevine_mutation/SM = A
+			text += " [SM.name]"
+	else
+		text += " normal"
+	text += " vine."
+	. += "<span class='notice'>[text]</span>"
+
+
+/obj/structure/spacevine/proc/wither()
+	for(var/datum/spacevine_mutation/SM in mutations)
+		SM.on_death(src)
+	qdel(src)
+
 
 /obj/structure/spacevine/has_prints()
 	return FALSE
@@ -522,10 +530,14 @@
 /obj/structure/spacevine/obj_destruction()
 	wither()
 
-/obj/structure/spacevine/Crossed(mob/crosser, oldloc)
-	if(isliving(crosser))
-		for(var/datum/spacevine_mutation/SM in mutations)
-			SM.on_cross(src, crosser)
+
+/obj/structure/spacevine/proc/on_entered(datum/source, atom/movable/arrived, atom/old_loc, list/atom/old_locs)
+	SIGNAL_HANDLER
+
+	if(isliving(arrived))
+		for(var/datum/spacevine_mutation/mutation in mutations)
+			mutation.on_cross(src, arrived)
+
 
 /obj/structure/spacevine/attack_hand(mob/user)
 	for(var/datum/spacevine_mutation/SM in mutations)

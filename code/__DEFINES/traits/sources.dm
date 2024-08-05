@@ -19,6 +19,9 @@
 #define EAR_DAMAGE "ear_damage"
 #define EYE_DAMAGE "eye_damage"
 
+/// Trait sorce for "was recently shocked by something"
+#define WAS_SHOCKED "was_shocked"
+
 /// cannot be removed without admin intervention
 #define ROUNDSTART_TRAIT "roundstart"
 
@@ -133,4 +136,7 @@
 #define IMPLANT_JUMP_BOOTS_TRAIT "implant_jump_boots_trait"
 #define SPELL_LEAP_TRAIT "spell_leap_trait"
 #define SPELL_LUNGE_TRAIT "spell_lunge_trait"
+
+// item trait sources
+#define BROODMOTHER_TONGUE_TRAIT "broodmother_tongue"
 

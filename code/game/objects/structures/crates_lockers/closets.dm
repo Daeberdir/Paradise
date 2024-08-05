@@ -22,7 +22,7 @@ GLOBAL_LIST_EMPTY(closets)
 	var/overlay_sparking = "sparking"
 	var/overlay_unlocked = "unlocked"
 	var/overlay_locked = "locked"
-	var/overlay_locker = "locker"
+	var/overlay_locker = null // TODO: 'locker'less closet sprites.
 	var/custom_door_overlay = null //handles overlay of door looking into screen
 	var/custom_open_overlay = null //handles overlay of opened door (its inner side)
 
@@ -43,6 +43,7 @@ GLOBAL_LIST_EMPTY(closets)
 	)
 	var/open_sound_volume = 35
 	var/close_sound_volume = 50
+	var/sparking_duration = 1 SECONDS
 	var/storage_capacity = 30 //This is so that someone can't pack hundreds of items in a locker/crate then open it in a populated area to crash clients.
 	var/material_drop = /obj/item/stack/sheet/metal
 	var/material_drop_amount = 2
@@ -320,7 +321,6 @@ GLOBAL_LIST_EMPTY(closets)
 
 /obj/structure/closet/verb/verb_toggleopen()
 	set src in oview(1)
-	set category = null
 	set name = "Toggle Open"
 
 	if(usr.incapacitated() || HAS_TRAIT(usr, TRAIT_HANDS_BLOCKED))
@@ -467,15 +467,25 @@ GLOBAL_LIST_EMPTY(closets)
 	density = FALSE
 	icon_state = "bluespace"
 	storage_capacity = 60
+	ignore_density_closed = TRUE
 	pass_flags = PASSDOOR|PASSTABLE|PASSGRILLE|PASSBLOB|PASSMOB|PASSMACHINE|PASSSTRUCTURE|PASSFLAPS|PASSFENCE|PASSVEHICLE|PASSITEM
 	var/materials = list(MAT_METAL = 5000, MAT_PLASMA = 2500, MAT_TITANIUM = 500, MAT_BLUESPACE = 500)
 	var/transparent = FALSE
 
 
-/obj/structure/closet/bluespace/proc/UpdateTransparency(atom/movable/AM, atom/location)
+/obj/structure/closet/bluespace/Initialize(mapload)
+	. = ..()
+	var/static/list/loc_connections = list(
+		COMSIG_ATOM_EXITED = PROC_REF(on_exited),
+		COMSIG_ATOM_ENTERED = PROC_REF(on_entered),
+	)
+	AddElement(/datum/element/connect_loc, loc_connections)
+
+
+/obj/structure/closet/bluespace/proc/UpdateTransparency()
 	var/transparency = FALSE
-	for(var/atom/A in location)
-		if(A.density && A != src && A != AM)
+	for(var/atom/check as anything in loc)
+		if(check.density && check != src)
 			transparency = TRUE
 			break
 	transparent = transparency
@@ -502,25 +512,22 @@ GLOBAL_LIST_EMPTY(closets)
 			. += mutable_appearance(icon, "[initial(icon_state)]_open", CLOSET_OLAY_LAYER_DOOR)
 
 
-/obj/structure/closet/bluespace/Crossed(atom/movable/AM, oldloc)
-	. = ..()
-	if(AM.density)
+/obj/structure/closet/bluespace/proc/on_entered(datum/source, atom/movable/arrived, atom/old_loc, list/atom/old_locs)
+	SIGNAL_HANDLER
+
+	if(!transparent && arrived.density && arrived != src)
 		transparent = TRUE
 		update_icon()
 
 
-/obj/structure/closet/bluespace/Uncrossed(atom/movable/mover)
-	. = ..()
-	UpdateTransparency(mover, loc)
+/obj/structure/closet/bluespace/proc/on_exited(datum/source, atom/movable/departed, atom/newLoc)
+	SIGNAL_HANDLER
+
+	UpdateTransparency()
 
 
 /obj/structure/closet/bluespace/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
 	. = ..()
 	if(loc)
-		UpdateTransparency(src, loc)
+		UpdateTransparency()
 
-
-/obj/structure/closet/bluespace/close()
-	. = ..()
-	if(.)
-		set_density(FALSE)

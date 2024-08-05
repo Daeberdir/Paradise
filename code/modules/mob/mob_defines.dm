@@ -71,7 +71,6 @@
 	var/gen_record = ""
 	var/exploit_record = ""
 	var/lastpuke = 0
-	var/can_strip = 1
 	/// For speaking/listening.
 	var/list/languages
 	/// For reagents that grant language knowlege.
@@ -87,7 +86,6 @@
 	var/bodytemperature = BODYTEMP_NORMAL	//98.7 F
 	var/nutrition = NUTRITION_LEVEL_FED + 50 //Carbon
 	var/satiety = 0 //Carbon
-	var/hunger_drain = HUNGER_FACTOR // how quickly the mob gets hungry; largely utilized by species.
 
 	var/overeatduration = 0		// How long this guy is overeating //Carbon
 	var/intent = null //Living
@@ -200,8 +198,8 @@
 	///How many usable hands does this mob currently have. Should only be changed through set_usable_hands()
 	var/usable_hands = 2
 
-	//SSD var, changed it up some so people can have special things happen for different mobs when SSD.
-	var/player_logged = 0
+	/// SSD var. When mob has SSD status it contains num value (in deciseconds), since last mob logout. Always null otherwise.
+	var/player_logged
 
 	//Ghosted var, set only if a player has manually ghosted out of this mob.
 	var/player_ghosted = 0
@@ -232,8 +230,9 @@
 
 	var/obj/effect/proc_holder/ranged_ability //Any ranged ability the mob has, as a click override
 
-	/// The datum receiving keyboard input. parent mob by default.
-	var/datum/input_focus = null
+	/// The datum receiving keyboard input. src by default
+	var/datum/focus
+
 	var/last_emote = null
 
 	var/ghost_orbiting = 0
@@ -244,4 +243,10 @@
 	var/list/movespeed_mod_immunities //Lazy list, see mob_movespeed.dm
 	/// The calculated mob speed slowdown based on the modifiers list
 	var/cached_multiplicative_slowdown
+	/// List of action speed modifiers applying to this mob
+	var/list/actionspeed_modification
+	/// List of action speed modifiers ignored by this mob. List -> List (id) -> List (sources)
+	var/list/actionspeed_mod_immunities
+	/// The calculated mob action speed slowdown based on the modifiers list, sorted by category in associvative list
+	var/list/cached_multiplicative_actions_slowdown
 
