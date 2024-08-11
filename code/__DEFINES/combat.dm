@@ -1,7 +1,5 @@
 //Damage things	//TODO: merge these down to reduce on defines
 //Way to waste perfectly good damagetype names (BRUTE) on this... If you were really worried about case sensitivity, you could have just used lowertext(damagetype) in the proc...
-#define CUT 		"cut"
-#define BRUISE		"bruise"
 #define BRUTE		"brute"
 #define BURN		"fire"
 #define TOX			"tox"
@@ -20,7 +18,10 @@
 #define RAD 		"rad"
 #define FIRE 		"fire"
 #define ACID 		"acid"
-//#define MAGIC		"magic"
+#define MAGIC		"magic"
+
+/// All armors
+#define ARMOR_LIST_ALL(...) list(ACID, BIO, BOMB, BULLET, ENERGY, FIRE, LASER, MAGIC, MELEE, RAD)
 
 #define STUN		"stun"
 #define WEAKEN		"weaken"
@@ -152,6 +153,14 @@
 
 #define EMP_HEAVY 1
 #define EMP_LIGHT 2
+
+// Return values used in item/melee/baton/baton_attack.
+/// Does a normal item attack.
+#define BATON_DO_NORMAL_ATTACK 1
+/// The attack has been stopped. Either because the user was clumsy or the attack was blocked.
+#define BATON_ATTACK_DONE 2
+/// The baton attack is still going. baton_effect() is called.
+#define BATON_ATTACKING 3
 
 /*
 * converts life cycle values into deciseconds. try and avoid usage of this.

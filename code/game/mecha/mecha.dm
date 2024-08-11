@@ -125,6 +125,7 @@
 
 /obj/mecha/Initialize()
 	. = ..()
+	ADD_TRAIT(src, TRAIT_WEATHER_IMMUNE, INNATE_TRAIT)
 	icon_state += "-open"
 	add_radio()
 	add_cabin()
@@ -411,7 +412,7 @@
 	var/strafed_backwards = FALSE //Checks if mecha moved backwards, while strafe is active (used later to modify speed and energy drain)
 
 	var/keyheld = FALSE //Checks if player pressed ALT button down while strafe is active
-	if(strafe && occupant.client?.input_data.keys_held["Alt"])
+	if(strafe && occupant.client?.keys_held["Alt"])
 		keyheld = TRUE
 
 	if(internal_damage & MECHA_INT_CONTROL_LOST)
@@ -906,9 +907,12 @@
 
 		user.visible_message("[user] opens [P] and spends some quality time customising [src].")
 
+		if(P.new_prefix)
+			initial_icon = "[P.new_prefix][initial_icon]"
+		else
+			initial_icon = P.new_icon
 		name = P.new_name
 		desc = P.new_desc
-		initial_icon = P.new_icon
 		update_icon(UPDATE_ICON_STATE)
 
 		user.temporarily_remove_item_from_inventory(P)
@@ -1078,7 +1082,7 @@
 				to_chat(user, span_warning("No AI detected in the [name] onboard computer."))
 				return
 			if(AI.mind.special_role) //Malf AIs cannot leave mechs. Except through death.
-				to_chat(user, span_boldannounce("ACCESS DENIED."))
+				to_chat(user, span_boldannounceic("ACCESS DENIED."))
 				return
 			AI.aiRestorePowerRoutine = 0//So the AI initially has power.
 			AI.control_disabled = TRUE
@@ -1263,7 +1267,7 @@
 
 
 /obj/mecha/proc/put_in(mob/user)
-	if(do_after(user, mech_enter_time * gettoolspeedmod(user), src))
+	if(do_after(user, mech_enter_time, src, category = DA_CAT_TOOL))
 		if(obj_integrity <= 0)
 			to_chat(user, span_warning("You cannot get in the [name], it has been destroyed!"))
 		else if(occupant)
