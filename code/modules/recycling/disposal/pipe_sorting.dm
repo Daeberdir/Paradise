@@ -6,7 +6,9 @@
 	flip_type = /obj/structure/disposalpipe/sortjunction/reversed
 	initialize_dirs = DISP_DIR_RIGHT|DISP_DIR_FLIP
 	/// Look at the list called TAGGERLOCATIONS in /code/_globalvars/lists/flavor_misc.dm
-	var/sortType = 0
+	var/list/sort_tags_list
+	/// For mappers. `sort_tags_list` usually list can't be longer than that number.
+	var/maxtags = 5
 
 
 /obj/structure/disposalpipe/sortjunction/Initialize(mapload, obj/structure/disposalconstruct/made_from)
@@ -16,17 +18,29 @@
 
 /obj/structure/disposalpipe/sortjunction/update_name(updates = ALL)
 	. = ..()
-	name = "sort junction"
-	if(sortType > 0)
-		name = GLOB.TAGGERLOCATIONS[sortType]
+	switch(LAZYLEN(sort_tags_list))
+		if(0)
+			name = "untagged sort junction"
+		if(1)
+			name = "'[GLOB.TAGGERLOCATIONS[LAZYACCESS(sort_tags_list, 1)]]' sort junction"
+		else
+			name = "multi-tagged sort junction"
 
 
 /obj/structure/disposalpipe/sortjunction/update_desc(updates = ALL)
 	. = ..()
 	desc = "An underfloor disposal pipe with a package sorting mechanism."
-	if(sortType > 0)
-		var/tag = uppertext(GLOB.TAGGERLOCATIONS[sortType])
-		desc += "\nIt's tagged with [tag]"
+
+	if(!LAZYLEN(sort_tags_list))
+		return .
+
+	var/tagnames
+	for(var/tag in sort_tags_list)
+		tag = uppertext(GLOB.TAGGERLOCATIONS[tag])
+		tagnames = "[tag]; [tagnames]"
+
+	tagnames = replacetext(tagnames, ";", ".", length(tagnames))
+	desc += "\nIt's tagged with: [tagnames]"
 
 
 /obj/structure/disposalpipe/sortjunction/attackby(obj/item/I, mob/user, params)
@@ -37,7 +51,7 @@
 		var/obj/item/destTagger/tagger = I
 
 		if(tagger.currTag > 0)	// Tag set
-			sortType = tagger.currTag
+			sort_tags_list = tagger.currTag
 			playsound(loc, 'sound/machines/twobeep.ogg', 100, TRUE)
 			var/tag = uppertext(GLOB.TAGGERLOCATIONS[tagger.currTag])
 			to_chat(user, span_notice("Changed filter to [tag]."))
@@ -47,7 +61,7 @@
 /obj/structure/disposalpipe/sortjunction/nextdir(obj/structure/disposalholder/holder)
 	var/sortdir = dpdir & ~(dir | REVERSE_DIR(dir))
 	if(holder.dir != sortdir) // probably came from the negdir
-		if(holder.destinationTag == sortType) // if destination matches filtered type...
+		if(holder.destinationTag == sort_tags_list) // if destination matches filtered type...
 			return sortdir // exit through sortdirection
 
 	// go with the flow to positive direction
