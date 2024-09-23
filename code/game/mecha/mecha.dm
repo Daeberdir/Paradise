@@ -248,7 +248,7 @@
 	var/mob/living/L = user
 	if(!target.Adjacent(src))
 		if(selected && selected.is_ranged())
-			if(HAS_TRAIT(L, TRAIT_PACIFISM) && selected.harmful)
+			if(selected.harmful && L.is_pasified())
 				to_chat(L, span_warning("You don't want to harm other living beings!"))
 				return
 			if(user.mind?.martial_art?.no_guns)
@@ -256,7 +256,7 @@
 				return
 			selected.action(target, params)
 	else if(selected && selected.is_melee())
-		if(isliving(target) && selected.harmful && HAS_TRAIT(L, TRAIT_PACIFISM))
+		if(isliving(target) && selected.harmful && L.is_pasified())
 			to_chat(user, span_warning("You don't want to harm other living beings!"))
 			return
 		selected.action(target, params)

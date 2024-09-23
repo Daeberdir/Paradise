@@ -72,12 +72,12 @@
 	if(deltimer && timerid)
 		deltimer(timerid)
 
-/datum/component/combo_attacks/proc/on_attack(datum/source, mob/living/target, mob/user)
+/datum/component/combo_attacks/proc/on_attack(datum/source, mob/living/target, mob/living/user)
 	SIGNAL_HANDLER
 
 	if(can_attack_callback && !can_attack_callback.Invoke(user, target))
 		return NONE
-	if(HAS_TRAIT(user, TRAIT_PACIFISM))
+	if(user.is_pasified())
 		return NONE
 	switch(user.a_intent)
 		if(INTENT_HELP)

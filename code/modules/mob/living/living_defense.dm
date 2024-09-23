@@ -149,7 +149,7 @@
 
 /mob/living/mech_melee_attack(obj/mecha/M)
 	if(M.occupant.a_intent == INTENT_HARM)
-		if(HAS_TRAIT(M.occupant, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+		if(M.occupant.is_pasified())
 			to_chat(M.occupant, "<span class='warning'>[pluralize_ru(M.occupant.gender,"Ты не хочешь","Вы не хотите")] навредить живым существам!</span>")
 			return
 		M.do_attack_animation(src)
@@ -322,7 +322,7 @@
 			to_chat(grabber, span_warning("Вы не можете усилить хватку над [name]!"))
 		return FALSE
 
-	if(grabber.grab_state >= GRAB_AGGRESSIVE && (HAS_TRAIT(grabber, TRAIT_PACIFISM) || GLOB.pacifism_after_gt))
+	if(grabber.grab_state >= GRAB_AGGRESSIVE && grabber.is_pasified())
 		if(!supress_message)
 			to_chat(grabber, span_warning("Вы не хотите навредить [name]!"))
 		return FALSE
@@ -368,7 +368,7 @@
 	switch(grabber.grab_state)
 		if(GRAB_AGGRESSIVE)
 			var/add_log = ""
-			if(HAS_TRAIT(grabber, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+			if(grabber.is_pasified())
 				visible_message(
 					span_danger("[grabber.name] крепко сжима[pluralize_ru(grabber.gender,"ет","ют")] [name]!"),
 					span_danger("[grabber.name] крепко сжима[pluralize_ru(grabber.gender,"ет","ют")] Вас!"),
@@ -438,7 +438,7 @@
 			M.Feedstop()
 		return // can't attack while eating!
 
-	if(HAS_TRAIT(src, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+	if(is_pasified())
 		to_chat(M, "<span class='warning'>[pluralize_ru(M.gender,"Ты не хочешь","Вы не хотите")] никому навредить!</span>")
 		return FALSE
 
@@ -455,7 +455,7 @@
 			return FALSE
 		M.custom_emote(EMOTE_VISIBLE, "[M.friendly] [src.declent_ru(ACCUSATIVE)].")
 		return FALSE
-	if(HAS_TRAIT(M, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+	if(M.is_pasified())
 		to_chat(M, "<span class='warning'>[pluralize_ru(M.gender,"Ты не хочешь","Вы не хотите")] никому навредить!</span>")
 		return FALSE
 
@@ -475,7 +475,7 @@
 			return FALSE
 
 		else
-			if(HAS_TRAIT(L, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+			if(L.is_pasified())
 				to_chat(L, "<span class='warning'>[pluralize_ru(L.gender,"Ты не хочешь","Вы не хотите")] никому навредить!</span>")
 				return FALSE
 
@@ -500,7 +500,7 @@
 			grabbedby(M)
 			return FALSE
 		if(INTENT_HARM)
-			if(HAS_TRAIT(M, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+			if(M.is_pasified())
 				to_chat(M, "<span class='warning'>[pluralize_ru(M.gender,"Ты","Вы")] не [pluralize_ru(M.gender,"хочешь","хотите")] никому навредить!</span>")
 				return FALSE
 			M.do_attack_animation(src)
@@ -513,7 +513,7 @@
 	return FALSE
 
 /mob/living/RangedAttack(atom/A, params) //Player firing
-	if(HAS_TRAIT(src, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+	if(is_pasified())
 		return
 	if(dirslash_enabled && a_intent != INTENT_HELP)
 		var/turf/turf_attacking = get_step(src, get_compass_dir(src, A))
@@ -533,3 +533,18 @@
 	Knockdown(1 SECONDS)
 	return TRUE
 
+
+/mob/living/proc/is_pasified()
+	if(GLOB.pacifism_after_gt)
+		var/datum/status_effect/hatred/hatred = has_status_effect(STATUS_EFFECT_HATRED)
+		if(!hatred || !length(hatred.sources))
+			return TRUE
+
+		for(var/a in hatred.sources)
+			if(hatred.sources[a])
+				return FALSE
+
+		return TRUE
+
+	if(HAS_TRAIT(src, TRAIT_PACIFISM))
+		return !has_status_effect(STATUS_EFFECT_HATRED)

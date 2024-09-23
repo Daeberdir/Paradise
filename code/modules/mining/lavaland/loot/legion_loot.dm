@@ -58,7 +58,7 @@
 			user.transform *= 1.2
 			animate(user, color = old_color, transform = old_transform, time = 1 SECONDS)
 
-/obj/item/storm_staff/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+/obj/item/storm_staff/afterattack(atom/target, mob/living/user, proximity_flag, click_parameters)
 	. = ..()
 	if(!thunder_charges)
 		to_chat(user, "<span class='warning'>The staff needs to recharge.</span>")
@@ -72,7 +72,7 @@
 	if(target_turf in targeted_turfs)
 		to_chat(user, "<span class='warning'>That SPOT is already being shocked!</span>")
 		return
-	if(HAS_TRAIT(user, TRAIT_PACIFISM))
+	if(user.is_pasified())
 		to_chat(user, "<span class='warning'>You don't want to hurt anyone!</span>")
 		return
 	var/power_boosted = FALSE

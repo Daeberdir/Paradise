@@ -271,8 +271,8 @@
 
 /// Updates grabbed victim status effects.
 /mob/living/proc/pull_on_life()
-	var/mob/grabber = pulledby
-	if(HAS_TRAIT(grabber, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+	var/mob/living/grabber = pulledby
+	if(grabber.is_pasified())
 		grabber.stop_pulling()
 		return
 

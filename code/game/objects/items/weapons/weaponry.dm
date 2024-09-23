@@ -414,8 +414,11 @@
 	playsound(loc, extend_sound, 50, TRUE)
 	add_fingerprint(user)
 	if(on)
+		user.apply_status_effect(STATUS_EFFECT_HATRED, src, TRUE)
 		to_chat(user, span_userdanger("Вы активировали [name] - время для правосудия!"))
 	else
+		var/datum/status_effect/hatred/hatred = user.has_status_effect(STATUS_EFFECT_HATRED)
+		hatred.remove_source(src)
 		to_chat(user, span_notice("Вы деактивировали [name]."))
 
 

@@ -47,7 +47,7 @@
 	if(user.a_intent != INTENT_HARM || !isGlass)
 		return ..()
 
-	if(HAS_TRAIT(user, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+	if(user.is_pasified())
 		to_chat(user, span_warning("You don't want to harm [target]!"))
 		return ATTACK_CHAIN_PROCEED
 

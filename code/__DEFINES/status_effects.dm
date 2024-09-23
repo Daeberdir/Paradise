@@ -106,6 +106,8 @@
 
 #define STATUS_EFFECT_PACIFIED /datum/status_effect/pacifism //forces the pacifism trait
 
+#define STATUS_EFFECT_HATRED /datum/status_effect/hatred // Negates the pacifism trait.
+
 #define STATUS_EFFECT_SHADOW_BOXING /datum/status_effect/shadow_boxing
 
 #define STATUS_EFFECT_MARK_PREY /datum/status_effect/mark_prey

@@ -122,15 +122,7 @@
 	id = "Exercised"
 	duration = 1200
 	alert_type = null
-
-/datum/status_effect/exercised/on_creation(mob/living/new_owner, ...)
-	. = ..()
-	STOP_PROCESSING(SSfastprocess, src)
-	START_PROCESSING(SSprocessing, src) //this lasts 20 minutes, so SSfastprocess isn't needed.
-
-/datum/status_effect/exercised/Destroy()
-	. = ..()
-	STOP_PROCESSING(SSprocessing, src)
+	processing_speed = STATUS_EFFECT_NORMAL_PROCESS
 
 
 /datum/status_effect/banana_power
@@ -736,6 +728,7 @@
 
 
 /datum/status_effect/drill_payback
+	id = "drill_payback"
 	duration = -1
 	status_type = STATUS_EFFECT_UNIQUE
 	alert_type = null
@@ -774,3 +767,44 @@
 /datum/status_effect/drill_payback/on_remove()
 	..()
 	owner.clear_fullscreen("payback")
+
+
+/atom/movable/screen/alert/status_effect/hatred
+	name = "Pure Hatred"
+	desc = "The blood in your veins boils with rage. Make them accept your justice."
+	icon = 'icons/mob/actions/actions.dmi'
+	icon_state = "blood_rush_status"
+
+
+/datum/status_effect/hatred
+	id = "hatred"
+	duration = -1
+	tick_interval = -1
+	status_type = STATUS_EFFECT_REFRESH
+	alert_type = /atom/movable/screen/alert/status_effect/hatred
+	var/list/sources = list()
+
+
+/datum/status_effect/hatred/on_creation(mob/living/new_owner, atom/source, gt_harm, ...)
+	. = ..()
+	sources[source.UID()] = gt_harm
+	owner.update_misc_effects()
+
+
+/datum/status_effect/hatred/on_remove()
+	owner.update_misc_effects()
+
+
+/datum/status_effect/hatred/refresh(effect, atom/source, gt_harm, ...)
+	. = ..()
+	sources[source.UID()] = gt_harm
+
+
+/datum/status_effect/hatred/get_examine_text()
+	return span_warningbig("Pure hatred is clearly visible in [owner.p_their()] eyes.")
+
+
+/datum/status_effect/hatred/proc/remove_source(atom/source)
+	sources -= source.UID()
+	if(!length(sources))
+		qdel(src)

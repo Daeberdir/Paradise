@@ -20,14 +20,6 @@
 /obj/item/organ/internal/eyes/proc/update_colour()
 	dna.write_eyes_attributes(src)
 
-/obj/item/organ/internal/eyes/proc/generate_icon(var/mob/living/carbon/human/HA)
-	var/mob/living/carbon/human/H = HA
-	if(!istype(H))
-		H = owner
-	var/icon/eyes_icon = new /icon('icons/mob/human_face.dmi', H.dna.species.eyes)
-	eyes_icon.Blend(eye_colour, ICON_ADD)
-
-	return eyes_icon
 
 /obj/item/organ/internal/eyes/proc/get_colourmatrix() //Returns a special colour matrix if the eyes are organic and the mob is colourblind, otherwise it uses the current one.
 	if(!is_robotic() && HAS_TRAIT(owner, TRAIT_COLORBLIND))

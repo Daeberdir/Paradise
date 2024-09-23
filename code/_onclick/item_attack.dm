@@ -185,7 +185,7 @@
 	if(item_flags & NOBLUDGEON)
 		return .
 
-	if(force && (HAS_TRAIT(user, TRAIT_PACIFISM) || GLOB.pacifism_after_gt))
+	if(force && user.is_pasified())
 		to_chat(user, span_warning("You don't want to harm other living beings!"))
 		return .
 

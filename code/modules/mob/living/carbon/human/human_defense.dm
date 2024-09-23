@@ -55,7 +55,7 @@ emp_act
 	if(mind?.martial_art?.deflection_chance) //Some martial arts users can deflect projectiles!
 		if(body_position != LYING_DOWN && !HAS_TRAIT(src, TRAIT_HULK) && mind.martial_art.try_deflect(src)) //But only if they're not lying down, and hulks can't do it
 			add_attack_logs(P.firer, src, "hit by [P.type] but got deflected by martial arts '[mind.martial_art]'")
-			if(HAS_TRAIT(src, TRAIT_PACIFISM) || !P.is_reflectable(REFLECTABILITY_PHYSICAL)) //if it cannot be reflected, it hits the floor. This is the exception to the rule
+			if(is_pasified() || !P.is_reflectable(REFLECTABILITY_PHYSICAL)) //if it cannot be reflected, it hits the floor. This is the exception to the rule
 				// Pacifists can deflect projectiles, but not reflect them.
 				// Instead, they deflect them into the ground below them.
 				var/turf/T = get_turf(src)
@@ -793,7 +793,7 @@ emp_act
 
 /mob/living/carbon/human/mech_melee_attack(obj/mecha/M)
 	if(M.occupant.a_intent == INTENT_HARM)
-		if(HAS_TRAIT(M.occupant, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+		if(M.occupant.is_pasified())
 			to_chat(M.occupant, "<span class='warning'>You don't want to harm other living beings!</span>")
 			return
 		M.do_attack_animation(src)

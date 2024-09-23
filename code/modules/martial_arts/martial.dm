@@ -65,7 +65,7 @@
 	return act(MARTIAL_COMBO_STEP_HELP, A, D)
 
 /datum/martial_art/proc/can_use(mob/living/carbon/human/H)
-	return !HAS_TRAIT(H, TRAIT_PACIFISM)
+	return !H.is_pasified()
 
 /datum/martial_art/proc/act(step, mob/living/carbon/human/user, mob/living/carbon/human/target, could_start_new_combo = TRUE)
 	if(!can_use(user))
@@ -327,11 +327,11 @@
 	desc = "Вы - лучший! и Вы это знаете!"
 
 
-/obj/item/storage/belt/champion/wrestling/equipped(mob/user, slot, initial = FALSE)
+/obj/item/storage/belt/champion/wrestling/equipped(mob/living/user, slot, initial = FALSE)
 	. = ..()
 	if(!ishuman(user) || slot != ITEM_SLOT_BELT)
 		return .
-	if(HAS_TRAIT(user, TRAIT_PACIFISM))
+	if(user.is_pasified())
 		to_chat(user, span_warning("In spite of the grandiosity of the belt, you don't feel like getting into any fights."))
 		return .
 	style.teach(user, TRUE)
@@ -432,7 +432,7 @@
 		else if(isvampire(user)) //Vampires
 			to_chat(user, "<span class='warning'>Your blood lust distracts you from the basics of CQC!</span>")
 			return
-		else if(HAS_TRAIT(user, TRAIT_PACIFISM))
+		else if(user.is_pasified())
 			to_chat(user, "<span class='warning'>The mere thought of combat, let alone CQC, makes your head spin!</span>")
 			return
 
@@ -548,7 +548,7 @@
 		to_chat(user, span_warning("It would be dishonorable to attack a foe while [target.p_they()] cannot retaliate."))
 		return .
 
-	if(HAS_TRAIT(user, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+	if(user.is_pasified())
 		to_chat(user, span_warning("You feel violence is not the answer."))
 		return .
 

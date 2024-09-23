@@ -1323,13 +1323,14 @@
 	var/obj/item/organ/internal/eyes/eyes = get_int_organ(/obj/item/organ/internal/eyes)
 	var/obj/item/organ/internal/cyberimp/eyes/eye_implant = get_int_organ(/obj/item/organ/internal/cyberimp/eyes)
 	if(istype(dna.species) && dna.species.eyes)
-		var/icon/eyes_icon
-		if(eye_implant) //Eye implants override native DNA eye colo(u)r
-			eyes_icon = eye_implant.generate_icon()
+		var/icon/eyes_icon = new('icons/mob/human_face.dmi', dna.species.eyes)
+		if(has_status_effect(STATUS_EFFECT_HATRED))
+			eyes_icon.Blend("#f33b0e", ICON_ADD)
+		else if(eye_implant) //Eye implants override native DNA eye colo(u)r
+			eyes_icon.Blend(eye_implant.eye_colour, ICON_ADD)
 		else if(eyes)
-			eyes_icon = eyes.generate_icon()
+			eyes_icon.Blend(eyes.eye_colour, ICON_ADD)
 		else //Error 404: Eyes not found!
-			eyes_icon = new('icons/mob/human_face.dmi', dna.species.eyes)
 			eyes_icon.Blend("#800000", ICON_ADD)
 
 		return eyes_icon
@@ -1355,7 +1356,9 @@ Eyes need to have significantly high darksight to shine unless the mob has the X
 	if(!get_location_accessible(src, BODY_ZONE_PRECISE_EYES))
 		return FALSE
 	// Natural eyeshine, any implants, and XRAY - all give shiny appearance.
-	if((istype(eyes) && eyes.shine()) || istype(eye_implant) || HAS_TRAIT(src, TRAIT_XRAY))
+	if((istype(eyes) && eyes.shine()) || istype(eye_implant) || \
+		HAS_TRAIT(src, TRAIT_XRAY) || has_status_effect(STATUS_EFFECT_HATRED))
+
 		return TRUE
 
 	return FALSE

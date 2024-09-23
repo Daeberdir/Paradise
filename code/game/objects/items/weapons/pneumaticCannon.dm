@@ -142,7 +142,7 @@
 	if(!tank)
 		to_chat(user, span_warning("[src] can't fire without a source of gas."))
 		return
-	if(HAS_TRAIT(user, TRAIT_PACIFISM))
+	if(user.is_pasified())
 		to_chat(user, span_warning("You can't bring yourself to fire [src]! You don't want to risk harming anyone..."))
 		return
 	if(tank && !tank.air_contents.remove(gasPerThrow * pressure_setting))

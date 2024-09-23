@@ -237,8 +237,8 @@
 		return TRUE
 
 
-/obj/structure/table/proc/tablepush(mob/living/victim, mob/user)
-	if(HAS_TRAIT(user, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+/obj/structure/table/proc/tablepush(mob/living/victim, mob/living/user)
+	if(user.is_pasified())
 		to_chat(user, span_danger("Throwing [victim] onto the table might hurt them!"))
 		return FALSE
 	if(victim.buckled)

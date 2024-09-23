@@ -531,7 +531,7 @@
 				if(grab_state >= GRAB_NECK)
 					neckgrab_throw = TRUE
 				stop_pulling()
-				if(HAS_TRAIT(src, TRAIT_PACIFISM) || GLOB.pacifism_after_gt)
+				if(is_pasified())
 					to_chat(src, span_notice("Вы осторожно отпускаете [throwable_mob.declent_ru(ACCUSATIVE)]."))
 					return FALSE
 	else
@@ -539,7 +539,7 @@
 			return FALSE
 		if(!drop_item_ground(held_item, silent = TRUE))
 			return FALSE
-		if(held_item.throwforce && (GLOB.pacifism_after_gt || HAS_TRAIT(src, TRAIT_PACIFISM)))
+		if(held_item.throwforce && is_pasified())
 			to_chat(src, span_notice("Вы осторожно опускаете [held_item.declent_ru(ACCUSATIVE)] на землю."))
 			return FALSE
 		thrown_thing = held_item
