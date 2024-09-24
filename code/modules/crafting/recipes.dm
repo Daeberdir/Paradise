@@ -1373,7 +1373,7 @@
 
 /datum/crafting_recipe/lockermechclamp
 	name = "Makeshift exosuit clamp"
-	result = /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/makeshift
+	result = /obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp/makeshift
 	reqs = list(/obj/item/stack/cable_coil = 5,
 				/obj/item/stack/sheet/metal = 2,
 				/obj/item/wirecutters = 1) //Don't ask, its just for the grabby grabby thing

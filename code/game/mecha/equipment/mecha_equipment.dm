@@ -22,8 +22,12 @@
 	MODULE_SELECTABLE_TOGGLE	- Equipment toggles On/Off instead of regular selecting.
 */
 	var/selectable = NONE
-	var/harmful = FALSE //Controls if equipment can be used to attack by a pacifist.
-	var/integrated = FALSE // Preventing modules from getting detached.
+	/// Controls if equipment can be used to attack by a pacifist.
+	var/harmful = FALSE
+	/// Preventing modules from getting detached.
+	var/integrated = FALSE
+	/// When linked module detached - detached our module as well.
+	var/linked_module
 
 
 /obj/item/mecha_parts/mecha_equipment/proc/update_chassis_page()
@@ -137,12 +141,21 @@
 		return FALSE
 
 
+/obj/item/mecha_parts/mecha_equipment/proc/get_linked_module(list/equipment)
+	return TRUE	// Check can't be failed when we have nothing to check for.
+
+
 /obj/item/mecha_parts/mecha_equipment/proc/can_attach(obj/mecha/M)
 	if(length(M.equipment) >= M.max_equip)
 		return FALSE
 
-	if(compatibility & M.compatibility)
-		return TRUE
+	if(!(compatibility & M.compatibility))
+		return FALSE
+
+	if(!get_linked_module(M.equipment))
+		return FALSE
+
+	return TRUE
 
 
 /obj/item/mecha_parts/mecha_equipment/proc/can_detach()
@@ -154,16 +167,25 @@
 /obj/item/mecha_parts/mecha_equipment/proc/attach(obj/mecha/M)
 	M.equipment += src
 	chassis = M
+
 	if(loc != M)
 		forceMove(M)
+
 	M.log_message("[src] initialized.")
+
 	if(!M.selected)
 		M.selected = src
+
 	update_chassis_page()
 	attach_act(M)
 	ADD_TRAIT(src, TRAIT_NODROP, MECHA_EQUIPMENT_TRAIT)
+
+	if(linked_module)
+		RegisterSignal(linked_module, COMSIG_MECHA_MODULE_DETACHED, override = TRUE)
+
 	if(M.occupant)
 		give_targeted_action()
+
 
 /obj/item/mecha_parts/mecha_equipment/proc/attach_act(obj/mecha/M)
 	return
@@ -180,13 +202,16 @@
 	module_action.Grant(chassis.occupant, chassis, src)
 	chassis.module_actions[src] = module_action
 
-/obj/item/mecha_parts/mecha_equipment/proc/detach(atom/moveto = null)
+/obj/item/mecha_parts/mecha_equipment/proc/detach(atom/moveto)
 	if(!can_detach())
 		return
+
 	if(chassis.occupant)
 		remove_targeted_action()
+
 	detach_act()
 	moveto = moveto || get_turf(chassis)
+
 	if(Move(moveto))
 		chassis.equipment -= src
 		if(chassis.selected == src)
@@ -196,6 +221,13 @@
 		chassis = null
 		REMOVE_TRAIT(src, TRAIT_NODROP, MECHA_EQUIPMENT_TRAIT)
 		set_ready_state(TRUE)
+
+	if(linked_module)
+		UnregisterSignal(linked_module, COMSIG_MECHA_MODULE_DETACHED)
+		linked_module = null
+
+	SEND_SIGNAL(src, COMSIG_MECHA_MODULE_DETACHED)
+
 
 /obj/item/mecha_parts/mecha_equipment/proc/detach_act()
 	return

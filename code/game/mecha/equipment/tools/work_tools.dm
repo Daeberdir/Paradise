@@ -271,14 +271,6 @@
 	return targeted_module?.is_melee()
 
 
-/obj/item/mecha_parts/mecha_equipment/working/multimodule/can_attach(obj/mecha/M)
-	if(length(M.equipment) + length(modules) > M.max_equip)
-		return FALSE
-
-	if(compatibility & M.compatibility)
-		return TRUE
-
-
 /obj/item/mecha_parts/mecha_equipment/working/multimodule/attach_act(obj/mecha/M)
 	for(var/thing in modules)
 		var/obj/item/mecha_parts/mecha_equipment/module = modules[thing]

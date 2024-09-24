@@ -868,6 +868,8 @@
 
 ///sent from mecha action buttons to the mecha they're linked to
 #define COMSIG_MECHA_ACTION_ACTIVATE "mecha_action_activate"
+/// Sent from mecha modules when they detached.
+#define COMSIG_MECHA_MODULE_DETACHED "mecha_module_detached"
 
 // /mob/living/carbon/human signals
 

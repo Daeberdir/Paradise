@@ -3610,10 +3610,10 @@
 	broken_lightmask_overlay = "tool_broken_lightmask"
 	deny_overlay = "tool_deny"
 
-	products = list(/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp = 10,
+	products = list(/obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp = 10,
 		/obj/item/mecha_parts/mecha_equipment/drill/diamonddrill = 10,
 		/obj/item/mecha_parts/mecha_equipment/mining_scanner = 10,
-		/obj/item/mecha_parts/mecha_equipment/rcd = 10,
+		/obj/item/mecha_parts/mecha_equipment/working/rcd = 10,
 		/obj/item/mecha_parts/mecha_equipment/weapon/energy/plasma = 10,
 		/obj/item/mecha_parts/mecha_equipment/extinguisher = 10,
 		/obj/item/mecha_parts/mecha_equipment/cable_layer = 10,

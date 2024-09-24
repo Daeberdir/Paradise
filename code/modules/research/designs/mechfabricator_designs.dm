@@ -873,7 +873,7 @@
 	name = "Exosuit Working Equipment (Hydraulic Clamp)"
 	id = "mech_hydraulic_clamp"
 	build_type = MECHFAB
-	build_path = /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp
+	build_path = /obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp
 	materials = list(MAT_METAL=10000)
 	construction_time = 10 SECONDS
 	category = list("Exosuit Equipment")
@@ -882,7 +882,7 @@
 	name = "Exosuit Working Module (ATMOS module)"
 	id = "mech_atmos_module"
 	build_type = MECHFAB
-	build_path = /obj/item/mecha_parts/mecha_equipment/multimodule/atmos_module
+	build_path = /obj/item/mecha_parts/mecha_equipment/working/multimodule/atmos_module
 	materials = list(MAT_METAL=10000)
 	construction_time = 10 SECONDS
 	category = list("Exosuit Equipment")
@@ -893,7 +893,7 @@
 	id = "mech_rcd"
 	build_type = MECHFAB
 	req_tech = list("materials" = 5, "bluespace" = 3, "magnets" = 4, "powerstorage"=4, "engineering" = 5)
-	build_path = /obj/item/mecha_parts/mecha_equipment/rcd
+	build_path = /obj/item/mecha_parts/mecha_equipment/working/rcd
 	materials = list(MAT_METAL=30000,MAT_GOLD=20000,MAT_PLASMA=25000,MAT_SILVER=20000)
 	construction_time = 30 SECONDS
 	category = list("Exosuit Equipment")
@@ -904,7 +904,7 @@
 	id = "mech_eng_toolset"
 	build_type = MECHFAB
 	req_tech = list("materials" = 6, "engineering" = 4)
-	build_path = /obj/item/mecha_parts/mecha_equipment/eng_toolset
+	build_path = /obj/item/mecha_parts/mecha_equipment/working/eng_toolset
 	materials = list(MAT_METAL=10000,MAT_TITANIUM =2000,MAT_PLASMA=2000)
 	construction_time = 20 SECONDS
 	category = list("Exosuit Equipment")
@@ -915,7 +915,7 @@
 	id = "mech_cargo_update"
 	build_type = MECHFAB
 	req_tech = list("materials" = 6, "programming" = 6, "bluespace" = 7)
-	build_path = /obj/item/mecha_parts/mecha_equipment/cargo_upgrade
+	build_path = /obj/item/mecha_parts/mecha_equipment/working/cargo_upgrade
 	materials = list(MAT_METAL=15000,MAT_TITANIUM =5000,MAT_BLUESPACE=3000)
 	construction_time = 15 SECONDS
 	category = list("Exosuit Equipment")

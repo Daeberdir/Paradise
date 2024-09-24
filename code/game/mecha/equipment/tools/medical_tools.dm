@@ -562,23 +562,38 @@
 	var/improv_max_volume = 300
 	var/imrov_synth_speed = 20
 
-/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun_upgrade/can_attach(obj/mecha/M)
-	if(..())
-		for(var/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/S in M.equipment)
-			return TRUE
-	return FALSE
+
+/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun_upgrade/get_linked_module(list/equipment)
+	for(var/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/S in equipment)
+		if(	S.max_volume == improv_max_volume || \
+			S.synth_speed == imrov_synth_speed || \
+			S.reagents.maximum_volume == improv_max_volume)
+			continue
+
+		linked_module = S
+
+	return linked_module
+
 
 /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun_upgrade/attach_act(obj/mecha/M)
-	for(var/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/S in chassis.equipment)
-		S.max_volume = improv_max_volume
-		S.synth_speed = imrov_synth_speed
-		S.reagents.maximum_volume = improv_max_volume
+	if(!istype(linked_module, /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun))
+		return
+
+	var/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/S = linked_module
+	S.max_volume = improv_max_volume
+	S.synth_speed = imrov_synth_speed
+	S.reagents.maximum_volume = improv_max_volume
+
 
 /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun_upgrade/detach_act()
-	for(var/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/S in chassis.equipment)
-		S.max_volume = initial(S.max_volume)
-		S.synth_speed = initial(S.synth_speed)
-		S.reagents.maximum_volume = S.max_volume
+	if(!istype(linked_module, /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun))
+		return
+
+	var/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/S = linked_module
+	S.max_volume = initial(S.max_volume)
+	S.synth_speed = initial(S.synth_speed)
+	S.reagents.maximum_volume = S.max_volume
+
 
 /obj/item/mecha_parts/mecha_equipment/medical/rescue_jaw
 	name = "rescue jaw"
