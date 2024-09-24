@@ -12,7 +12,7 @@
 	max_equip = 2 //You only have two arms and the control system is shitty
 	wreckage = null
 	mech_enter_time = 20
-
+	compatibility = MODULE_COMPATIBILITY_MAKESHIFT
 	cargo_capacity = 5 // you can fit a few things in this locker but not much.
 
 
@@ -36,6 +36,7 @@
 	mech_enter_time = 20
 	max_equip = 4
 	wreckage = null
+	compatibility = ALL
 
 
 /obj/mecha/combat/lockersyndie/add_cell()

@@ -20,6 +20,7 @@
 	stepsound = null
 	turnsound = null
 	starting_voice = /obj/item/mecha_modkit/voice/silent
+	compatibility = MODULE_COMPATIBILITY_MIME
 
 /obj/mecha/combat/reticence/loaded/New()
 	..()

@@ -399,7 +399,7 @@
 		to_chat(user, span_warning("The hatch is coated with a product that prevents the shaped charge from sticking!"))
 		return ATTACK_CHAIN_BLOCKED_ALL
 
-	if(istype(I, /obj/item/mecha_parts/mecha_equipment/rcd) || istype(I, /obj/item/rcd))
+	if(istype(I, /obj/item/mecha_parts/mecha_equipment/working/rcd) || istype(I, /obj/item/rcd))
 		add_fingerprint(user)
 		to_chat(user, span_warning("The hatch is made of an advanced compound that cannot be deconstructed using an RCD."))
 		return ATTACK_CHAIN_BLOCKED_ALL

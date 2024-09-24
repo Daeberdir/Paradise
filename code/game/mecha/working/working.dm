@@ -1,6 +1,7 @@
 /obj/mecha/working
 	internal_damage_threshold = 60
 	cargo_capacity = 15
+	compatibility = MODULE_COMPATIBILITY_WORKING|MODULE_COMPATIBILITY_DRILL|MODULE_COMPATIBILITY_BOOSTER
 	var/fast_pressure_step_in = 2
 	var/slow_pressure_step_in = 2
 
@@ -10,7 +11,7 @@
 		trackers += new /obj/item/mecha_parts/mecha_tracking(src)
 
 /obj/mecha/working/proc/collect_ore()
-	if(locate(/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp) in equipment)
+	if(locate(/obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp) in equipment)
 		var/obj/structure/ore_box/ore_box = locate(/obj/structure/ore_box) in cargo
 		if(ore_box)
 			for(var/obj/item/stack/ore/ore in range(1, src))

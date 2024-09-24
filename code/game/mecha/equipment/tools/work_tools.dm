@@ -1,6 +1,10 @@
 //Hydraulic clamp, Kill clamp, RCD, Mime RCD, ATMOS module(Extinguisher, Cable layer, Holowall), Engineering toolset.
 
-/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp
+/obj/item/mecha_parts/mecha_equipment/working
+	compatibility = MODULE_COMPATIBILITY_WORKING
+
+
+/obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp
 	name = "hydraulic clamp"
 	desc = "Equipment for engineering exosuits. Lifts objects and loads them into cargo."
 	icon_state = "mecha_clamp"
@@ -9,13 +13,8 @@
 	var/dam_force = 20
 	harmful = TRUE
 
-/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/can_attach(obj/mecha/M)
-	if(..())
-		if(istype(M, /obj/mecha/working) || istype(M, /obj/mecha/combat/lockersyndie))
-			return TRUE
-	return FALSE
 
-/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/action(atom/target)
+/obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp/action(atom/target)
 	if(!action_checks(target))
 		return FALSE
 	if(!chassis)
@@ -84,12 +83,12 @@
 
 
 //This is pretty much just for the death-ripley
-/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/kill
+/obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp/kill
 	name = "\improper KILL CLAMP"
 	desc = "They won't know what clamped them!"
 	energy_drain = 0
 
-/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/kill/action(atom/target)
+/obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp/kill/action(atom/target)
 	if(!action_checks(target))
 		return FALSE
 	if(!chassis)
@@ -114,28 +113,23 @@
 	start_cooldown()
 	return TRUE
 
-/obj/item/mecha_parts/mecha_equipment/cargo_upgrade
+/obj/item/mecha_parts/mecha_equipment/working/cargo_upgrade
 	name = "Cargo expansion upgrade"
 	desc = "A working exosuit module that allows you to turn your Ripley into a hearse, zoo, or armored personnel carrier."
 	icon_state = "tesla"
 	origin_tech = "materials=5;bluespace=6;"
 	selectable = MODULE_SELECTABLE_NONE
 
-/obj/item/mecha_parts/mecha_equipment/cargo_upgrade/can_attach(obj/mecha/M)
-	if(..())
-		if(istype(M, /obj/mecha/working))
-			return TRUE
-	return FALSE
 
-/obj/item/mecha_parts/mecha_equipment/cargo_upgrade/attach_act(obj/mecha/M)
+/obj/item/mecha_parts/mecha_equipment/working/cargo_upgrade/attach_act(obj/mecha/M)
 	chassis.cargo_expanded = TRUE
 	chassis.cargo_capacity = 40
 
-/obj/item/mecha_parts/mecha_equipment/cargo_upgrade/detach_act(obj/mecha/M)
+/obj/item/mecha_parts/mecha_equipment/working/cargo_upgrade/detach_act(obj/mecha/M)
 	chassis.cargo_expanded = FALSE
 	chassis.cargo_capacity = initial(chassis.cargo_capacity)
 
-/obj/item/mecha_parts/mecha_equipment/rcd
+/obj/item/mecha_parts/mecha_equipment/working/rcd
 	name = "Mounted RCD"
 	desc = "An exosuit-mounted Rapid Construction Device. (Can be attached to: Any exosuit)"
 	icon_state = "mecha_rcd"
@@ -147,23 +141,23 @@
 	toolspeed = 1
 	usesound = 'sound/items/deconstruct.ogg'
 
-/obj/item/mecha_parts/mecha_equipment/rcd/New()
+/obj/item/mecha_parts/mecha_equipment/working/rcd/New()
 	GLOB.rcd_list += src
 	rcd_holder = new(rcd_holder)
 	rcd_holder.power_use_multiplier = energy_drain
 	rcd_holder.canRwall = TRUE
 	..()
 
-/obj/item/mecha_parts/mecha_equipment/rcd/Destroy()
+/obj/item/mecha_parts/mecha_equipment/working/rcd/Destroy()
 	GLOB.rcd_list -= src
 	rcd_holder.chassis = null
 	qdel(rcd_holder)
 	return ..()
 
-/obj/item/mecha_parts/mecha_equipment/rcd/attach_act(obj/mecha/M)
+/obj/item/mecha_parts/mecha_equipment/working/rcd/attach_act(obj/mecha/M)
 	rcd_holder.chassis = M
 
-/obj/item/mecha_parts/mecha_equipment/rcd/action(atom/target)
+/obj/item/mecha_parts/mecha_equipment/working/rcd/action(atom/target)
 	if(!action_checks(target) || get_dist(chassis, target)>3)
 		return FALSE
 	var/area/check_area = get_area(target)
@@ -176,13 +170,13 @@
 	if(rcd_act_result == RCD_NO_ACT) //if our rcd_act was not implemented/impossible to do - we can move again
 		chassis.can_move = 0
 
-/obj/item/mecha_parts/mecha_equipment/rcd/proc/check_menu(mob/living/carbon/user)
+/obj/item/mecha_parts/mecha_equipment/working/rcd/proc/check_menu(mob/living/carbon/user)
 	return (user && chassis.occupant == user && user.stat != DEAD)
 
-/obj/item/mecha_parts/mecha_equipment/rcd/self_occupant_attack()
+/obj/item/mecha_parts/mecha_equipment/working/rcd/self_occupant_attack()
 	radial_menu(chassis.occupant)
 
-/obj/item/mecha_parts/mecha_equipment/rcd/proc/radial_menu(mob/living/carbon/user)
+/obj/item/mecha_parts/mecha_equipment/working/rcd/proc/radial_menu(mob/living/carbon/user)
 	if(!check_menu(user))
 		return
 	var/list/choices = list(
@@ -214,7 +208,7 @@
 			occupant_message("Switched RCD to Construct Firelock.")
 	playsound(get_turf(chassis), 'sound/effects/pop.ogg', 50, 0)
 
-/obj/item/mecha_parts/mecha_equipment/rcd/Topic(href,href_list)
+/obj/item/mecha_parts/mecha_equipment/working/rcd/Topic(href,href_list)
 	..()
 	if(href_list["mode"])
 		rcd_holder.mode = href_list["mode"]
@@ -230,7 +224,7 @@
 			if(RCD_MODE_FIRELOCK)
 				occupant_message("Switched RCD to Construct Firelock.")
 
-/obj/item/mecha_parts/mecha_equipment/rcd/get_module_equip_info()
+/obj/item/mecha_parts/mecha_equipment/working/rcd/get_module_equip_info()
 	return " \[<a href='byond://?src=[UID()];mode=[RCD_MODE_DECON]'>D</a>|<a href='byond://?src=[UID()];mode=[RCD_MODE_TURF]'>C</a>|<a href='byond://?src=[UID()];mode=[RCD_MODE_AIRLOCK]'>A</a>|<a href='byond://?src=[UID()];mode=[RCD_MODE_WINDOW]'>W</a>|<a href='byond://?src=[UID()];mode=[RCD_MODE_FIRELOCK]'>F</a>\]"
 
 /obj/item/mecha_parts/mecha_equipment/mimercd
@@ -241,12 +235,8 @@
 	equip_cooldown = 1 SECONDS
 	energy_drain = 250
 	range = MECHA_MELEE | MECHA_RANGED
+	compatibility = MODULE_COMPATIBILITY_MIME
 
-/obj/item/mecha_parts/mecha_equipment/mimercd/can_attach(obj/mecha/combat/M)
-	if(..())
-		if(istype(M, /obj/mecha/combat/reticence) || istype(M, /obj/mecha/combat/lockersyndie))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/mimercd/action(atom/target)
 	if(istype(target, /turf/space/transit))//>implying these are ever made -Sieve
@@ -262,57 +252,57 @@
 			new /obj/structure/barricade/mime/mrcd(target)
 			chassis.spark_system.start()
 
-/obj/item/mecha_parts/mecha_equipment/multimodule
+/obj/item/mecha_parts/mecha_equipment/working/multimodule
 	name = "multi module"
 	var/list/modules = list()
 	var/obj/item/mecha_parts/mecha_equipment/targeted_module
 	range = MECHA_MELEE | MECHA_RANGED
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/New()
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/New()
 	..()
 	for(var/module in modules)
 		var/obj/item/mecha_parts/mecha_equipment/new_module = new module(src)
 		modules[module] = new_module
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/is_ranged()//add a distance restricted equipment. Why not?
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/is_ranged()//add a distance restricted equipment. Why not?
 	return targeted_module?.is_ranged()
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/is_melee()
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/is_melee()
 	return targeted_module?.is_melee()
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/can_attach(obj/mecha/M)
-	if(!..())
+
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/can_attach(obj/mecha/M)
+	if(length(M.equipment) + length(modules) > M.max_equip)
 		return FALSE
-	for(var/obj/item/mecha_parts/mecha_equipment/module in modules)
-		if(!module.can_attach(M))
-			return FALSE
-	return TRUE
+
+	if(compatibility & M.compatibility)
+		return TRUE
 
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/attach_act(obj/mecha/M)
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/attach_act(obj/mecha/M)
 	for(var/thing in modules)
 		var/obj/item/mecha_parts/mecha_equipment/module = modules[thing]
 		module.chassis = chassis
 		module.attach_act(M)
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/detach_act()
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/detach_act()
 	for(var/thing in modules)
 		var/obj/item/mecha_parts/mecha_equipment/module = modules[thing]
 		module.detach_act()
 		module.chassis = null
 		module.set_ready_state(TRUE)
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/action(atom/target)
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/action(atom/target)
 	targeted_module.action(target)
 	update_equip_info()
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/self_occupant_attack()
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/self_occupant_attack()
 	radial_menu(chassis.occupant)
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/proc/check_menu(mob/living/carbon/user)
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/proc/check_menu(mob/living/carbon/user)
 	return (user && chassis.occupant == user && user.stat != DEAD)
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/proc/radial_menu(mob/living/carbon/user)
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/proc/radial_menu(mob/living/carbon/user)
 	var/list/choices = list()
 	for(var/thing in modules)
 		var/obj/item/mecha_parts/mecha_equipment/module = modules[thing]
@@ -331,10 +321,10 @@
 		update_equip_info()
 		occupant_message("Switched to [targeted_module]")
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/get_equip_info()
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/get_equip_info()
 	. = "<dt>[..()]"
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/get_module_equip_info()
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/get_module_equip_info()
 	. = "</dt>"
 	for(var/thing in modules)
 		var/obj/item/mecha_parts/mecha_equipment/module = modules[thing]
@@ -343,7 +333,7 @@
 		else
 			. += "<dd><a href='byond://?src=[UID()];module=[module.UID()]'>Select [module.name]</a> [module.get_module_equip_info()]</dd>"
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/Topic(href, href_list)
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/Topic(href, href_list)
 	..()
 	if(href_list["module"])
 		targeted_module = locateUID(href_list["module"])
@@ -351,7 +341,7 @@
 		occupant_message("Switched to [targeted_module]")
 
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/attackby(obj/item/I, mob/user, params)
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/storage/bible))
 		var/obj/item/mecha_parts/mecha_equipment/extinguisher/extinguisher = locate() in src
 		if(extinguisher?.reagents && user.mind?.isholy)
@@ -361,7 +351,7 @@
 	return ..()
 
 
-/obj/item/mecha_parts/mecha_equipment/multimodule/atmos_module
+/obj/item/mecha_parts/mecha_equipment/working/multimodule/atmos_module
 	name = "ATMOS module"
 	desc = "Equipment for engineering exosuits. Lays cable along the exosuit's path."
 	icon_state = "mecha_atmos"
@@ -383,11 +373,6 @@
 	cable = new(src, 0)
 	..()
 
-/obj/item/mecha_parts/mecha_equipment/cable_layer/can_attach(obj/mecha/M)
-	if(..())
-		if(istype(M, /obj/mecha/working) || istype(M, /obj/mecha/combat/lockersyndie))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/cable_layer/attach_act()
 	RegisterSignal(chassis, COMSIG_MOVABLE_MOVED, PROC_REF(layCable))
@@ -566,11 +551,6 @@
 /obj/item/mecha_parts/mecha_equipment/extinguisher/on_reagent_change()
 	return
 
-/obj/item/mecha_parts/mecha_equipment/extinguisher/can_attach(obj/mecha/M)
-	if(..())
-		if(istype(M, /obj/mecha/working) || istype(M, /obj/mecha/combat/lockersyndie))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/holowall
 	name = "holowall module"
@@ -632,13 +612,8 @@
 				qdel(H)
 			occupant_message(span_notice("You clear all active holobarriers."))
 
-/obj/item/mecha_parts/mecha_equipment/holowall/can_attach(obj/mecha/M)
-	if(..())
-		if(istype(M, /obj/mecha/working) || istype(M, /obj/mecha/combat/lockersyndie))
-			return TRUE
-	return FALSE
 
-/obj/item/mecha_parts/mecha_equipment/eng_toolset
+/obj/item/mecha_parts/mecha_equipment/working/eng_toolset
 	name = "Engineering toolset"
 	desc = "Equipment for engineering exosuits. Gives a set of good tools."
 	icon_state = "mecha_toolset"
@@ -655,7 +630,7 @@
 	var/emag_item = /obj/item/kitchen/knife/combat/cyborg/mecha
 	var/emagged = FALSE
 
-/obj/item/mecha_parts/mecha_equipment/eng_toolset/New()
+/obj/item/mecha_parts/mecha_equipment/working/eng_toolset/New()
 	..()
 	for(var/obj/item/item as anything in items_list)
 		ADD_TRAIT(item, TRAIT_NODROP, type)
@@ -666,13 +641,8 @@
 		item.tool_enabled = TRUE
 	selected_item = pick(items_list)
 
-/obj/item/mecha_parts/mecha_equipment/eng_toolset/can_attach(obj/mecha/M)
-	if(..())
-		if(istype(M, /obj/mecha/working) || istype(M, /obj/mecha/combat/lockersyndie))
-			return TRUE
-	return FALSE
 
-/obj/item/mecha_parts/mecha_equipment/eng_toolset/get_module_equip_info()
+/obj/item/mecha_parts/mecha_equipment/working/eng_toolset/get_module_equip_info()
 	for(var/obj/item/item as anything in items_list)
 		var/short_name = uppertext(item.name[1])
 		if(item == selected_item)
@@ -681,14 +651,14 @@
 			. += "|<a href='byond://?src=[UID()];select=[item.UID()]'>[short_name]</a>"
 	. += "|"
 
-/obj/item/mecha_parts/mecha_equipment/eng_toolset/Topic(href,href_list)
+/obj/item/mecha_parts/mecha_equipment/working/eng_toolset/Topic(href,href_list)
 	..()
 	if(href_list["select"])
 		selected_item = locateUID(href_list["select"])
 		occupant_message("Switched to [selected_item]")
 		update_equip_info()
 
-/obj/item/mecha_parts/mecha_equipment/eng_toolset/action(atom/target)
+/obj/item/mecha_parts/mecha_equipment/working/eng_toolset/action(atom/target)
 	if(!action_checks(target))
 		return FALSE
 	selected_item.melee_attack_chain(chassis.occupant, target)
@@ -697,13 +667,13 @@
 		start_cooldown()
 	chassis.use_power(energy_drain)
 
-/obj/item/mecha_parts/mecha_equipment/eng_toolset/self_occupant_attack()
+/obj/item/mecha_parts/mecha_equipment/working/eng_toolset/self_occupant_attack()
 	radial_menu(chassis.occupant)
 
-/obj/item/mecha_parts/mecha_equipment/eng_toolset/proc/check_menu(mob/living/carbon/user)
+/obj/item/mecha_parts/mecha_equipment/working/eng_toolset/proc/check_menu(mob/living/carbon/user)
 	return (user && chassis.occupant == user && user.stat != DEAD)
 
-/obj/item/mecha_parts/mecha_equipment/eng_toolset/proc/radial_menu(mob/living/carbon/user)
+/obj/item/mecha_parts/mecha_equipment/working/eng_toolset/proc/radial_menu(mob/living/carbon/user)
 	var/list/choices = list()
 	for(var/obj/item/I as anything in items_list)
 		choices["[I.name]"] = image(icon = I.icon, icon_state = I.icon_state)
@@ -718,13 +688,13 @@
 	if(selected)
 		extend(selected)
 
-/obj/item/mecha_parts/mecha_equipment/eng_toolset/proc/extend(obj/item/selected)
+/obj/item/mecha_parts/mecha_equipment/working/eng_toolset/proc/extend(obj/item/selected)
 	if(selected in items_list)
 		selected_item = selected
 		occupant_message("Switched to [selected_item]")
 		update_equip_info()
 
-/obj/item/mecha_parts/mecha_equipment/eng_toolset/emag_act(mob/user)
+/obj/item/mecha_parts/mecha_equipment/working/eng_toolset/emag_act(mob/user)
 	if(!emagged)
 		var/obj/item/emag_thing = new emag_item
 		items_list.Add(emag_thing)

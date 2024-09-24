@@ -16,6 +16,7 @@
 	add_req_access = FALSE
 	max_equip = 3
 	starting_voice = /obj/item/mecha_modkit/voice/honk
+	compatibility = MODULE_COMPATIBILITY_CLOWN
 	var/squeak = 0
 
 /obj/mecha/combat/honker/loaded/New()

@@ -39,7 +39,6 @@
 	var/lights = 0
 	var/lights_power = 6
 	var/lights_color = -99999 // "NONSENSICAL_VALUE"
-	var/emagged = FALSE
 	var/frozen = FALSE
 	var/repairing = FALSE
 	/// The internal storage of the exosuit. For the cargo module
@@ -68,6 +67,7 @@
 
 	var/wreckage
 
+	var/compatibility = NONE
 	var/list/equipment = new
 	var/obj/item/mecha_parts/mecha_equipment/selected
 	var/max_equip = 3

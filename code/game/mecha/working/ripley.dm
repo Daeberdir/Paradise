@@ -93,6 +93,7 @@
 	armor = list("melee" = 40, "bullet" = 30, "laser" = 30, "energy" = 30, "bomb" = 60, "bio" = 0, "rad" = 70, "fire" = 100, "acid" = 100)
 	max_equip = 5 // More armor, less tools
 	wreckage = /obj/structure/mecha_wreckage/ripley/firefighter
+	compatibility = parent_type::compatibility|MODULE_COMPATIBILITY_JAW
 
 /obj/mecha/working/ripley/deathripley
 	desc = "OH SHIT IT'S THE DEATHSQUAD WE'RE ALL GONNA DIE"
@@ -112,7 +113,7 @@
 
 /obj/mecha/working/ripley/deathripley/New()
 	..()
-	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/kill
+	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp/kill
 	ME.attach(src)
 	return
 
@@ -142,7 +143,7 @@
 	LAZYADD(cargo, new /obj/structure/ore_box(src))
 
 	//Attach hydraulic clamp
-	var/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/HC = new
+	var/obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp/HC = new
 	HC.attach(src)
 	QDEL_LIST(trackers) //Deletes the beacon so it can't be found easily
 
@@ -151,15 +152,16 @@
 
 
 /obj/mecha/working/ripley/emag_act(mob/user)
-	if(!emagged)
-		add_attack_logs(user, src, "emagged")
-		emagged = TRUE
-		if(user)
-			to_chat(user, "<span class='notice'>You slide the card through [src]'s ID slot.</span>")
-		playsound(loc, "sparks", 100, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
-		desc += "</br><span class='danger'>The mech's equipment slots spark dangerously!</span>"
-	else if(user)
-		to_chat(user, "<span class='warning'>[src]'s ID slot rejects the card.</span>")
+	if(MODULE_COMPATIBILITY_COMBAT & compatibility)
+		return ..()
+
+	add_attack_logs(user, src, "emagged")
+	compatibility |= MODULE_COMPATIBILITY_COMBAT
+	if(user)
+		to_chat(user, span_notice("You slide the card through [src]'s ID slot."))
+	playsound(loc, "sparks", 100, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+	desc += "</br><span class='danger'>The mech's equipment slots spark dangerously!</span>"
+
 
 /obj/mecha/working/ripley/full_load
 	name = "Тестовый Рипли"
@@ -181,13 +183,13 @@
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/energy/plasma
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp
+	ME = new /obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/kill
+	ME = new /obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp/kill
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/multimodule/atmos_module
+	ME = new /obj/item/mecha_parts/mecha_equipment/working/multimodule/atmos_module
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/rcd
+	ME = new /obj/item/mecha_parts/mecha_equipment/working/rcd
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/wormhole_generator
 	ME.attach(src)
@@ -199,9 +201,9 @@
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/mining_scanner
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/eng_toolset
+	ME = new /obj/item/mecha_parts/mecha_equipment/working/eng_toolset
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/cargo_upgrade
+	ME = new /obj/item/mecha_parts/mecha_equipment/working/cargo_upgrade
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/weapon/energy/mecha_kineticgun
 	ME.attach(src)

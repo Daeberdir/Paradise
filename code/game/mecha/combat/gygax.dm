@@ -15,9 +15,9 @@
 	wreckage = /obj/structure/mecha_wreckage/gygax
 	internal_damage_threshold = 35
 	max_equip = 3
-	maxsize = 2
 	step_energy_drain = 3
 	normal_step_energy_drain = 3
+	compatibility = parent_type::compatibility|MODULE_COMPATIBILITY_BOLA
 
 /obj/mecha/combat/gygax/GrantActions(mob/living/user, human_occupant = 0)
 	..()
@@ -48,7 +48,6 @@
 	maint_access = FALSE
 	wreckage = /obj/structure/mecha_wreckage/gygax/ert
 	max_equip = 5
-	maxsize = 2
 	starting_voice = /obj/item/mecha_modkit/voice/nanotrasen
 	destruction_sleep_duration = 1
 
@@ -80,7 +79,6 @@
 	maint_access = FALSE
 	wreckage = /obj/structure/mecha_wreckage/gygax/dark
 	max_equip = 4
-	maxsize = 2
 	starting_voice = /obj/item/mecha_modkit/voice/syndicate
 	destruction_sleep_duration = 2 SECONDS
 	strafe_allowed = TRUE

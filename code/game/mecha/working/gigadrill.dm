@@ -34,7 +34,7 @@
 	drill.attach(src)
 	LAZYADD(cargo, new /obj/structure/ore_box(src))
 
-	var/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/clamp = new
+	var/obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp/clamp = new
 	clamp.integrated = TRUE
 	clamp.attach(src)
 

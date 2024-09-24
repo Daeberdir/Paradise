@@ -553,17 +553,13 @@
 	origin_tech = "materials=5;engineering=5;magnets=4;powerstorage=4"
 	energy_drain = 20
 	selectable = MODULE_SELECTABLE_NONE
+	compatibility = MODULE_COMPATIBILITY_BOOSTER
 	var/ripley_step_in = 2.5
 	var/odyss_step_in = 1.8
 	var/clarke_step_in = 1.5
 	var/durand_step_in = 3.3
 	var/locker_step_in = 2
 
-/obj/item/mecha_parts/mecha_equipment/improved_exosuit_control_system/can_attach(obj/mecha/M)
-	if(..())
-		if(istype(M, /obj/mecha/medical) || istype(M, /obj/mecha/combat/lockersyndie) || istype(M, /obj/mecha/working) || istype(M, /obj/mecha/combat/durand))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/improved_exosuit_control_system/attach_act()
 	if(istype(loc, /obj/mecha/working/ripley)) // for ripley/firefighter

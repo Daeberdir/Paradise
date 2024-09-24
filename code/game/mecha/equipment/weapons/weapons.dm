@@ -2,9 +2,9 @@
 	name = "mecha weapon"
 	range = MECHA_RANGED
 	origin_tech = "materials=3;combat=3"
+	compatibility = MODULE_COMPATIBILITY_COMBAT
 	var/projectile
 	var/fire_sound
-	var/size = 0
 	var/projectiles_per_shot = 1
 	var/variance = 0
 	var/randomspread = FALSE //use random spread for machineguns, instead of shotgun scatter
@@ -12,15 +12,6 @@
 	var/projectiles
 	var/projectile_energy_cost
 
-/obj/item/mecha_parts/mecha_equipment/weapon/can_attach(obj/mecha/combat/M)
-	if(..())
-		if(istype(M))
-			if(size > M.maxsize)
-				return FALSE
-			return TRUE
-		else if(M.emagged == TRUE)
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/proc/get_shot_amount()
 	return projectiles_per_shot
@@ -64,7 +55,6 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy
 	name = "General Energy Weapon"
-	size = 2
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser
 	equip_cooldown = 0.4 SECONDS
@@ -179,7 +169,6 @@
 	equip_cooldown = 0.8 SECONDS
 	projectile = /obj/item/projectile/energy/electrode
 	fire_sound = 'sound/weapons/gunshots/1taser.ogg'
-	size = 1
 
 /obj/item/mecha_parts/mecha_equipment/weapon/honker
 	name = "HoNkER BlAsT 5000"
@@ -187,12 +176,8 @@
 	energy_drain = 200
 	equip_cooldown = 15 SECONDS
 	range = MECHA_MELEE | MECHA_RANGED
+	compatibility = MODULE_COMPATIBILITY_CLOWN
 
-/obj/item/mecha_parts/mecha_equipment/weapon/honker/can_attach(obj/mecha/combat/M)
-	if(..())
-		if(istype(M, /obj/mecha/combat/honker) || istype(M, /obj/mecha/combat/lockersyndie))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/honker/action(target, params)
 	if(!chassis)
@@ -242,7 +227,6 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic
 	name = "General Ballisic Weapon"
-	size = 2
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/action_checks(atom/target)
 	if(..())
@@ -290,12 +274,8 @@
 	projectile = /obj/item/projectile/bullet/mime
 	projectiles = 20
 	projectile_energy_cost = 50
+	compatibility = MODULE_COMPATIBILITY_MIME
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/carbine/silenced/can_attach(obj/mecha/combat/M)
-	if(..())
-		if(istype(M, /obj/mecha/combat/reticence) || istype(M, /obj/mecha/combat/lockersyndie))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/scattershot
 	name = "LBX AC 10 \"Scattershot\""
@@ -445,7 +425,6 @@
 	equip_cooldown = 6 SECONDS
 	var/det_time = 20
 	harmful = TRUE
-	size = 1
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/flashbang/action(target, params)
 	if(!action_checks(target))
@@ -469,7 +448,6 @@
 	projectile = /obj/item/grenade/clusterbuster
 	projectile_energy_cost = 1600 //getting off cheap seeing as this is 3 times the flashbangs held in the grenade launcher.
 	equip_cooldown = 9 SECONDS
-	size = 1
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/flashbang/clusterbang/limited/get_module_equip_info()//Limited version of the clusterbang launcher that can't reload
 	return " \[[projectiles]\]"
@@ -487,12 +465,8 @@
 	projectile_energy_cost = 100
 	equip_cooldown = 2 SECONDS
 	harmful = FALSE
+	compatibility = MODULE_COMPATIBILITY_CLOWN
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/banana_mortar/can_attach(obj/mecha/combat/M)
-	if(..())
-		if(istype(M, /obj/mecha/combat/honker) || istype(M, /obj/mecha/combat/lockersyndie))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/banana_mortar/action(target, params)
 	if(!action_checks(target))
@@ -516,12 +490,8 @@
 	projectile_energy_cost = 100
 	equip_cooldown = 1 SECONDS
 	harmful = FALSE
+	compatibility = MODULE_COMPATIBILITY_CLOWN
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/mousetrap_mortar/can_attach(obj/mecha/combat/M)
-	if(..())
-		if(istype(M, /obj/mecha/combat/honker) || istype(M, /obj/mecha/combat/lockersyndie))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/mousetrap_mortar/action(target, params)
 	if(!action_checks(target))
@@ -548,12 +518,8 @@
 	projectile_energy_cost = 50
 	equip_cooldown = 1 SECONDS
 	harmful = FALSE
+	compatibility = MODULE_COMPATIBILITY_BOLA
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/bola/can_attach(obj/mecha/combat/M)
-	if(..())
-		if(istype(M, /obj/mecha/combat/gygax) || istype(M, /obj/mecha/combat/lockersyndie))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/bola/action(target, params)
 	if(!action_checks(target))
@@ -580,12 +546,8 @@
 	projectile = /obj/item/projectile/plasma/adv/mech
 	fire_sound = 'sound/weapons/gunshots/1laser5.ogg'
 	harmful = TRUE
+	compatibility = MODULE_COMPATIBILITY_WORKING
 
-/obj/item/mecha_parts/mecha_equipment/weapon/energy/plasma/can_attach(obj/mecha/M)
-	if(istype(M, /obj/mecha/working) || istype(M, /obj/mecha/combat/lockersyndie))
-		if(M.equipment.len<M.max_equip)
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/mecha_kineticgun
 	equip_cooldown = 1 SECONDS
@@ -593,13 +555,7 @@
 	desc = "An exosuit-mounted mining tool that does increased damage in low pressure. Drawing from an onboard power source allows it to project further than the handheld version."
 	icon_state = "mecha_kineticgun"
 	energy_drain = 50
-	size = 1
 	projectile = /obj/item/projectile/kinetic/mech
 	fire_sound = 'sound/weapons/kenetic_accel.ogg'
 	harmful = FALSE
-
-/obj/item/mecha_parts/mecha_equipment/weapon/energy/mecha_kineticgun/can_attach(obj/mecha/M)
-	if(istype(M))
-		if(length(M.equipment) < M.max_equip)
-			return TRUE
-	return FALSE
+	compatibility = MODULE_COMPATIBILITY_WORKING

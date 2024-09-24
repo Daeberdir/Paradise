@@ -1,17 +1,12 @@
 // Sleeper, and Syringe gun
 
 /obj/item/mecha_parts/mecha_equipment/medical
+	compatibility = MODULE_COMPATIBILITY_COMBAT
 
 /obj/item/mecha_parts/mecha_equipment/medical/New()
 	..()
 	START_PROCESSING(SSobj, src)
 
-
-/obj/item/mecha_parts/mecha_equipment/medical/can_attach(obj/mecha/M)
-	if(..())
-		if(istype(M, /obj/mecha/medical) || istype(M, /obj/mecha/combat/lockersyndie))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/medical/attach_act(obj/mecha/M)
 	START_PROCESSING(SSobj, src)
@@ -297,11 +292,6 @@
 	if(reagents)
 		reagents.set_reacting(TRUE)
 
-/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/can_attach(obj/mecha/M)
-	if(..())
-		if(istype(M, /obj/mecha/medical) || istype(M, /obj/mecha/combat/lockersyndie))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/get_module_equip_info()
 	return " \[<a href=\"?src=[UID()];toggle_mode=1\">[analyze_mode? "Analyze" : "Launch"]</a>\]<br />\[Syringes: [syringes.len]/[max_syringes] | Reagents: [reagents.total_volume]/[reagents.maximum_volume]\]<br /><a href='byond://?src=[UID()];show_reagents=1'>Reagents list</a>"
@@ -597,6 +587,7 @@
 	origin_tech = "materials=2;engineering=2"	//kind of sad, but identical to jaws of life
 	equip_cooldown = 1.5 SECONDS
 	energy_drain = 10
+	compatibility = MODULE_COMPATIBILITY_JAW
 	var/dam_force = 20
 
 
@@ -633,9 +624,3 @@
 				step(L, NORTH)
 			else
 				step(L, SOUTH)
-
-/obj/item/mecha_parts/mecha_equipment/medical/rescue_jaw/can_attach(obj/mecha/M)
-	if(istype(M, /obj/mecha/medical) || istype(M, /obj/mecha/working/ripley/firefighter) || istype(M, /obj/mecha/combat/lockersyndie))	//Odys or firefighters or syndielocker
-		if(M.equipment.len < M.max_equip)
-			return TRUE
-	return FALSE

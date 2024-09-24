@@ -165,8 +165,8 @@
 
 	if(ismecha(user.loc))
 		var/obj/mecha/mecha = user.loc
-		if(istype(mecha.selected, /obj/item/mecha_parts/mecha_equipment/eng_toolset))
-			var/obj/item/mecha_parts/mecha_equipment/eng_toolset/toolset = mecha.selected
+		if(istype(mecha.selected, /obj/item/mecha_parts/mecha_equipment/working/eng_toolset))
+			var/obj/item/mecha_parts/mecha_equipment/working/eng_toolset/toolset = mecha.selected
 			I = toolset.selected_item
 
 	else

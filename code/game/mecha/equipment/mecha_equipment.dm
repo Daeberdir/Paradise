@@ -13,14 +13,15 @@
 	var/equip_ready = TRUE
 	var/energy_drain = 0
 	var/obj/mecha/chassis = null
+	/// Determines, what mecha can attach this module.
+	var/compatibility = NONE
 	var/range = MECHA_MELEE //bitflags
 	var/salvageable = TRUE
 /*
 	MODULE_SELECTABLE_FULL		- Regular selectable equipment.
 	MODULE_SELECTABLE_TOGGLE	- Equipment toggles On/Off instead of regular selecting.
-	MODULE_SELECTABLE_NONE		- Not selectable equipment.
 */
-	var/selectable = MODULE_SELECTABLE_FULL
+	var/selectable = NONE
 	var/harmful = FALSE //Controls if equipment can be used to attack by a pacifist.
 	var/integrated = FALSE // Preventing modules from getting detached.
 
@@ -135,11 +136,14 @@
 	if(!chassis || 	chassis.loc != C || src != chassis.selected || !(get_dir(chassis, target) & chassis.dir))
 		return FALSE
 
+
 /obj/item/mecha_parts/mecha_equipment/proc/can_attach(obj/mecha/M)
-	if(istype(M))
-		if(length(M.equipment) < M.max_equip)
-			return TRUE
-	return FALSE
+	if(length(M.equipment) >= M.max_equip)
+		return FALSE
+
+	if(compatibility & M.compatibility)
+		return TRUE
+
 
 /obj/item/mecha_parts/mecha_equipment/proc/can_detach()
 	if(integrated)

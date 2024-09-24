@@ -13,6 +13,7 @@
 	force = 15
 	harmful = TRUE
 	sharp = TRUE
+	compatibility = MODULE_COMPATIBILITY_DRILL
 	var/drill_delay = 7
 	var/drill_level = DRILL_BASIC
 
@@ -83,15 +84,10 @@
 	drill.move_ores()
 
 /obj/item/mecha_parts/mecha_equipment/drill/proc/move_ores()
-	if((locate(/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp) in chassis.equipment) && istype(chassis, /obj/mecha/working))
+	if((locate(/obj/item/mecha_parts/mecha_equipment/working/hydraulic_clamp) in chassis.equipment) && istype(chassis, /obj/mecha/working))
 		var/obj/mecha/working/R = chassis //we could assume that it's a ripley because it has a clamp, but that's ~unsafe~ and ~bad practice~
 		R.collect_ore()
 
-/obj/item/mecha_parts/mecha_equipment/drill/can_attach(obj/mecha/M)
-	if(..())
-		if(istype(M, /obj/mecha/working) || istype(M, /obj/mecha/combat))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/drill/proc/drill_mob(mob/living/target, mob/user)
 	target.visible_message(span_danger("[chassis] is drilling [target] with [src]!"),
