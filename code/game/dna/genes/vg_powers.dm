@@ -305,7 +305,7 @@
 			return
 		// target.hud_typing = TRUE
 		target.thoughts_hud_set(TRUE)
-		var/say = tgui_input_text(user, "What do you wish to say?", "Scan Mind")
+		var/say = tgui_input_text(target, "What do you wish to say?", "Scan Mind")
 		// target.hud_typing = FALSE
 		target.typing = FALSE
 		if(!say || target.stat)

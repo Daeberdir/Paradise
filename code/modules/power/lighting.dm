@@ -3,10 +3,10 @@
 // Consists of light fixtures (/obj/machinery/light) and light tube/bulb items (/obj/item/light)
 
 // status values shared between lighting fixtures and items
-#define LIGHT_OK 0
-#define LIGHT_EMPTY 1
-#define LIGHT_BROKEN 2
-#define LIGHT_BURNED 3
+#define LIGHT_OK		1
+#define LIGHT_BURNED	2
+#define LIGHT_BROKEN	3
+#define LIGHT_EMPTY		4
 
 #define STAGE_EMPTY 1
 #define STAGE_WIRED 2
@@ -184,6 +184,7 @@
 	idle_power_usage = 2
 	active_power_usage = 20
 	power_channel = LIGHT //Lights are calc'd via area so they dont need to be in the machine list
+	siemens_strength = 0	// The number increases when we need to shock someone.
 	/// Is the light on or off?
 	var/on = FALSE
 	/// If the light state has changed since the last 'update()', also update the power requirements
@@ -340,9 +341,8 @@
 /obj/machinery/light/proc/update(trigger = TRUE, play_sound = TRUE)
 	var/area/current_area = get_area(src)
 	UnregisterSignal(current_area, COMSIG_AREA_POWER_CHANGE)
-	switch(status)
-		if(LIGHT_BROKEN, LIGHT_BURNED, LIGHT_EMPTY)
-			on = FALSE
+	if(status != LIGHT_OK)
+		on = FALSE
 
 	emergency_mode = FALSE
 	if(fire_mode)
@@ -441,21 +441,19 @@
 // attack with item - insert light (if right type), otherwise try to break the light
 
 /obj/machinery/light/attackby(obj/item/I, mob/living/user, params)
+	add_fingerprint(user)
+
 	if(user.a_intent == INTENT_HARM)
-		if(light_hit_check(I, user))
-			return ATTACK_CHAIN_BLOCKED_ALL
 		return ..()
 
 	//Light replacer code
 	if(istype(I, /obj/item/lightreplacer))
-		add_fingerprint(user)
 		var/obj/item/lightreplacer/lightreplacer = I
 		lightreplacer.ReplaceLight(src, user)
 		return ATTACK_CHAIN_BLOCKED_ALL
 
 	// attempt to insert a light
 	if(istype(I, /obj/item/light))
-		add_fingerprint(user)
 		var/obj/item/light/new_light = I
 		if(status != LIGHT_EMPTY)
 			to_chat(user, span_warning("There is a [fitting] already inserted."))
@@ -482,46 +480,7 @@
 			explode()
 		return ATTACK_CHAIN_BLOCKED_ALL
 
-	if(light_hit_check(I, user))
-		return ATTACK_CHAIN_BLOCKED_ALL
-
 	return ..()
-
-
-/// Special lights attack handling
-/obj/machinery/light/proc/light_hit_check(obj/item/I, mob/living/user)
-	if(status == LIGHT_EMPTY)
-		if(has_power() && (I.flags & CONDUCT))
-			add_fingerprint(user)
-			do_sparks(3, 1, src)
-			if(prob(75)) // If electrocuted
-				electrocute_mob(user, get_area(src), src, rand(0.7, 1), TRUE)
-				to_chat(user, span_userdanger("You have been electrocuted by [src]!"))
-			else // If not electrocuted
-				to_chat(user, span_danger("You stick [I] into the light socket."))
-			return TRUE
-		return FALSE
-	if(status == LIGHT_BROKEN)
-		return FALSE
-	add_fingerprint(user)
-	user.do_attack_animation(src)
-	if(prob(1 + I.force * 5))
-		user.visible_message(
-			span_danger("[user] smashed the light!"),
-			span_danger("You hit the light, and it smashes!"),
-			span_italics("You hear the tinkle of breaking glass."),
-		)
-		if(on && (I.flags & CONDUCT) && prob(12))
-			electrocute_mob(user, get_area(src), src, 0.3, TRUE)
-		break_light_tube()
-		return TRUE
-	playsound(loc, 'sound/effects/glasshit.ogg', 75, TRUE)
-	user.visible_message(
-		span_danger("[user] hits the light."),
-		span_danger("You hit the light."),
-		span_italics("You hear someone hitting a glass."),
-	)
-	return TRUE
 
 
 /obj/machinery/light/screwdriver_act(mob/living/user, obj/item/I)
@@ -564,15 +523,31 @@
 
 /obj/machinery/light/proceed_attack_results(obj/item/I, mob/living/user, params, def_zone)
 	. = ..()
-	if(ATTACK_CHAIN_SUCCESS_CHECK(.) && (status == LIGHT_BROKEN || status == LIGHT_EMPTY) && on && (I.flags & CONDUCT) && prob(12))
-		electrocute_mob(user, get_area(src), src, 0.3, TRUE)
+	if(ATTACK_CHAIN_SUCCESS_CHECK(.) && siemens_strength && has_power() && (I.flags & CONDUCT))
+		electrocute_mob(user, get_area(src), src, siemens_strength, TRUE)
+		siemens_strength = 0
 
 
-/obj/machinery/light/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1)
+/obj/machinery/light/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, attack_dir, armour_penetration = 0)
 	. = ..()
-	if(. && !QDELETED(src))
-		if(prob(damage_amount * 5))
-			break_light_tube()
+	if(!. || QDELETED(src))
+		return
+
+	if(status < LIGHT_BROKEN)
+//		if(!prob(1 + damage_amount * 5))
+//			return
+
+		break_light_tube()
+
+		if(prob(12))
+			siemens_strength = 0.3
+
+	else if(status == LIGHT_EMPTY)
+		do_sparks(3, TRUE, src)
+
+//		if(prob(75))
+		siemens_strength = rand(0.7, 1)
+
 
 /obj/machinery/light/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
 	switch(damage_type)
@@ -749,10 +724,11 @@
 		return
 
 	if(!skip_sound_and_sparks)
-		if(status == LIGHT_OK || status == LIGHT_BURNED)
-			playsound(loc, 'sound/effects/glasshit.ogg', 75, 1)
 		if(on || overloaded)
 			do_sparks(3, 1, src)
+
+		playsound(loc, 'sound/effects/glasshit.ogg', 75, TRUE)
+
 	status = LIGHT_BROKEN
 	update()
 
