@@ -30,12 +30,16 @@
 	phasing_action.Remove(user)
 	switch_damtype_action.Remove(user)
 
+
 /obj/mecha/combat/phazon/New()
 	..()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/rcd
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/gravcatapult
 	ME.attach(src)
+
+	RegisterSignal(src, COMSIG_MOVABLE_Z_CHANGED, TYPE_PROC_REF(/obj/mecha, forcedisable_phasing))
+
 
 /obj/mecha/combat/phazon/get_commands()
 	var/output = {"<div class='wr'>
