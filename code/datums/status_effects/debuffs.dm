@@ -177,7 +177,7 @@
 	return ..()
 
 /datum/status_effect/bluespace_slowdown/on_remove()
-	owner.next_move_modifier /= 2
+	owner.next_move_modifier *= 0.5
 
 
 /**
@@ -294,11 +294,11 @@
 			if(force_left > force_right)
 				if(!owner.hand)
 					owner.swap_hand()
-				left_hand.attack(target, owner, BODY_ZONE_HEAD)	// yes! right in the neck
+				left_hand.attack(target, owner, def_zone = BODY_ZONE_HEAD)	// yes! right in the neck
 			else if(force_right)
 				if(owner.hand)
 					owner.swap_hand()
-				right_hand.attack(target, owner, BODY_ZONE_HEAD)
+				right_hand.attack(target, owner, def_zone = BODY_ZONE_HEAD)
 			return
 
 		// here goes nothing!
@@ -309,7 +309,7 @@
 			if(owner.hand && owner.l_hand != found_gun)
 				owner.swap_hand()
 			found_gun.process_fire(target, owner, zone_override = BODY_ZONE_HEAD)	// hell yeah! few headshots for mr. vampire!
-			found_gun.attack(owner, owner, BODY_ZONE_HEAD)	// attack ourselves also in case gun has no ammo
+			found_gun.attack(owner, owner, def_zone = BODY_ZONE_HEAD)	// attack ourselves also in case gun has no ammo
 
 
 // start of `living` level status procs.
@@ -540,6 +540,9 @@
 		if(L)
 			liver_multiplier = L.alcohol_intensity
 		actual_strength *= liver_multiplier
+
+	if(HAS_TRAIT(owner, TRAIT_SOBER))
+		actual_strength *= 0.5	// you can resist the effects of the alcohol twice as good
 
 	// THRESHOLD_SLUR (60 SECONDS)
 	if(actual_strength >= THRESHOLD_SLUR)
@@ -959,7 +962,7 @@
 /datum/status_effect/transient/blindness/calc_decay()
 	if(ishuman(owner))
 		var/mob/living/carbon/human/H = owner
-		if((BLINDNESS in H.mutations))
+		if(HAS_TRAIT(H, TRAIT_BLIND))
 			return 0
 
 		var/obj/item/organ/vision = H.dna?.species?.get_vision_organ(H)
@@ -1010,7 +1013,7 @@
 		if(prob(pukeprob))
 			carbon.AdjustConfused(9 SECONDS)
 			carbon.AdjustStuttering(3 SECONDS)
-			carbon.vomit(15, FALSE, 8 SECONDS, 0, FALSE)
+			carbon.vomit(15, message = FALSE)
 		carbon.Dizzy(15 SECONDS)
 	if(strength >= DISGUST_LEVEL_DISGUSTED)
 		if(prob(25))
@@ -1224,3 +1227,33 @@
 	if(new_filter)
 		animate(get_filter("ray"), offset = 10, time = 10 SECONDS, loop = -1)
 		animate(offset = 0, time = 10 SECONDS)
+
+/datum/status_effect/tox_vomit
+	id = "vomitting_from_toxins"
+	alert_type = null
+	processing_speed = STATUS_EFFECT_NORMAL_PROCESS
+	tick_interval = 2 SECONDS
+	var/puke_counter = 0
+
+/datum/status_effect/tox_vomit/on_apply()
+	if(!iscarbon(owner))
+		return FALSE
+
+	return TRUE
+
+/datum/status_effect/tox_vomit/tick(seconds_between_ticks)
+	if(owner.stat == DEAD || !TOX_VOMIT_THRESHOLD_REACHED(owner, TOX_VOMIT_REQUIRED_TOXLOSS) || HAS_TRAIT(owner, TRAIT_GODMODE))
+		qdel(src)
+		return
+
+	puke_counter++
+	if(puke_counter < 25)
+		return
+
+	var/mob/living/carbon/carbon = owner
+	puke_counter = initial(puke_counter)
+
+	if(!carbon.vomit())
+		return
+
+	carbon.adjustToxLoss(-3)

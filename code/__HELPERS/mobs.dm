@@ -46,16 +46,25 @@
 
 	return pick(valid_picks)
 
-/proc/random_hair_style(var/gender, species = SPECIES_HUMAN, var/datum/robolimb/robohead)
+/proc/random_hair_style(gender, species = SPECIES_HUMAN, datum/robolimb/robohead, mob/living/carbon/human/H)
 	var/h_style = "Bald"
 	var/list/valid_hairstyles = list()
+
+	if(species == SPECIES_WRYN) // wryns antennaes now bound to hivenode, no need to change them
+		if(H)
+			var/obj/item/organ/external/head/head_organ = H.get_organ(BODY_ZONE_HEAD)
+			if(head_organ?.h_style)
+				return head_organ.h_style
+		else
+			return "Antennae"
+
 	for(var/hairstyle in GLOB.hair_styles_public_list)
 		var/datum/sprite_accessory/S = GLOB.hair_styles_public_list[hairstyle]
 
 		if(hairstyle == "Bald") //Just in case.
 			valid_hairstyles += hairstyle
 			continue
-		if((gender == MALE && S.gender == FEMALE) || (gender == FEMALE && S.gender == MALE))
+		if(gender == S.unsuitable_gender)
 			continue
 		if(species == SPECIES_MACNINEPERSON) //If the user is a species who can have a robotic head...
 			if(!robohead)
@@ -75,7 +84,7 @@
 
 	return h_style
 
-/proc/random_facial_hair_style(var/gender, species = SPECIES_HUMAN, var/datum/robolimb/robohead)
+/proc/random_facial_hair_style(gender, species = SPECIES_HUMAN, datum/robolimb/robohead)
 	var/f_style = "Shaved"
 	var/list/valid_facial_hairstyles = list()
 	for(var/facialhairstyle in GLOB.facial_hair_styles_list)
@@ -84,7 +93,7 @@
 		if(facialhairstyle == "Shaved") //Just in case.
 			valid_facial_hairstyles += facialhairstyle
 			continue
-		if((gender == MALE && S.gender == FEMALE) || (gender == FEMALE && S.gender == MALE))
+		if(gender == S.unsuitable_gender)
 			continue
 		if(species == SPECIES_MACNINEPERSON) //If the user is a species who can have a robotic head...
 			if(!robohead)
@@ -119,7 +128,7 @@
 
 	return ha_style
 
-/proc/random_marking_style(var/location = "body", species = SPECIES_HUMAN, var/datum/robolimb/robohead, var/body_accessory, var/alt_head)
+/proc/random_marking_style(location = "body", species = SPECIES_HUMAN, datum/robolimb/robohead, body_accessory, alt_head, gender = NEUTER)
 	var/m_style = "None"
 	var/list/valid_markings = list()
 	for(var/marking in GLOB.marking_styles_list)
@@ -127,9 +136,11 @@
 		if(S.name == "None")
 			valid_markings += marking
 			continue
-		if(S.marking_location != location) //If the marking isn't for the location we desire, skip.
+		if(S.marking_location != location)	// If the marking isn't for the location we desire, skip.
 			continue
-		if(!(species in S.species_allowed)) //If the user's head is not of a species the marking style allows, skip it. Otherwise, add it to the list.
+		if(gender == S.unsuitable_gender)	// If the marking isn't allowed for the user's gender, skip.
+			continue
+		if(!(species in S.species_allowed))	// If the user's head is not of a species the marking style allows, skip it. Otherwise, add it to the list.
 			continue
 		if(location == "tail")
 			if(!body_accessory)
@@ -497,7 +508,7 @@
 	to_chat(user, "Name = <b>[M.name]</b>; Real_name = [M.real_name]; Mind_name = [M.mind?"[M.mind.name]":""]; Key = <b>[M.key]</b>;")
 	to_chat(user, "Location = [location_description];")
 	to_chat(user, "[special_role_description]")
-	to_chat(user, "(<a href='?src=[usr.UID()];priv_msg=[M.client?.ckey]'>PM</a>) ([ADMIN_PP(M,"PP")]) ([ADMIN_VV(M,"VV")]) ([ADMIN_TP(M,"TP")]) ([ADMIN_SM(M,"SM")]) ([ADMIN_FLW(M,"FLW")])")
+	to_chat(user, "(<a href='byond://?src=[usr.UID()];priv_msg=[M.client?.ckey]'>PM</a>) ([ADMIN_PP(M,"PP")]) ([ADMIN_VV(M,"VV")]) ([ADMIN_TP(M,"TP")]) ([ADMIN_SM(M,"SM")]) ([ADMIN_FLW(M,"FLW")])")
 
 // Gets the first mob contained in an atom, and warns the user if there's not exactly one
 /proc/get_mob_in_atom_with_warning(atom/A, mob/user = usr)
@@ -525,8 +536,6 @@
 
 	return locate(/mob) in A
 
-// Suppress the mouse macros
-/client/var/next_mouse_macro_warning
 /mob/proc/LogMouseMacro(verbused, params)
 	if(!client)
 		return

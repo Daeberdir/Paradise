@@ -327,13 +327,21 @@ Difficulty: Very Hard
 		disable_shield()
 
 
-/mob/living/simple_animal/hostile/megafauna/ancient_robot/attacked_by(obj/item/I, mob/living/user)
+/mob/living/simple_animal/hostile/megafauna/ancient_robot/proceed_attack_results(obj/item/I, mob/living/user, params, def_zone)
 	if(!body_shield_enabled)
 		return ..()
+
+	. = ATTACK_CHAIN_BLOCKED
 	do_sparks(2, 1, src)
-	visible_message("<span class='danger'>[src]'s shield deflects [I] in a shower of sparks!</span>", "<span class='userdanger'>You deflect the attack!</span>")
+	visible_message(
+		span_danger("[src]'s shield deflects [I] in a shower of sparks!"),
+		span_warning("Your shield deflects the attack!"),
+		ignored_mobs = user,
+	)
+	to_chat(user, span_danger("[src]'s shield deflects your attack!"))
 	if(I.force)
 		disable_shield()
+
 
 /mob/living/simple_animal/hostile/megafauna/ancient_robot/devour(mob/living/L)
 	say(pick("JKYZXAIZOBK GTGREYKX GIZOBK", "OTZKMXGZOTM YAHPKIZ YZXKTMZNY", "JKIUSVOROTM GTJ RKGXTOTM", "LOTJOTM IXOZOIGR CKGQTKYYKY")) //what can I say, I like the trope of something talking in cypher
@@ -564,22 +572,29 @@ Difficulty: Very Hard
 	return
 
 /mob/living/simple_animal/hostile/megafauna/ancient_robot/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
-	if(movement_dir)
-		leg_walking_controler(movement_dir)
-		if(charging)
-			if(mode == PYRO)
-				var/turf/C = get_turf(src)
-				new /obj/effect/temp_visual/lava_warning(C, enraged ? 18 SECONDS : 6 SECONDS)
-				for(var/turf/T in range (1,src))
-					new /obj/effect/hotspot(T)
-					T.hotspot_expose(700,50,1)
-			if(mode == VORTEX)
-				var/turf/T = get_turf(src)
-				for(var/atom/A in T)
-					A.ex_act(3) //Body is immune to explosions of this strength.
-				T.ex_act(3)
+	if(!movement_dir)
+		return ..()
 
-	beam.forceMove(get_turf(src))
+	leg_walking_controler(movement_dir)
+	if(!charging)
+		return ..()
+
+	switch(mode)
+		if(PYRO)
+			var/turf/C = get_turf(src)
+			new /obj/effect/temp_visual/lava_warning(C, enraged ? 18 SECONDS : 6 SECONDS)
+			for(var/turf/T in range (1,src))
+				new /obj/effect/hotspot(T)
+				T.hotspot_expose(700,50,1)
+		if(VORTEX)
+			var/turf/T = get_turf(src)
+			for(var/atom/A in T)
+				A.ex_act(3) //Body is immune to explosions of this strength.
+			T.ex_act(3)
+
+	if(beam && !QDELETED(beam))
+		beam.forceMove(get_turf(src))
+
 	return ..()
 
 
@@ -599,7 +614,6 @@ Difficulty: Very Hard
 	faction = list("mining", "boss") // No attacking your leg
 	weather_immunities = list(TRAIT_LAVA_IMMUNE, TRAIT_ASHSTORM_IMMUNE)
 	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
-	minbodytemp = 0
 	check_friendly_fire = 1
 	ranged = TRUE
 	projectilesound = 'sound/weapons/gunshots/1autorifle.ogg'
@@ -638,6 +652,12 @@ Difficulty: Very Hard
 	who_am_i = who
 	ranged_cooldown_time = rand(30, 60) // keeps them not running on the same time
 	addtimer(CALLBACK(src, PROC_REF(beam_setup)), 1 SECONDS)
+
+/mob/living/simple_animal/hostile/ancient_robot_leg/ComponentInitialize()
+	AddComponent( \
+		/datum/component/animal_temperature, \
+		minbodytemp = 0, \
+	)
 
 /mob/living/simple_animal/hostile/ancient_robot_leg/death(gibbed)
 	return //It shouldn't get gibbed by shuttle.

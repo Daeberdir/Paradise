@@ -407,6 +407,14 @@
 	job = list(JOB_TITLE_CMO, JOB_TITLE_GENETICIST)
 	surplus = 0
 
+/datum/uplink_item/jobspecific/laser_eyes_injector
+	name = "Laser Eyes Injector"
+	desc = "Эксперементальный ДНК инжектор, который навсегда даст вам способность стрелять лазерами из глаз."
+	item = /obj/item/laser_eyes_injector
+	cost = 37
+	job = list(JOB_TITLE_GENETICIST)
+	surplus = 0
+
 //Virology
 /datum/uplink_item/jobspecific/viral_injector
 	name = "Viral Injector"
@@ -438,6 +446,13 @@
 	cost = 25
 	job = list(JOB_TITLE_CIVILIAN, JOB_TITLE_ROBOTICIST)
 	surplus = 0
+
+/datum/uplink_item/jobspecific/lockermech
+	name = "Combat Drone Manual"
+	desc = "Manual that will allow you to construct combat drones and control plates for them."
+	item = /obj/item/drone_manual
+	cost = 45
+	job = list(JOB_TITLE_ROBOTICIST)
 
 /datum/uplink_item/jobspecific/stungloves
 	name = "Stungloves"
@@ -804,6 +819,12 @@
 	desc = "A high powered chainsaw for cutting up ...you know...."
 	item = /obj/item/twohanded/chainsaw
 	cost = 60
+
+/datum/uplink_item/dangerous/rapier
+	name = "Syndicate rapier"
+	desc = "An elegant plastitanium rapier with a diamond tip and coated in a specialized knockout poison. The rapier comes with its own sheath, and is capable of puncturing through almost any defense. However, due to the size of the blade and obvious nature of the sheath, the weapon stands out as being obviously nefarious."
+	item = /obj/item/storage/belt/rapier/syndie
+	cost = 40
 
 /datum/uplink_item/dangerous/commando_kit
 	name = "Commandos knife operation kit"
@@ -1591,7 +1612,7 @@
 	name = "Cryptographic Sequencer"
 	desc = "The cryptographic sequencer, also known as an emag, is a small card that unlocks hidden functions in electronic devices, subverts intended functions and characteristically breaks security mechanisms."
 	item = /obj/item/card/emag
-	cost = 50 // No brainrot allowed
+	cost = 30 // Brainrot allowed
 
 /datum/uplink_item/device_tools/access_tuner
 	name = "Access Tuner"

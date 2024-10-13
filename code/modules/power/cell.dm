@@ -18,6 +18,7 @@
 	var/self_recharge = 0 //does it self recharge, over time, or not?
 	var/ratingdesc = TRUE
 	var/grown_battery = FALSE // If it's a grown that acts as a battery, add a wire overlay to it.
+	var/overlay_charged = "cell-o2" // for custom overlays
 
 /obj/item/stock_parts/cell/laser
 	maxcharge = 1500
@@ -37,6 +38,31 @@
 /obj/item/stock_parts/cell/Destroy()
 	STOP_PROCESSING(SSobj, src)
 	return ..()
+
+
+/obj/item/stock_parts/cell/magic_charge_act(mob/user)
+	. = NONE
+
+	if(charge >= maxcharge)
+		return
+
+	if(prob(80) && adjust_maxcharge(-200))
+		. |= RECHARGE_BURNOUT
+
+	charge = maxcharge
+	. |= RECHARGE_SUCCESSFUL
+
+	update_appearance(UPDATE_ICON)
+
+
+/obj/item/stock_parts/cell/proc/adjust_maxcharge(amount)
+	if(self_recharge)
+		return FALSE	// SelfCharging uses static charge values ​​per tick, so we don't want it to mess up the recharge balance.
+
+	var/old_maxcharge = maxcharge
+	maxcharge = max(maxcharge + amount, 1)
+
+	return maxcharge != old_maxcharge
 
 
 /obj/item/stock_parts/cell/vv_edit_var(var_name, var_value)
@@ -62,7 +88,7 @@
 	if(charge < 0.01)
 		return
 	else if(charge/maxcharge >=0.995)
-		. += "cell-o2"
+		. += overlay_charged
 	else
 		. += "cell-o1"
 
@@ -102,22 +128,27 @@
 	to_chat(viewers(user), "<span class='suicide'>[user] is licking the electrodes of the [src]! It looks like [user.p_theyre()] trying to commit suicide.</span>")
 	return FIRELOSS
 
-/obj/item/stock_parts/cell/attackby(obj/item/W, mob/user, params)
-	if(istype(W, /obj/item/reagent_containers/syringe))
-		var/obj/item/reagent_containers/syringe/S = W
 
-		to_chat(user, "You inject the solution into the power cell.")
-
-		if(S.reagents.has_reagent("plasma", 5) || S.reagents.has_reagent("plasma_dust", 5))
-
+/obj/item/stock_parts/cell/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/reagent_containers/syringe))
+		add_fingerprint(user)
+		var/obj/item/reagent_containers/syringe/syringe = I
+		if(syringe.mode != 1)	// injecting
+			to_chat(user, span_warning("The [syringe.name] should be in inject mode."))
+			return ATTACK_CHAIN_PROCEED
+		if(!syringe.reagents.total_volume)
+			to_chat(user, span_warning("The [syringe.name] is empty."))
+			return ATTACK_CHAIN_PROCEED
+		to_chat(user, span_notice("You have injected the solution into the power cell."))
+		if(syringe.reagents.has_reagent("plasma", 5) || syringe.reagents.has_reagent("plasma_dust", 5))
 			rigged = TRUE
-
 			log_admin("LOG: [key_name(user)] injected a power cell with plasma, rigging it to explode.")
 			message_admins("LOG: [key_name_admin(user)] injected a power cell with plasma, rigging it to explode.")
+		syringe.reagents.clear_reagents()
+		syringe.update_icon()
+		return ATTACK_CHAIN_PROCEED_SUCCESS
 
-		S.reagents.clear_reagents()
-	else
-		return ..()
+	return ..()
 
 
 /obj/item/stock_parts/cell/proc/explode()
@@ -245,7 +276,7 @@
 /obj/item/stock_parts/cell/high/plus
 	name = "high-capacity power cell+"
 	desc = "Where did these come from?"
-	icon_state = "h+cell"
+	icon_state = "hcell"
 	maxcharge = 15000
 	chargerate = 2250
 
@@ -291,6 +322,7 @@
 	materials = list(MAT_GLASS = 600)
 	rating = 6
 	chargerate = 4000
+	overlay_charged = "cell-o2-bs"
 
 /obj/item/stock_parts/cell/bluespace/empty/New()
 	..()
@@ -361,6 +393,9 @@
 
 /obj/item/stock_parts/cell/emproof/corrupt()
 	return
+
+/obj/item/stock_parts/cell/emproof/adjust_maxcharge(amount)
+	return FALSE
 
 /obj/item/stock_parts/cell/ninja
 	name = "spider-clan power cell"

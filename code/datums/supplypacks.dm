@@ -237,6 +237,35 @@ GLOBAL_LIST_INIT(all_supply_groups, list(SUPPLY_EMERGENCY,SUPPLY_SECURITY,SUPPLY
 	containername = "pump crate"
 	access = ACCESS_ATMOSPHERICS
 
+/datum/supply_packs/emergency/biosuitcrate
+	name = "Anti-epidemic equipment crate"
+	contains = list(/obj/item/clothing/suit/bio_suit,
+					/obj/item/clothing/suit/bio_suit,
+					/obj/item/clothing/suit/bio_suit,
+					/obj/item/clothing/suit/bio_suit,
+					/obj/item/clothing/suit/bio_suit,
+					/obj/item/clothing/suit/bio_suit,
+					/obj/item/clothing/head/bio_hood,
+					/obj/item/clothing/head/bio_hood,
+					/obj/item/clothing/head/bio_hood,
+					/obj/item/clothing/head/bio_hood,
+					/obj/item/clothing/head/bio_hood,
+					/obj/item/clothing/head/bio_hood,
+					/obj/item/clothing/mask/breath,
+					/obj/item/clothing/mask/breath,
+					/obj/item/clothing/mask/breath,
+					/obj/item/clothing/mask/breath,
+					/obj/item/clothing/mask/breath,
+					/obj/item/clothing/mask/breath,
+					/obj/item/tank/internals/emergency_oxygen/engi,
+					/obj/item/tank/internals/emergency_oxygen/engi,
+					/obj/item/tank/internals/emergency_oxygen/engi,
+					/obj/item/tank/internals/emergency_oxygen/engi,
+					/obj/item/tank/internals/emergency_oxygen/engi,
+					/obj/item/tank/internals/emergency_oxygen/engi)
+	cost = 120
+	containername = "anti-epidemic equipment crate"
+
 /datum/supply_packs/emergency/specialops
 	name = "Special Ops Supplies"
 	contains = list(/obj/item/storage/box/emps,
@@ -758,12 +787,12 @@ GLOBAL_LIST_INIT(all_supply_groups, list(SUPPLY_EMERGENCY,SUPPLY_SECURITY,SUPPLY
 	containername = "various shotgun shells crate"
 	cost = 250
 	contains = list(
-		/obj/item/ammo_casing/shotgun/stunslug,
-		/obj/item/ammo_casing/shotgun/pulseslug,
-		/obj/item/ammo_casing/shotgun/incendiary/dragonsbreath,
-		/obj/item/ammo_casing/shotgun/frag12,
-		/obj/item/ammo_casing/shotgun/ion,
-		/obj/item/ammo_casing/shotgun/laserslug,
+		/obj/item/ammo_box/shotgun/stunslug,
+		/obj/item/ammo_box/shotgun/pulseslug,
+		/obj/item/ammo_box/shotgun/dragonsbreath,
+		/obj/item/ammo_box/shotgun/frag12,
+		/obj/item/ammo_box/shotgun/ion,
+		/obj/item/ammo_box/shotgun/laserslug,
 	)
 	required_tech = list("powerstorage" = 4, "combat" = 4, "magnets" = 4, "materials" = 4)
 
@@ -2931,6 +2960,13 @@ GLOBAL_LIST_INIT(all_supply_groups, list(SUPPLY_EMERGENCY,SUPPLY_SECURITY,SUPPLY
 	contains = list(/obj/item/vending_refill/chinese)
 	cost = 15
 	containername = "chinese supply crate"
+
+/datum/supply_packs/vending/customat
+	name = "Customat Resupply Canister Crate"
+	contains = list(/obj/item/vending_refill/custom,
+					/obj/item/vending_refill/custom)
+	cost = 30
+	containername = "customat canister supply crate"
 
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////// CONTRABAND SUPPLY ///////////////////////////////////

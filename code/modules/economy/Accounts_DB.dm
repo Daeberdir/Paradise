@@ -25,16 +25,7 @@ GLOBAL_VAR(current_date_string)
 	// If someone ever makes a map without one of these consoles, the entire eco AND date system breaks
 	// This upsets me a lot
 	// AA Todo: SSeconomy
-	if(!GLOB.station_account)
-		create_station_account()
-
-	if(GLOB.department_accounts.len == 0)
-		for(var/department in GLOB.station_departments)
-			create_department_account(department)
-	if(!GLOB.vendor_account)
-		create_department_account("Vendor")
-		GLOB.vendor_account = GLOB.department_accounts["Vendor"]
-
+	
 	if(!GLOB.current_date_string)
 		GLOB.current_date_string = "[time2text(world.timeofday, "DD Month")], [GLOB.game_year]"
 
@@ -50,11 +41,17 @@ GLOBAL_VAR(current_date_string)
 		<hr>
 	"}
 
-/obj/machinery/computer/account_database/attackby(obj/O, mob/user, params)
-	if(ui_login_attackby(O, user))
+
+/obj/machinery/computer/account_database/attackby(obj/item/I, mob/user, params)
+	if(user.a_intent == INTENT_HARM)
+		return ..()
+
+	if(ui_login_attackby(I, user))
 		add_fingerprint(user)
-		return
+		return ATTACK_CHAIN_BLOCKED_ALL
+
 	return ..()
+
 
 /obj/machinery/computer/account_database/attack_hand(mob/user)
 	if(..())

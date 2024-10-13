@@ -108,13 +108,28 @@ GLOBAL_LIST_INIT(default_medbay_channels, list(
 
 
 /obj/item/radio/Initialize()
-	..()
+	. = ..()
 	if(frequency < RADIO_LOW_FREQ || frequency > RADIO_HIGH_FREQ)
 		frequency = sanitize_frequency(frequency, RADIO_LOW_FREQ, RADIO_HIGH_FREQ)
 	set_frequency(frequency)
 
 	for(var/ch_name in channels)
 		secure_radio_connections[ch_name] = SSradio.add_object(src, SSradio.radiochannels[ch_name],  RADIO_CHAT)
+
+/obj/item/radio/emag_act(mob/user)
+	if(!user.mind.special_role && !is_admin(user) || !hidden_uplink)
+		var/turf/T = get_turf(loc)
+
+		if(ismob(loc))
+			var/mob/M = loc
+			M.show_message(span_danger("Your [src] explodes!"), 1)
+
+		if(T)
+			T.hotspot_expose(700,125)
+			explosion(T, -1, -1, 2, 3, cause = src)
+		qdel(src)
+	else
+		hidden_uplink.trigger(user)
 
 /obj/item/radio/attack_ghost(mob/user)
 	return interact(user)
@@ -309,6 +324,7 @@ GLOBAL_LIST_INIT(default_medbay_channels, list(
 	name = "security shortwave radio"
 	desc = "A basic handheld radio that can communicate with local telecommunication networks. This model is painted in black colors."
 	icon_state = "walkietalkie_sec"
+	item_state = "walkietalkie_sec"
 	frequency = SEC_FREQ
 
 // Just a dummy mob used for making announcements, so we don't create AIs to do this
@@ -720,20 +736,22 @@ GLOBAL_LIST_INIT(default_medbay_channels, list(
 /obj/item/radio/borg/ert/specops
 	keyslot = new /obj/item/encryptionkey/centcom
 
-/obj/item/radio/borg/attackby(obj/item/W as obj, mob/user as mob, params)
-	if(istype(W, /obj/item/encryptionkey/))
+
+/obj/item/radio/borg/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/encryptionkey))
+		add_fingerprint(user)
 		user.set_machine(src)
 		if(keyslot)
-			to_chat(user, "The radio can't hold another key!")
-			return
-
-		if(!keyslot)
-			user.drop_transfer_item_to_loc(W, src)
-			keyslot = W
-
+			to_chat(user, span_warning("The radio can't hold another key!"))
+			return ATTACK_CHAIN_PROCEED
+		if(!user.drop_transfer_item_to_loc(I, src))
+			return .()
+		keyslot = I
 		recalculateChannels()
-	else
-		return ..()
+		return ATTACK_CHAIN_BLOCKED_ALL
+
+	return ..()
+
 
 /obj/item/radio/borg/screwdriver_act(mob/user, obj/item/I)
 	. = TRUE

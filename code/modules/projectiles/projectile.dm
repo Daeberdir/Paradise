@@ -102,7 +102,7 @@
 	/// Instructs forceMove to NOT reset our trajectory to the new location!
 	var/trajectory_ignore_forcemove = FALSE
 
-	/// Does this projectile do extra damage to / break shields? Not implemented currently.
+	/// Does this projectile do extra damage to / break shields?
 	var/shield_buster = FALSE
 	/// Does this projectile ignores def zone calculations. Used for sniper bullets.
 	var/forced_accuracy = FALSE
@@ -112,7 +112,7 @@
 	/// If `TRUE`, projectile with dismemberment will forcefully cut head instead of gibbing them
 	var/dismember_head = FALSE
 	/// Probability to hit lying non-dead mobs
-	var/hit_crawling_mobs_chance = 0
+	var/hit_crawling_mobs_chance = 33
 
 
 /obj/item/projectile/Initialize(mapload)

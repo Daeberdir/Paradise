@@ -15,7 +15,6 @@
 	ventcrawler_trait = TRAIT_VENTCRAWLER_ALWAYS
 	mobility_flags = MOBILITY_FLAGS_REST_CAPABLE_DEFAULT
 	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
-	minbodytemp = 0
 
 	maxHealth = 50
 	health = 50
@@ -53,6 +52,12 @@
 	var/datum/action/innate/diona/merge/merge_action = new()
 	var/datum/action/innate/diona/evolve/evolve_action = new()
 	var/datum/action/innate/diona/steal_blood/steal_blood_action = new()
+
+/mob/living/simple_animal/diona/ComponentInitialize()
+	AddComponent( \
+		/datum/component/animal_temperature, \
+		minbodytemp = 0, \
+	)
 
 /datum/action/innate/diona/merge
 	name = "Merge with gestalt"
@@ -277,7 +282,7 @@
 
 	var/list/choices = list()
 	for(var/mob/living/carbon/human/H in oview(1,src))
-		if(Adjacent(H) && H.dna && !(NO_BLOOD in H.dna.species.species_traits))
+		if(Adjacent(H) && !HAS_TRAIT(H, TRAIT_NO_BLOOD))
 			choices += H
 
 	if(!choices.len)
@@ -289,7 +294,7 @@
 	if(!M || !src || !(Adjacent(M)) || stat != CONSCIOUS) //input can take a while, so re-validate
 		return FALSE
 
-	if(!M.dna || (NO_BLOOD in M.dna.species.species_traits))
+	if(HAS_TRAIT(M, TRAIT_NO_BLOOD))
 		to_chat(src, "<span class='warning'>That donor has no blood to take.</span>")
 		return FALSE
 

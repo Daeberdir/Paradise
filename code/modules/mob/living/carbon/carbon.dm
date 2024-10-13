@@ -35,7 +35,7 @@
 /mob/living/carbon/Move(atom/newloc, direct = NONE, glide_size_override = 0, update_dir = TRUE)
 	. = ..()
 	if(.)
-		if((FAT in mutations) && m_intent == MOVE_INTENT_RUN && bodytemperature <= 360)
+		if(HAS_TRAIT(src, TRAIT_FAT) && m_intent == MOVE_INTENT_RUN && bodytemperature <= 360)
 			adjust_bodytemperature(2)
 
 		// Moving around increases germ_level faster
@@ -74,43 +74,70 @@
 	return FALSE
 
 
-/mob/living/carbon/proc/vomit(lost_nutrition = 10, blood = 0, stun = 8 SECONDS, distance = 0, message = 1)
-	if(ismachineperson(src)) //IPCs do not vomit particulates
+/mob/living/carbon/proc/vomit(
+	lost_nutrition = VOMIT_NUTRITION_LOSS,
+	mode = NONE,
+	stun = VOMIT_STUN_TIME,
+	distance = VOMIT_DISTANCE,
+	message = TRUE
+)
+	if(ismachineperson(src)) // IPCs do not vomit particulates.
 		return FALSE
+
 	if(is_muzzled())
 		if(message)
-			to_chat(src, "<span class='warning'>Намордник препятствует рвоте!</span>")
+			to_chat(src, span_warning("Намордник препятствует рвоте!"))
+
 		return FALSE
+
 	if(stun)
 		Stun(stun)
-	if(nutrition < 100 && !blood)
+
+	if((nutrition - VOMIT_SAFE_NUTRITION) < lost_nutrition && (!(mode & VOMIT_BLOOD)))
 		if(message)
-			visible_message("<span class='warning'>[src.name] сухо кашля[pluralize_ru(src.gender,"ет","ют")]!</span>", \
-							"<span class='userdanger'>Вы пытаетесь проблеваться, но в вашем желудке пусто!</span>")
+			visible_message(span_warning("[name] сухо кашля[pluralize_ru(gender,"ет","ют")]!"), \
+							span_userdanger("Вы пытаетесь проблеваться, но в вашем желудке пусто!"))
+
 		if(stun)
 			Weaken(stun * 2.5)
-	else
-		if(message)
-			visible_message("<span class='danger'>[src.name] блю[pluralize_ru(src.gender,"ет","ют")]!</span>", \
-							"<span class='userdanger'>Вас вырвало!</span>")
-		playsound(get_turf(src), 'sound/effects/splat.ogg', 50, 1)
-		var/turf/T = get_turf(src)
-		for(var/i=0 to distance)
-			if(blood)
-				if(T)
-					add_splatter_floor(T)
-				if(stun)
-					adjustBruteLoss(3)
-			else
-				if(T)
-					T.add_vomit_floor()
-				adjust_nutrition(-lost_nutrition)
-				if(stun)
-					adjustToxLoss(-3)
-			T = get_step(T, dir)
-			if(T.is_blocked_turf())
-				break
-	return TRUE
+
+		return FALSE
+
+	if(message)
+		visible_message(span_danger("[name] блю[pluralize_ru(gender,"ет","ют")]!"), \
+						span_userdanger("Вас вырвало!"))
+
+	playsound(get_turf(src), 'sound/effects/splat.ogg', 50, TRUE)
+	var/turf/turf = get_turf(src)
+
+	if(!turf)
+		return FALSE
+
+	var/max_nutriment_vomit_dist = 0
+	if(lost_nutrition)
+		max_nutriment_vomit_dist = floor((nutrition - VOMIT_SAFE_NUTRITION) / lost_nutrition)
+
+	for(var/i = 1 to distance)
+		if(max_nutriment_vomit_dist >= i)
+			turf.add_vomit_floor()
+			adjust_nutrition(-lost_nutrition)
+
+			if(stun)
+				adjustToxLoss(-3)
+
+		if(mode & VOMIT_BLOOD)
+			add_splatter_floor(turf)
+
+			if(stun)
+				adjustBruteLoss(3)
+
+		turf = get_step(turf, dir)
+
+		if(turf.is_blocked_turf())
+			break
+
+	return FALSE
+
 
 /mob/living/carbon/gib()
 	. = death(TRUE)
@@ -216,7 +243,7 @@
 				if(prob(30) && ishuman(M)) // 30% chance of burning your hands
 					var/mob/living/carbon/human/H = M
 					var/protected = FALSE // Protected from the fire
-					if((H.gloves?.max_heat_protection_temperature > 360) || (HEATRES in H.mutations))
+					if((H.gloves?.max_heat_protection_temperature > 360) || HAS_TRAIT(H, TRAIT_RESIST_HEAT))
 						protected = TRUE
 					if(!protected)
 						H.apply_damage(5, BURN, def_zone = H.hand ? BODY_ZONE_PRECISE_L_HAND : BODY_ZONE_PRECISE_R_HAND)
@@ -308,7 +335,7 @@
 			to_chat(src, "<span class='info'>Вы полностью истощены.</span>")
 		else
 			to_chat(src, "<span class='info'>Вы чувствуете усталость.</span>")
-	if((isskeleton(H) || (SKELETON in H.mutations)) && (!H.w_uniform) && (!H.wear_suit))
+	if((isskeleton(H) || HAS_TRAIT(H, TRAIT_SKELETON)) && (!H.w_uniform) && (!H.wear_suit))
 		H.play_xylophone()
 
 
@@ -535,14 +562,9 @@
 					to_chat(src, span_notice("Вы осторожно отпускаете [throwable_mob.declent_ru(ACCUSATIVE)]."))
 					return FALSE
 	else
-		if(held_item.override_throw(src, target) || (held_item.item_flags & ABSTRACT))	//can't throw abstract items
+		if(held_item.override_throw(src, target))
 			return FALSE
-		if(!drop_item_ground(held_item, silent = TRUE))
-			return FALSE
-		if(held_item.throwforce && (GLOB.pacifism_after_gt || HAS_TRAIT(src, TRAIT_PACIFISM)))
-			to_chat(src, span_notice("Вы осторожно опускаете [held_item.declent_ru(ACCUSATIVE)] на землю."))
-			return FALSE
-		thrown_thing = held_item
+		thrown_thing = held_item.on_thrown(src, target)
 
 	if(!thrown_thing)
 		return FALSE
@@ -565,11 +587,11 @@
 		frequency_number = 1 - (thrown_item.w_class - 3) / 8
 
 	var/power_throw = 0
-	if(HULK in mutations)
+	if(HAS_TRAIT(src, TRAIT_HULK))
 		power_throw++
-	if(DWARF in mutations)
+	if(HAS_TRAIT(src, TRAIT_DWARF))
 		power_throw--
-	if(throwing_mob && (DWARF in throwing_mob.mutations))
+	if(throwing_mob && HAS_TRAIT(throwing_mob, TRAIT_DWARF))
 		power_throw++
 	if(neckgrab_throw)
 		power_throw++
@@ -678,9 +700,9 @@
 	return loc.handle_slip(src, weaken, slipped_on, lube_flags, tilesSlipped)
 
 
-/mob/living/carbon/proc/eat(var/obj/item/reagent_containers/food/toEat, mob/user, var/bitesize_override)
+/mob/living/carbon/proc/eat(obj/item/reagent_containers/food/toEat, mob/user, bitesize_override)
 	if(!istype(toEat))
-		return 0
+		return FALSE
 	var/fullness = nutrition + 10
 	if(istype(toEat, /obj/item/reagent_containers/food/snacks))
 		for(var/datum/reagent/consumable/C in reagents.reagent_list) //we add the nutrition value of what we're currently digesting
@@ -688,30 +710,30 @@
 	if(user == src)
 		if(istype(toEat, /obj/item/reagent_containers/food/drinks))
 			if(!selfDrink(toEat))
-				return 0
+				return FALSE
 		else
 			if(!selfFeed(toEat, fullness))
-				return 0
+				return FALSE
 		if(toEat.log_eating)
 			var/this_bite = bitesize_override ? bitesize_override : toEat.bitesize
 			add_game_logs("Ate [toEat](bite volume: [this_bite*toEat.transfer_efficiency]) containing [toEat.reagents.log_list()]", src)
 	else
 		if(!forceFed(toEat, user, fullness))
-			return 0
+			return FALSE
 		var/this_bite = bitesize_override ? bitesize_override : toEat.bitesize
 		add_attack_logs(user, src, "Force Fed [toEat](bite volume: [this_bite*toEat.transfer_efficiency]u) containing [toEat.reagents.log_list()]")
 	consume(toEat, bitesize_override, can_taste_container = toEat.can_taste)
 	SSticker.score.score_food_eaten++
-	return 1
+	return TRUE
 
 
-/mob/living/carbon/proc/selfFeed(var/obj/item/reagent_containers/food/toEat, fullness)
+/mob/living/carbon/proc/selfFeed(obj/item/reagent_containers/food/toEat, fullness)
 	if(ispill(toEat))
 		to_chat(src, "<span class='notify'>You [toEat.apply_method] [toEat].</span>")
 	else
 		if(toEat.junkiness && satiety < -150 && nutrition > NUTRITION_LEVEL_STARVING + 50 )
 			to_chat(src, "<span class='notice'>You don't feel like eating any more junk food at the moment.</span>")
-			return 0
+			return FALSE
 		if(fullness <= 50)
 			to_chat(src, "<span class='warning'>You hungrily chew out a piece of [toEat] and gobble it!</span>")
 		else if(fullness > 50 && fullness < 150)
@@ -722,15 +744,15 @@
 			to_chat(src, "<span class='notice'>You unwillingly chew a bit of [toEat].</span>")
 		else if(fullness > (600 * (1 + overeatduration / 2000)))	// The more you eat - the more you can eat
 			to_chat(src, "<span class='warning'>You cannot force any more of [toEat] to go down your throat.</span>")
-			return 0
-	return 1
+			return FALSE
+	return TRUE
 
 
-/mob/living/carbon/proc/selfDrink(var/obj/item/reagent_containers/food/drinks/toDrink, mob/user)
-	return 1
+/mob/living/carbon/proc/selfDrink(obj/item/reagent_containers/food/drinks/toDrink, mob/user)
+	return TRUE
 
 
-/mob/living/carbon/proc/forceFed(var/obj/item/reagent_containers/food/toEat, mob/user, fullness)
+/mob/living/carbon/proc/forceFed(obj/item/reagent_containers/food/toEat, mob/user, fullness)
 	if(ispill(toEat) || fullness <= (600 * (1 + overeatduration / 1000)))
 		if(!toEat.instant_application)
 			visible_message("<span class='warning'>[user] attempts to force [src] to [toEat.apply_method] [toEat].</span>")
@@ -765,7 +787,7 @@ so that different stomachs can handle things in different ways VB*/
 
 
 /mob/living/carbon/proc/can_breathe_gas()
-	if(dna && (NO_BREATHE in dna.species.species_traits))
+	if(HAS_TRAIT(src, TRAIT_NO_BREATH))
 		return FALSE
 
 	if(!wear_mask && !head)
@@ -847,7 +869,7 @@ so that different stomachs can handle things in different ways VB*/
 		if(A.update_remote_sight(src)) //returns 1 if we override all other sight updates.
 			return
 
-	if(XRAY in mutations)
+	if(HAS_TRAIT(src, TRAIT_XRAY))
 		add_sight(SEE_TURFS|SEE_MOBS|SEE_OBJS)
 		lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
 
@@ -933,3 +955,10 @@ so that different stomachs can handle things in different ways VB*/
 
 	if(should_vomit)
 		fakevomit()
+
+
+/mob/living/carbon/on_no_breath_trait_gain(datum/source)
+	. = ..()
+
+	co2overloadtime = 0
+

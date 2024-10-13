@@ -44,8 +44,6 @@
 
 /obj/structure/table/Initialize(mapload)
 	. = ..()
-	if(flipped)
-		update_icon(UPDATE_ICON_STATE)
 	var/static/list/loc_connections = list(
 		COMSIG_ATOM_ENTERED = PROC_REF(on_entered),
 		COMSIG_ATOM_EXIT = PROC_REF(on_exit),
@@ -272,21 +270,21 @@
 
 
 /obj/structure/table/attackby(obj/item/I, mob/user, params)
-	if(user.a_intent != INTENT_HARM && !(I.item_flags & ABSTRACT) && !HAS_TRAIT(I, TRAIT_NODROP))
-		if(user.transfer_item_to_loc(I, loc))
-			add_fingerprint(user)
-			var/list/click_params = params2list(params)
-			//Center the icon where the user clicked.
-			if(!click_params || !click_params["icon-x"] || !click_params["icon-y"])
-				return
-			//Clamp it so that the icon never moves more than 16 pixels in either direction (thus leaving the table turf)
-			I.pixel_x = clamp(text2num(click_params["icon-x"]) - 16, -(world.icon_size/2), world.icon_size/2)
-			I.pixel_y = clamp(text2num(click_params["icon-y"]) - 16, -(world.icon_size/2), world.icon_size/2)
-			item_placed(I)
-	else
-		if(isrobot(user))
-			return
+	if(user.a_intent == INTENT_HARM || (I.item_flags & ABSTRACT) || I.is_robot_module())
 		return ..()
+	if(!user.transfer_item_to_loc(I, loc))
+		return ..()
+	. = ATTACK_CHAIN_BLOCKED_ALL
+	add_fingerprint(user)
+	var/list/click_params = params2list(params)
+	//Center the icon where the user clicked.
+	if(!click_params || !click_params["icon-x"] || !click_params["icon-y"])
+		return .
+	//Clamp it so that the icon never moves more than 16 pixels in either direction (thus leaving the table turf)
+	I.pixel_x = clamp(text2num(click_params["icon-x"]) - 16, -(world.icon_size/2), world.icon_size/2)
+	I.pixel_y = clamp(text2num(click_params["icon-y"]) - 16, -(world.icon_size/2), world.icon_size/2)
+	item_placed(I)
+
 
 /obj/structure/table/shove_impact(mob/living/target, mob/living/attacker)
 	if(locate(/obj/structure/table) in get_turf(target))
@@ -388,16 +386,18 @@
 
 
 
-/obj/structure/table/proc/flip(direction)
+/obj/structure/table/proc/flip(direction, throw_around = TRUE)
 	if(flipped)
 		return FALSE
 
 	if(!straight_table_check(turn(direction, 90)) || !straight_table_check(turn(direction, -90)))
 		return FALSE
 
-	var/list/targets = list(get_step(src, dir), get_step(src, turn(dir, 45)), get_step(src, turn(dir, -45)))
-	for(var/atom/movable/thing in get_turf(src))
-		if(!thing.anchored)
+	if(throw_around)
+		var/list/targets = list(get_step(src, dir), get_step(src, turn(dir, 45)), get_step(src, turn(dir, -45)))
+		for(var/atom/movable/thing in get_turf(src))
+			if(thing.anchored)
+				continue
 			INVOKE_ASYNC(thing, TYPE_PROC_REF(/atom/movable, throw_at), pick(targets), 1, 1)
 
 	dir = direction
@@ -412,7 +412,7 @@
 	for(var/check_dir in list(turn(direction, 90), turn(direction, -90)))
 		var/obj/structure/table/other_table = locate(/obj/structure/table, get_step(src, check_dir))
 		if(other_table)
-			other_table.flip(direction)
+			other_table.flip(direction, throw_around)
 	update_icon(UPDATE_ICON_STATE)
 
 	creates_cover = FALSE
@@ -435,7 +435,7 @@
 
 	layer = initial(layer)
 	flipped = FALSE
-	smooth = initial(smooth)
+	smooth = initial(smooth) | SMOOTH_OBJ
 	flags &= ~ON_BORDER
 	playsound(loc, flip_sound, 100, TRUE)
 	update_flipped_turf()
@@ -446,9 +446,7 @@
 			other_table.unflip()
 
 	dir = initial(dir)
-	update_icon(UPDATE_ICON_STATE)
-	queue_smooth(src)
-	queue_smooth_neighbors(src)
+	update_icon()
 
 	creates_cover = TRUE
 	if(isturf(loc))
@@ -525,7 +523,7 @@
 		table_shatter(M)
 
 
-/obj/structure/table/glass/flip(direction)
+/obj/structure/table/glass/flip(direction, throw_around = TRUE)
 	deconstruct(FALSE)
 	return TRUE
 
@@ -886,12 +884,12 @@
 
 
 /obj/structure/rack/attackby(obj/item/I, mob/user, params)
-	if(isrobot(user))
-		return
-	if(user.a_intent == INTENT_HARM)
+	if(user.a_intent == INTENT_HARM || (I.item_flags & ABSTRACT) || I.is_robot_module())
 		return ..()
-	if(!(I.item_flags & ABSTRACT) && user.transfer_item_to_loc(I, loc))
-		add_fingerprint(user)
+	if(!user.transfer_item_to_loc(I, loc))
+		return ..()
+	add_fingerprint(user)
+	return ATTACK_CHAIN_BLOCKED_ALL
 
 
 /obj/structure/rack/wrench_act(mob/user, obj/item/I)
@@ -961,7 +959,7 @@
 		var/list/click_params = params2list(params)
 		//Center the icon where the user clicked.
 		if(!click_params || !click_params["icon-x"] || !click_params["icon-y"])
-			return  .
+			return TRUE
 		//Clamp it so that the icon never moves more than 16 pixels in either direction (thus leaving the table turf)
 		our_gun.pixel_x = clamp(text2num(click_params["icon-x"]) - 16, -(world.icon_size/2), world.icon_size/2)
 		our_gun.pixel_y = 0
@@ -973,11 +971,11 @@
 
 
 /obj/structure/rack/gunrack/attackby(obj/item/I, mob/user, params)
-	if(!ishuman(user))
-		return
 	if(user.a_intent == INTENT_HARM)
 		return ..()
+	add_fingerprint(user)
 	place_gun(I, user, params)
+	return ATTACK_CHAIN_BLOCKED_ALL
 
 
 /obj/structure/rack/gunrack/wrench_act(mob/user, obj/item/I)

@@ -12,8 +12,10 @@
 	armor = list("melee" = 50, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 50, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 70)
 	resistance_flags = FIRE_PROOF
 	damage_deflection = 70
+	can_open_with_hands = FALSE
 	var/id_tag
 	var/protected = 1
+
 
 /obj/machinery/door/poddoor/preopen
 	icon_state = "open"
@@ -23,8 +25,12 @@
 /obj/machinery/door/poddoor/impassable
 	name = "reinforced blast door"
 	desc = "A heavy duty blast door that opens mechanically. Looks even tougher than usual."
-	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	resistance_flags = INDESTRUCTIBLE|LAVA_PROOF|FIRE_PROOF|UNACIDABLE|ACID_PROOF
 	hackable = FALSE
+
+
+/obj/machinery/door/poddoor/impassable/unhittable
+	obj_flags = IGNORE_HITS
 
 
 /obj/machinery/door/poddoor/Bumped(atom/movable/moving_atom, skip_effects = TRUE)
@@ -52,7 +58,7 @@
 
 /obj/machinery/door/poddoor/update_icon_state()
 	icon_state = density ? "closed" : "open"
-
+	SSdemo.mark_dirty(src)
 
 /obj/machinery/door/poddoor/try_to_activate_door(mob/user)
  	return

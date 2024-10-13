@@ -42,6 +42,8 @@
 	var/sound_cooldown = 1 SECONDS
 	//Emag vulnerability.
 	var/hackable = TRUE
+	/// Whether or not the door can be opened by hand (used for blast doors and shutters)
+	var/can_open_with_hands = TRUE
 
 /obj/machinery/door/New()
 	..()
@@ -84,7 +86,7 @@
 
 /obj/machinery/door/Initialize()
 	air_update_turf(1)
-	..()
+	. = ..()
 
 /obj/machinery/door/Destroy()
 	set_density(FALSE)
@@ -97,7 +99,7 @@
 /obj/machinery/door/Bumped(atom/movable/moving_atom, skip_effects = FALSE)
 	. = ..()
 
-	if(skip_effects || operating || emagged)
+	if(skip_effects || operating || emagged || (!can_open_with_hands && density) )
 		return .
 	if(ismob(moving_atom))
 		var/mob/B = moving_atom
@@ -160,7 +162,7 @@
 
 
 /obj/machinery/door/proc/bumpopen(mob/user)
-	if(operating)
+	if(operating || !can_open_with_hands)
 		return
 	add_fingerprint(user)
 
@@ -233,7 +235,7 @@
 
 /obj/machinery/door/proc/try_to_activate_door(mob/user)
 	add_fingerprint(user)
-	if(operating || emagged)
+	if(operating || emagged || !can_open_with_hands)
 		return
 	if(requiresID() && (allowed(user) || user.can_advanced_admin_interact()))
 		if(density)
@@ -285,16 +287,22 @@
 		user.visible_message(span_notice("[user] cleans the ooze off [src]."), span_notice("You clean the ooze off [src]."))
 		REMOVE_TRAIT(src, TRAIT_CMAGGED, CMAGGED)
 
+
 /obj/machinery/door/attackby(obj/item/I, mob/user, params)
 	if(HAS_TRAIT(src, TRAIT_CMAGGED))
 		clean_cmag_ooze(I, user)
-	if(user.a_intent != INTENT_HARM && istype(I, /obj/item/twohanded/fireaxe))
-		add_fingerprint(user)
-		try_to_crowbar(user, I)
-		return 1
-	else if(!(I.item_flags & NOBLUDGEON) && user.a_intent != INTENT_HARM)
-		try_to_activate_door(user)
-		return 1
+		return ATTACK_CHAIN_BLOCKED_ALL
+
+	if(user.a_intent != INTENT_HARM)
+		if(istype(I, /obj/item/twohanded/fireaxe))
+			add_fingerprint(user)
+			try_to_crowbar(user, I)
+			return ATTACK_CHAIN_BLOCKED_ALL
+
+		if(!(I.item_flags & NOBLUDGEON))
+			try_to_activate_door(user)
+			return ATTACK_CHAIN_BLOCKED_ALL
+
 	return ..()
 
 

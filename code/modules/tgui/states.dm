@@ -34,8 +34,12 @@
 				. = max(., UI_UPDATE)
 
 	// Check if the state allows interaction
-	var/result = state.can_use_topic(src_object, user)
+	var/result = state.can_use_topic(src_object, user, state.ui_source)
 	. = max(., result)
+
+
+/datum/ui_state
+	var/atom/ui_source = null
 
 /**
  * private
@@ -48,7 +52,7 @@
  *
  * return UI_state The state of the UI.
  */
-/datum/ui_state/proc/can_use_topic(src_object, mob/user)
+/datum/ui_state/proc/can_use_topic(src_object, mob/user, atom/ui_source)
 	// Don't allow interaction by default.
 	return UI_CLOSE
 
@@ -131,8 +135,9 @@
 	// Otherwise, we got nothing.
 	return UI_CLOSE
 
+
 /mob/living/carbon/human/shared_living_ui_distance(atom/movable/src_object, viewcheck)
-	if((TK in mutations) && (get_dist(src, src_object) <= 2))
+	if(HAS_TRAIT(src, TRAIT_TELEKINESIS) && (get_dist(src, src_object) <= 2))
 		return UI_INTERACTIVE
 	if(ismecha(loc))
 		if(get_dist(loc, src_object) <= 1)

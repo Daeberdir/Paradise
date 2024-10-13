@@ -192,8 +192,8 @@
 /obj/structure/disposalpipe/attackby(obj/item/I, mob/user, params)
 	var/turf/our_turf = loc
 	if(isturf(our_turf) && (our_turf.intact || (our_turf.transparent_floor == TURF_TRANSPARENT)))
-		to_chat(user, span_warning("You can't interact with something that's under the floor!"))
-		return 		// prevent interaction with T-scanner revealed pipes and pipes under glass
+		to_chat(user, span_warning("You cannot interact with something that's under the floor!"))
+		return ATTACK_CHAIN_BLOCKED_ALL	// prevent interaction with T-scanner revealed pipes and pipes under glass
 	return ..()
 
 
@@ -310,6 +310,9 @@
 	null_linked_refs()
 	linked = null
 	var/turf/our_turf = get_turf(src)
+	var/obj/machinery/customat/customat = locate() in our_turf
+	if(customat)
+		set_linked(customat)
 	var/obj/machinery/disposal/disposal = locate() in our_turf
 	if(disposal)
 		set_linked(disposal)
@@ -339,11 +342,7 @@
 	//Disposal constructors
 	var/obj/structure/disposalconstruct/construct = locate() in loc
 	if(construct?.anchored)
-		return
-
-	var/turf/our_turf = loc
-	if(our_turf.intact || (our_turf.transparent_floor == TURF_TRANSPARENT))
-		return	// prevent interaction with T-scanner revealed pipes
+		return ATTACK_CHAIN_BLOCKED_ALL
 
 	return ..()
 
@@ -361,7 +360,11 @@
 			outlet.expel(holder) // expel at outlet
 		else
 			var/obj/machinery/disposal/disposal = linked
-			disposal.expel(holder) // expel at disposal
+			if(istype(disposal))
+				disposal.expel(holder) // expel at disposal
+			else
+				var/obj/machinery/customat/customat = linked
+				customat.expel(holder) // expel at customat
 
 	// Returning null without expelling holder makes the holder expell itself
 	return null

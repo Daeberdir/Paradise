@@ -2,7 +2,7 @@
 	name = "inteliCard"
 	icon = 'icons/obj/aicards.dmi'
 	icon_state = "aicard" // aicard-full
-	item_state = "electronic"
+	item_state = "aicard"
 	w_class = WEIGHT_CLASS_SMALL
 	slot_flags = ITEM_SLOT_BELT
 	item_flags = NOBLUDGEON
@@ -10,7 +10,7 @@
 	origin_tech = "programming=3;materials=3"
 
 
-/obj/item/aicard/afterattack(atom/target, mob/user, proximity)
+/obj/item/aicard/afterattack(atom/target, mob/user, proximity, params)
 	..()
 	if(!proximity || !target)
 		return

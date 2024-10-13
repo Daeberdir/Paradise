@@ -102,6 +102,11 @@ GLOBAL_LIST_EMPTY(closets)
 
 	return TRUE
 
+/obj/structure/closet/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	. = ..()
+	if(iswallturf(hit_atom) && prob(20))
+		open()
+
 /obj/structure/closet/proc/dump_contents()
 	var/atom/L = drop_location()
 	for(var/atom/movable/AM in src)
@@ -204,35 +209,41 @@ GLOBAL_LIST_EMPTY(closets)
 	MouseDrop_T(grabbed_thing, grabber)	//act like they were dragged onto the closet
 
 
-/obj/structure/closet/attackby(obj/item/W, mob/user, params)
-	if(istype(W, /obj/item/rcs) && !opened)
-		var/obj/item/rcs/E = W
-		if(E.try_send_container(user, src))
-			add_fingerprint(user)
-		return
-
+/obj/structure/closet/attackby(obj/item/I, mob/user, params)
 	if(opened)
-		if(istype(W, /obj/item/tk_grab))
-			return FALSE
-		if(user.a_intent != INTENT_HELP) // Stops you from putting your baton in the closet on accident
-			return
-		if(isrobot(user))
-			return
-		if(!user.transfer_item_to_loc(W, src.loc)) //couldn't drop the item
-			to_chat(user, "<span class='notice'>\The [W] is stuck to your hand, you cannot put it in \the [src]!</span>")
-			return
-		if(W)
-			add_fingerprint(user)
-			return TRUE // It's resolved. No afterattack needed. Stops you from emagging lockers when putting in an emag
-	else if(can_be_emaged && (istype(W, /obj/item/card/emag) || istype(W, /obj/item/melee/energy/blade) && !broken))
+		if(user.a_intent == INTENT_HARM || (I.item_flags & ABSTRACT) || I.is_robot_module())
+			return ..()
+		if(!user.drop_transfer_item_to_loc(I, loc)) //couldn't drop the item
+			return ..()
 		add_fingerprint(user)
+		return ATTACK_CHAIN_BLOCKED_ALL
+
+	if(istype(I, /obj/item/rcs))
+		var/obj/item/rcs/rcs = I
+		add_fingerprint(user)
+		rcs.try_send_container(user, src)
+		return ATTACK_CHAIN_BLOCKED_ALL
+
+	var/is_emag = istype(I, /obj/item/card/emag)
+	if(is_emag || istype(I, /obj/item/melee/energy/blade))
+		add_fingerprint(user)
+		if(!can_be_emaged || broken)
+			var/add_flags = NONE
+			if(is_emag)
+				add_flags |= ATTACK_CHAIN_NO_AFTERATTACK
+			return ..() | add_flags
 		emag_act(user)
-	else if(istype(W, /obj/item/stack/packageWrap))
-		return
-	else if(user.a_intent != INTENT_HARM)
+		return ATTACK_CHAIN_BLOCKED_ALL
+
+	if(istype(I, /obj/item/stack/packageWrap))
+		return ATTACK_CHAIN_PROCEED	// afterattack handles it
+
+	if(user.a_intent != INTENT_HARM)
 		closed_item_click(user)
-	else
-		return ..()
+		return ATTACK_CHAIN_BLOCKED_ALL
+
+	return ..()
+
 
 // What happens when the closet is attacked by a random item not on harm mode
 /obj/structure/closet/proc/closed_item_click(mob/user)
@@ -460,6 +471,33 @@ GLOBAL_LIST_EMPTY(closets)
 		gorilla.oogaooga()
 	return ..()
 
+/obj/structure/closet/shove_impact(mob/living/target, mob/living/attacker)
+	if(opened && can_close())
+		target.forceMove(src)
+		visible_message(
+			span_danger("[attacker] shoves [target] inside [src]!"),
+			span_userdanger("You shove [target] inside [src]!"),
+			span_warning("You hear a thud, and something clangs shut.")
+		)
+		close()
+		add_attack_logs(attacker, target, "shoved into [src]")
+		return TRUE
+
+	if(locked && allowed(target))
+		locked = !locked
+		visible_message("<span class='danger'>[attacker] shoves [target] against [src], knocking the lock [locked ? null : "un"]locked!</span>")
+		target.Knockdown(3 SECONDS)
+		playsound(loc, pick(togglelock_sound), 15, TRUE, -3)
+		update_icon()
+		return TRUE
+
+	if(!opened && can_open())
+		open()
+		visible_message("<span class='danger'>[attacker] shoves [target] against [src], knocking it open!</span>")
+		target.Knockdown(3 SECONDS)
+		return TRUE
+
+	return ..()
 
 /obj/structure/closet/bluespace
 	name = "bluespace closet"

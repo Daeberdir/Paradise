@@ -1990,7 +1990,7 @@
 /turf/simulated/floor/wood,
 /area/centcom/jail)
 "aQh" = (
-/obj/vehicle/motorcycle{
+/obj/vehicle/ridden/motorcycle{
 	dir = 8
 	},
 /obj/structure/sign/poster/contraband/random{
@@ -2630,8 +2630,7 @@
 "bhM" = (
 /obj/effect/turf_decal/siding/white{
 	dir = 4;
-	pixel_x = -14;
-	initialized = 1
+	pixel_x = -14
 	},
 /turf/simulated/floor/plasteel{
 	icon_state = "dark"
@@ -2929,8 +2928,7 @@
 "bnd" = (
 /obj/effect/turf_decal/caution/stand_clear{
 	dir = 8;
-	pixel_y = -16;
-	initialized = 1
+	pixel_y = -16
 	},
 /turf/simulated/floor/plasteel{
 	dir = 9;
@@ -4269,8 +4267,7 @@
 /obj/structure/closet/cardboard{
 	icon_state = "cardboard_librarian";
 	icon_closed = "cardboard_librarian";
-	icon_opened = "cardboard_librarian_open";
-	initialized = 1
+	icon_opened = "cardboard_librarian_open"
 	},
 /obj/item/paper/central_command/archive/memes{
 	info = "<center><img src=\"https://cdn.discordapp.com/attachments/961279768249118750/1046826506741104830/unknown.png?width=604&height=604\"></center>";
@@ -5145,8 +5142,7 @@
 "cqx" = (
 /obj/effect/turf_decal/siding/white{
 	dir = 4;
-	pixel_x = -14;
-	initialized = 1
+	pixel_x = -14
 	},
 /obj/effect/turf_decal/siding{
 	color = "#444444";
@@ -6027,13 +6023,11 @@
 	dir = 8;
 	id_tag = "CC_supply_internal";
 	layer = 5;
-	locked = 1;
-	name = "Central Command Supply Internal Shutter"
+	locked = 1
 	},
-/obj/effect/decal/warning_stripes/yellow,
 /obj/machinery/door_control/secure{
 	id = "CC_supply_internal";
-	name = "Central Command Supply Internal Shutter";
+	name = "Supply External Shutters";
 	pixel_y = 24;
 	req_access = list(114)
 	},
@@ -6743,7 +6737,7 @@
 	},
 /obj/machinery/door_control/secure{
 	id = "Drop";
-	name = "Central Command Mass Driver Shutte";
+	name = "Massdriver Shutters";
 	pixel_y = 24;
 	req_access = list(114)
 	},
@@ -7610,7 +7604,7 @@
 /turf/simulated/floor/grass,
 /area/centcom/evac)
 "dxs" = (
-/obj/vehicle/motorcycle{
+/obj/vehicle/ridden/motorcycle{
 	dir = 1
 	},
 /turf/simulated/floor/plasteel{
@@ -8658,10 +8652,9 @@
 /area/centcom/supply)
 "dZu" = (
 /obj/effect/turf_decal/caution/stand_clear/white,
-/obj/machinery/door/poddoor/impassable{
+/obj/machinery/door/poddoor/impassable/unhittable{
 	id_tag = "CC_Players_In";
-	name = "Blast Door";
-	can_be_hit = 0
+	name = "Blast Door"
 	},
 /turf/simulated/floor/plasteel{
 	icon_state = "dark"
@@ -9050,7 +9043,7 @@
 	dir = 4;
 	icon_state = "darkyellowalt"
 	},
-/area/centcom/specops)
+/area/centcom/supply)
 "eji" = (
 /obj/structure/chair/sofa{
 	dir = 8
@@ -11080,12 +11073,6 @@
 	},
 /turf/simulated/floor/carpet/green,
 /area/ninja/outpost)
-"fjr" = (
-/obj/effect/turf_decal/bot,
-/turf/simulated/floor/plasteel{
-	icon_state = "dark"
-	},
-/area/centcom/specops)
 "fjw" = (
 /obj/structure/window/reinforced{
 	dir = 1;
@@ -12771,7 +12758,7 @@
 /area/shuttle/administration)
 "fVC" = (
 /obj/machinery/turretid{
-	control_area = "\improper Centcom Special Operations";
+	control_area = "Centcom Special Operations Forces";
 	name = "Quarantine Turret";
 	pixel_x = 3;
 	pixel_y = -26
@@ -14288,8 +14275,7 @@
 	color = "black";
 	icon_state = "tile_full";
 	layer = 9;
-	opacity = 1;
-	initialized = 1
+	opacity = 1
 	},
 /turf/simulated/floor/plating,
 /area/centcom/supply)
@@ -14392,10 +14378,8 @@
 	dir = 8;
 	id_tag = "CC_supply_internal";
 	layer = 5;
-	locked = 1;
-	name = "Central Command Supply Internal Shutter"
+	locked = 1
 	},
-/obj/effect/decal/warning_stripes/yellow,
 /turf/simulated/floor/plasteel{
 	icon_state = "darkyellowalt"
 	},
@@ -16563,8 +16547,8 @@
 	dir = 4;
 	dwidth = 4;
 	height = 6;
-	id = "gamma_transit";
-	name = "gamma in transit. IT SHOULD NOT BE IN TRANSIT";
+	id = "gamma_shuttle_transit";
+	name = "gamma in transit";
 	pixel_x = -32;
 	turf_type = /turf/space/transit/south;
 	width = 7
@@ -17069,12 +17053,6 @@
 	icon_state = "sepia"
 	},
 /area/ninja/outpost)
-"icG" = (
-/turf/simulated/floor/plasteel{
-	dir = 4;
-	icon_state = "darkyellowalt"
-	},
-/area/centcom/specops)
 "icT" = (
 /obj/effect/turf_decal{
 	dir = 10;
@@ -17241,8 +17219,7 @@
 "ihi" = (
 /obj/effect/turf_decal/siding/white{
 	dir = 1;
-	pixel_y = 3;
-	initialized = 1
+	pixel_y = 3
 	},
 /obj/effect/turf_decal/siding/white{
 	dir = 8
@@ -17271,21 +17248,18 @@
 /obj/effect/decal/cleanable/crayon{
 	color = "yellow";
 	icon_state = "guy";
-	initialized = 1;
 	layer = 5;
 	pixel_y = -30
 	},
 /obj/effect/decal/cleanable/crayon{
 	color = "yellow";
 	icon_state = "face";
-	initialized = 1;
 	pixel_x = -32;
 	pixel_y = 32
 	},
 /obj/effect/decal/cleanable/crayon{
 	color = "yellow";
 	icon_state = "shitcurity";
-	initialized = 1;
 	pixel_x = 32;
 	pixel_y = 32
 	},
@@ -17913,8 +17887,7 @@
 	color = "black";
 	icon_state = "tile_full";
 	layer = 9;
-	opacity = 1;
-	initialized = 1
+	opacity = 1
 	},
 /turf/simulated/floor/plating,
 /area/centcom/supply)
@@ -19273,8 +19246,7 @@
 	dir = 2;
 	id_tag = "CC_supply_external2";
 	layer = 5;
-	locked = 1;
-	name = "Central Command Supply External Shutte"
+	locked = 1
 	},
 /turf/simulated/floor/plasteel{
 	dir = 4;
@@ -20162,8 +20134,7 @@
 /area/syndicate_mothership/cargo)
 "jAZ" = (
 /obj/effect/turf_decal/box/white{
-	pixel_y = 16;
-	initialized = 1
+	pixel_y = 16
 	},
 /turf/simulated/floor/plasteel{
 	icon_state = "dark"
@@ -20436,7 +20407,7 @@
 /turf/simulated/floor/carpet/black,
 /area/syndicate_mothership/control)
 "jGg" = (
-/obj/vehicle/secway{
+/obj/vehicle/ridden/secway{
 	layer = 3.5
 	},
 /obj/item/key/security,
@@ -21187,7 +21158,7 @@
 "jWN" = (
 /obj/machinery/door_control/secure{
 	id = "CC_Armory_Grenade";
-	name = "Grebades";
+	name = "Grenades";
 	pixel_x = 24;
 	pixel_y = -24;
 	req_access = list(114)
@@ -21954,7 +21925,7 @@
 /turf/simulated/floor/carpet,
 /area/centcom/zone1)
 "kqc" = (
-/obj/vehicle/janicart{
+/obj/vehicle/ridden/janicart{
 	dir = 4
 	},
 /obj/item/key/janitor,
@@ -22073,7 +22044,6 @@
 "ktw" = (
 /obj/effect/decal/cleanable/crayon{
 	icon_state = "bodys";
-	initialized = 1;
 	pixel_x = 14;
 	pixel_y = 32
 	},
@@ -25010,7 +24980,7 @@
 /turf/simulated/floor/indestructible/abductor,
 /area/abductor_ship)
 "lLd" = (
-/obj/vehicle/janicart{
+/obj/vehicle/ridden/janicart{
 	dir = 4
 	},
 /obj/item/key/janitor,
@@ -27269,14 +27239,13 @@
 	dir = 2;
 	id_tag = "CC_supply_internal2";
 	layer = 5;
-	locked = 1;
-	name = "Central Command Supply Internal Shutter"
+	locked = 1
 	},
 /turf/simulated/floor/plasteel{
 	dir = 4;
 	icon_state = "darkyellowalt"
 	},
-/area/centcom/specops)
+/area/centcom/supply)
 "mNh" = (
 /obj/structure/table/reinforced,
 /obj/item/clothing/gloves/color/latex/nitrile,
@@ -30235,8 +30204,7 @@
 /obj/effect/decal/warning_stripes/yellow,
 /obj/machinery/door/poddoor/shutters/invincible{
 	dir = 2;
-	id_tag = "Drop";
-	name = "Central Command Supply Massdriver Shutte"
+	id_tag = "Drop"
 	},
 /turf/simulated/floor/plasteel{
 	icon_state = "dark"
@@ -33192,6 +33160,19 @@
 	icon_state = "floor13"
 	},
 /area/shuttle/ninja)
+"pse" = (
+/obj/machinery/door_control/secure{
+	id = "gamma shuttle";
+	name = "Gamma Armory Shutters";
+	req_access = list(114);
+	pixel_x = 24;
+	pixel_y = 26
+	},
+/turf/simulated/floor/plasteel{
+	dir = 4;
+	icon_state = "darkyellowaltstrip"
+	},
+/area/centcom/supply)
 "psf" = (
 /turf/space/transit/east{
 	icon_state = "speedspace_ew_1"
@@ -34042,12 +34023,11 @@
 	dir = 2;
 	id_tag = "CC_supply_external2";
 	layer = 5;
-	locked = 1;
-	name = "Central Command Supply External Shutte"
+	locked = 1
 	},
 /obj/machinery/door_control/secure{
 	id = "CC_supply_external2";
-	name = "Central Command Supply External Shutte";
+	name = "Supply Internal Shutters";
 	req_access = list(114);
 	pixel_x = -24
 	},
@@ -34670,12 +34650,6 @@
 /turf/simulated/floor/plasteel{
 	dir = 9;
 	icon_state = "navyblue"
-	},
-/area/centcom/specops)
-"pYg" = (
-/turf/simulated/floor/plasteel{
-	dir = 8;
-	icon_state = "darkyellowaltstrip"
 	},
 /area/centcom/specops)
 "pYo" = (
@@ -35329,8 +35303,7 @@
 "qpR" = (
 /obj/effect/turf_decal/siding/white{
 	dir = 1;
-	pixel_y = 3;
-	initialized = 1
+	pixel_y = 3
 	},
 /obj/effect/turf_decal/siding/white{
 	dir = 4
@@ -35578,10 +35551,8 @@
 	dir = 8;
 	id_tag = "CC_supply_external";
 	layer = 5;
-	locked = 1;
-	name = "Central Command Supply External Shutte"
+	locked = 1
 	},
-/obj/effect/decal/warning_stripes/yellow,
 /turf/simulated/floor/plasteel{
 	icon_state = "darkyellowalt"
 	},
@@ -36546,8 +36517,7 @@
 "qTA" = (
 /obj/effect/turf_decal/siding/white{
 	dir = 1;
-	pixel_y = 3;
-	initialized = 1
+	pixel_y = 3
 	},
 /turf/simulated/floor/plasteel{
 	icon_state = "dark"
@@ -38570,12 +38540,11 @@
 	dir = 2;
 	id_tag = "CC_supply_internal2";
 	layer = 5;
-	locked = 1;
-	name = "Central Command Supply Internal Shutter"
+	locked = 1
 	},
 /obj/machinery/door_control/secure{
 	id = "CC_supply_internal2";
-	name = "Central Command Supply Internal Shutter";
+	name = "Supply External Shutters";
 	req_access = list(114);
 	pixel_x = -24
 	},
@@ -38583,7 +38552,7 @@
 	dir = 8;
 	icon_state = "darkyellowalt"
 	},
-/area/centcom/specops)
+/area/centcom/supply)
 "rLX" = (
 /obj/effect/decal/warning_stripes/northwestsouth,
 /obj/machinery/door/poddoor/shutters/invincible{
@@ -38802,8 +38771,7 @@
 	color = "black";
 	icon_state = "tile_full";
 	layer = 9;
-	opacity = 1;
-	initialized = 1
+	opacity = 1
 	},
 /turf/simulated/floor/plating,
 /area/centcom/supply)
@@ -40058,7 +40026,7 @@
 "syr" = (
 /obj/machinery/door/airlock/security/glass{
 	name = "Escape Shuttle Cell";
-	req_access = list(2)
+	req_access = list(63)
 	},
 /turf/simulated/floor/shuttle/objective_check{
 	icon = 'icons/turf/floors.dmi';
@@ -40405,10 +40373,9 @@
 /area/centcom/zone2)
 "sFQ" = (
 /obj/effect/turf_decal/caution/stand_clear/white,
-/obj/machinery/door/poddoor/impassable{
+/obj/machinery/door/poddoor/impassable/unhittable{
 	id_tag = "CC_Players_In";
-	name = "Blast Door";
-	can_be_hit = 0
+	name = "Blast Door"
 	},
 /turf/simulated/floor/plasteel{
 	icon_state = "dark"
@@ -46765,7 +46732,7 @@
 /area/syndicate_mothership)
 "vwk" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/vehicle/motorcycle{
+/obj/vehicle/ridden/motorcycle{
 	dir = 1
 	},
 /turf/simulated/floor/plasteel{
@@ -47114,8 +47081,7 @@
 /area/syndicate_mothership)
 "vGJ" = (
 /obj/structure/marker_beacon{
-	icon_state = "markerburgundy-on";
-	initialized = 1
+	icon_state = "markerburgundy-on"
 	},
 /turf/simulated/floor/plating/airless,
 /area/space)
@@ -47254,7 +47220,7 @@
 /turf/simulated/floor/plasteel,
 /area/shuttle/escape)
 "vLc" = (
-/obj/vehicle/motorcycle{
+/obj/vehicle/ridden/motorcycle{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
@@ -47935,8 +47901,7 @@
 /obj/structure/closet/cardboard{
 	icon_state = "cardboard_cargo";
 	icon_closed = "cardboard_cargo";
-	icon_opened = "cardboard_cargo_open";
-	initialized = 1
+	icon_opened = "cardboard_cargo_open"
 	},
 /mob/living/simple_animal/hostile/mimic{
 	faction = list("neutral");
@@ -49369,7 +49334,7 @@
 	},
 /area/syndicate_mothership/elite_squad)
 "wGg" = (
-/obj/vehicle/motorcycle{
+/obj/vehicle/ridden/motorcycle{
 	dir = 8
 	},
 /turf/simulated/floor/wood{
@@ -49696,13 +49661,6 @@
 /obj/structure/flora/ausbushes/sunnybush,
 /turf/simulated/floor/indestructible/grass,
 /area/syndicate_mothership/outside)
-"wRr" = (
-/obj/effect/turf_decal/arrows,
-/turf/simulated/floor/plasteel{
-	dir = 8;
-	icon_state = "darkyellowaltstrip"
-	},
-/area/centcom/specops)
 "wRu" = (
 /turf/simulated/floor/plasteel{
 	dir = 5;
@@ -50809,13 +50767,11 @@
 	dir = 8;
 	id_tag = "CC_supply_external";
 	layer = 5;
-	locked = 1;
-	name = "Central Command Supply External Shutte"
+	locked = 1
 	},
-/obj/effect/decal/warning_stripes/yellow,
 /obj/machinery/door_control/secure{
 	id = "CC_supply_external";
-	name = "Central Command Supply External Shutte";
+	name = "Supply Internal Shutters";
 	pixel_y = 24;
 	req_access = list(114)
 	},
@@ -50881,6 +50837,13 @@
 	req_access = list(114)
 	},
 /obj/structure/fans/tiny,
+/obj/machinery/door/poddoor/shutters/invincible{
+	armor = list("melee"=100,"bullet"=100,"laser"=100,"energy"=100,"bomb"=100,"bio"=100,"rad"=100,"fire"=100,"acid"=100);
+	dir = 2;
+	id_tag = "gamma shuttle";
+	layer = 5;
+	locked = 1
+	},
 /turf/simulated/floor/plasteel{
 	icon_state = "dark"
 	},
@@ -103911,9 +103874,9 @@ afP
 uab
 afP
 afP
-nAN
-nAN
-nAN
+afP
+afP
+afP
 nAN
 aFB
 wEo
@@ -104168,9 +104131,9 @@ hOx
 lzS
 lzS
 afP
-fjr
-fjr
-nAN
+lzS
+lzS
+afP
 nNb
 ric
 qgi
@@ -104425,11 +104388,11 @@ rgL
 rgL
 coX
 pKM
-pYg
-wRr
+rgL
+coX
 rLT
 mpv
-hTD
+mTv
 fAg
 fAg
 fAg
@@ -104682,11 +104645,11 @@ ofy
 fon
 jCz
 jgl
-icG
+fqL
 eiV
 mMp
 aWp
-cFn
+wRu
 gvy
 hHu
 mzs
@@ -105707,7 +105670,7 @@ qix
 fqL
 fqL
 fqL
-ifZ
+pse
 tgA
 tyO
 nAN

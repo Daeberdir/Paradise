@@ -1,3 +1,4 @@
+
 /datum/cargo_quest/thing
 	quest_type_name = "generic thing"
 	var/list/easy_items
@@ -66,6 +67,19 @@
 
 /datum/cargo_quest/thing/xenobio
 	quest_type_name = "Xenobiological extract"
+	bounty_jobs = list(
+		JOB_TITLE_CMO,
+		JOB_TITLE_DOCTOR,
+		JOB_TITLE_GENETICIST,
+		JOB_TITLE_PSYCHIATRIST,
+		JOB_TITLE_CHEMIST,
+		JOB_TITLE_VIROLOGIST,
+		JOB_TITLE_PARAMEDIC,
+		JOB_TITLE_CORONER,
+		JOB_TITLE_INTERN
+	)
+	linked_departament = "Science"
+
 	easy_items = list(
 		/obj/item/slime_extract/grey = 45,
 		/obj/item/slime_extract/orange = 90,
@@ -98,6 +112,19 @@
 
 /datum/cargo_quest/thing/organs
 	quest_type_name = "Organ"
+	bounty_jobs = list(
+		JOB_TITLE_CMO,
+		JOB_TITLE_DOCTOR,
+		JOB_TITLE_GENETICIST,
+		JOB_TITLE_PSYCHIATRIST,
+		JOB_TITLE_CHEMIST,
+		JOB_TITLE_VIROLOGIST,
+		JOB_TITLE_PARAMEDIC,
+		JOB_TITLE_CORONER,
+		JOB_TITLE_INTERN
+	)
+	linked_departament = "Medical"
+
 	normal_items = list(
 		/obj/item/organ/internal/eyes/tajaran = 105,
 		/obj/item/organ/internal/eyes/vulpkanin = 105,
@@ -114,6 +141,8 @@
 		/obj/item/organ/internal/heart/slime = 210,
 		/obj/item/organ/internal/liver/diona = 300,
 		/obj/item/organ/internal/lungs/unathi/ash_walker = 325,
+		/obj/item/organ/internal/eyes/unathi/ash_walker = 350,
+		/obj/item/organ/internal/eyes/unathi/ash_walker_shaman = 350,
 		/obj/item/organ/internal/lantern = 400
 	)
 	very_hard_items = list(
@@ -133,6 +162,9 @@
 
 /datum/cargo_quest/thing/foods
 	quest_type_name = "Food"
+	bounty_jobs = list(JOB_TITLE_CHEF)
+	linked_departament = "Support"
+
 	easy_items = list(
 		/obj/item/reagent_containers/food/snacks/friedegg = 10,
 		/obj/item/reagent_containers/food/snacks/tofuburger = 10,
@@ -210,6 +242,9 @@
 
 /datum/cargo_quest/thing/miner
 	quest_type_name = "Shaft Miner Loot"
+	bounty_jobs = list(JOB_TITLE_MINER)
+	linked_departament = "Cargo"
+
 	easy_items = list(
 		/obj/item/crusher_trophy/legion_skull = 60,
 		/obj/item/crusher_trophy/watcher_wing = 50,
@@ -242,6 +277,9 @@
 
 /datum/cargo_quest/thing/minerals
 	quest_type_name = "Minerals"
+	bounty_jobs = list(JOB_TITLE_MINER)
+	linked_departament = "Cargo"
+
 	var/list/required_minerals = list()
 	unique_things = FALSE
 	var/static/list/unique_minerals = list(/obj/item/stack/sheet/bluespace_crystal, /obj/item/stack/sheet/mineral/bananium, /obj/item/stack/sheet/mineral/tranquillite)
@@ -271,8 +309,8 @@
 /datum/cargo_quest/thing/minerals/add_goal(difficultly)
 	var/list/difficult_list = generate_goal_list(difficultly)
 	var/obj/item/generated_mineral = pick(difficult_list)
-
-	q_storage.reward += difficult_list[generated_mineral]["reward"]
+	cargo_quest_reward = difficult_list[generated_mineral]["reward"]
+	q_storage.reward += cargo_quest_reward
 	if(!required_minerals[generated_mineral])
 		required_minerals += generated_mineral
 	required_minerals[generated_mineral] += difficult_list[generated_mineral]["amount"]
@@ -326,6 +364,9 @@
 
 /datum/cargo_quest/thing/seeds
 	quest_type_name = "Seeds"
+	bounty_jobs = list(JOB_TITLE_BOTANIST)
+	linked_departament = "Support"
+
 	easy_items = list(
 		/obj/item/seeds/harebell = 0, //Why? - Becouse we can
 		/obj/item/seeds/starthistle = 0,
@@ -405,6 +446,9 @@
 	quest_type_name = "Botany Genes on Disks"
 	item_for_show = /obj/item/disk/plantgene
 	req_items = list(/obj/item/disk/plantgene)
+	bounty_jobs = list(JOB_TITLE_BOTANIST)
+	linked_departament = "Support"
+	
 	var/list/required_genes = list()
 	easy_items = list(
 		/datum/plant_gene/trait/plant_type/fungal_metabolism = 60,
@@ -472,17 +516,21 @@
 	quest_type_name = "DNA Genes"
 	item_for_show = /obj/item/dnainjector
 	req_items = list(/obj/item/dnainjector)
+	bounty_jobs = list(JOB_TITLE_GENETICIST)
+	linked_departament = "Medical"
+
 	var/list/required_blocks = list()
 	normal_items = list(
 		"LISP" = 150,
 		"MUTE" = 150,
 		"RAD" = 150,
-		"FAT" = 150,
+		"OBESITY" = 150,
 		"SWEDE" = 150,
 		"SCRAMBLE" = 150,
 		"WEAK" = 150,
 		"HORNS" = 150,
 		"COMIC" = 150,
+		"PARAPLEGIA" = 150,
 	)
 
 	hard_items = list(
@@ -508,6 +556,7 @@
 		"BREATHLESS" = 250,
 		"COLD" = 200,
 		"HALLUCINATION" = 200,
+		"FARVISION" = 200,
 	)
 	very_hard_items = list(
 		"NOPRINTS" = 250,
@@ -574,6 +623,8 @@
 	quest_type_name = "Viruses symptoms in vials (10u minimum)"
 	item_for_show = /obj/item/reagent_containers/glass/beaker/vial
 	req_items = list(/obj/item/reagent_containers/glass/beaker/vial)
+	bounty_jobs = list(JOB_TITLE_VIROLOGIST)
+	linked_departament = "Medical"
 
 	var/list/required_symptoms = list()
 
@@ -681,6 +732,8 @@
 
 	var/list/required_mobs = list()
 	var/list/capsules
+	bounty_jobs = list(JOB_TITLE_MINER)
+	linked_departament = "Cargo"
 
 	normal_items = list(
 		/mob/living/simple_animal/hostile/asteroid/goliath/beast = 180,
@@ -702,7 +755,8 @@
 /datum/cargo_quest/thing/capsule/add_goal(difficultly)
 	var/list/difficult_list = generate_goal_list(difficultly)
 	var/mob/generated_mob = pick(difficult_list)
-	q_storage.reward += difficult_list[generated_mob]
+	cargo_quest_reward = difficult_list[generated_mob]
+	q_storage.reward += cargo_quest_reward
 	if(unique_things)
 		difficult_list.Remove(generated_mob)
 

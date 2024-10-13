@@ -67,7 +67,7 @@ GLOBAL_VAR_INIT(time_last_changed_position, 0)
 
 
 /obj/machinery/computer/card/Initialize()
-	..()
+	. = ..()
 	Radio = new /obj/item/radio(src)
 	Radio.listening = 0
 	Radio.config(list("Command" = 0))
@@ -150,21 +150,28 @@ GLOBAL_VAR_INIT(time_last_changed_position, 0)
 	else
 		to_chat(usr, "There is nothing to remove from the console.")
 
+
 /obj/machinery/computer/card/attackby(obj/item/card/id/id_card, mob/user, params)
-	if(!istype(id_card))
+	if(user.a_intent == INTENT_HARM || !istype(id_card))
 		return ..()
 
+	. = ATTACK_CHAIN_BLOCKED_ALL
+	add_fingerprint(user)
+
 	if(!scan && check_access(id_card))
-		user.drop_transfer_item_to_loc(id_card, src)
+		if(!user.drop_transfer_item_to_loc(id_card, src))
+			return ..()
 		scan = id_card
 		playsound(src, 'sound/machines/terminal_insert_disc.ogg', 50, FALSE)
 	else if(!modify)
-		user.drop_transfer_item_to_loc(id_card, src)
+		if(!user.drop_transfer_item_to_loc(id_card, src))
+			return ..()
 		modify = id_card
 		playsound(src, 'sound/machines/terminal_insert_disc.ogg', 50, FALSE)
 
 	SStgui.update_uis(src)
 	attack_hand(user)
+
 
 //Check if you can't touch a job in any way whatsoever
 /obj/machinery/computer/card/proc/job_blacklisted_full(datum/job/job)
@@ -522,6 +529,8 @@ GLOBAL_VAR_INIT(time_last_changed_position, 0)
 				modify.access = access
 				modify.rank = t1
 				modify.assignment = assignment
+				SSjobs.account_job_transfer(modify.registered_name, t1)
+
 			regenerate_id_name()
 			return
 		if("demote")
@@ -552,6 +561,8 @@ GLOBAL_VAR_INIT(time_last_changed_position, 0)
 			modify.access = access
 			modify.assignment = "Demoted"
 			modify.icon_state = "id"
+
+			SSjobs.account_job_transfer(modify.registered_name, JOB_TITLE_CIVILIAN)
 			regenerate_id_name()
 			return
 		if("terminate")
@@ -576,6 +587,8 @@ GLOBAL_VAR_INIT(time_last_changed_position, 0)
 				job.current_positions--
 			modify.assignment = "Terminated"
 			modify.access = list()
+
+			SSjobs.account_job_transfer(modify.registered_name, modify.rank, FALSE)
 			regenerate_id_name()
 			return
 		if("make_job_available") // MAKE ANOTHER JOB POSITION AVAILABLE FOR LATE JOINERS

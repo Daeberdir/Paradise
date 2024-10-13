@@ -27,8 +27,6 @@
 	environment_smash = FALSE
 	pixel_y = 8
 	pressure_resistance = 200
-	minbodytemp = 0
-	maxbodytemp = 1500
 	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
 	var/mob/living/carbon/human/current_victim
 	var/manifested = FALSE
@@ -58,6 +56,12 @@
 			return
 		Acquire_Victim()
 
+/mob/living/simple_animal/hostile/floor_cluwne/ComponentInitialize()
+	AddComponent( \
+		/datum/component/animal_temperature, \
+		minbodytemp = 0, \
+		maxbodytemp = 1500, \
+	)
 
 /mob/living/simple_animal/hostile/floor_cluwne/Destroy()
 	return ..()
@@ -346,7 +350,14 @@
 		visible_message("<span class='danger'>[src] begins dragging [H] under the floor!</span>")
 
 		if(do_after(src, 5 SECONDS, H) && eating)
-			H.BecomeBlind()
+			if(!HAS_TRAIT_FROM(H, TRAIT_BLIND, FLOOR_CLUWNE_TRAIT))
+				ADD_TRAIT(H, TRAIT_BLIND, FLOOR_CLUWNE_TRAIT)
+				if(!HAS_TRAIT_NOT_FROM(H, TRAIT_BLIND, FLOOR_CLUWNE_TRAIT))
+					H.update_blind_effects()
+			if(!HAS_TRAIT_FROM(H, TRAIT_NEARSIGHTED, FLOOR_CLUWNE_TRAIT))
+				ADD_TRAIT(H, TRAIT_NEARSIGHTED, FLOOR_CLUWNE_TRAIT)
+				if(!HAS_TRAIT_NOT_FROM(H, TRAIT_NEARSIGHTED, FLOOR_CLUWNE_TRAIT))
+					H.update_nearsighted_effects()
 			H.layer = GAME_PLANE
 			H.invisibility = INVISIBILITY_MAXIMUM
 			H.mouse_opacity = MOUSE_OPACITY_TRANSPARENT

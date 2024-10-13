@@ -234,15 +234,15 @@
 		/obj/item/clothing/head/helmet/space/eva/pirate/leader,
 		/obj/item/hardsuit_shield/syndi,
 		/obj/item/hardsuit_shield/wizard,
-		/obj/vehicle/space/speedbike/red,
-		/obj/vehicle/space/speedbike/red,
-		/obj/vehicle/space/speedbike,
-		/obj/vehicle/space/speedbike,
-		/obj/vehicle/motorcycle,
-		/obj/vehicle/motorcycle,
-		/obj/vehicle/snowmobile/blue/key,
-		/obj/vehicle/snowmobile/key,
-		/obj/vehicle/car,
+		/obj/vehicle/ridden/speedbike/red,
+		/obj/vehicle/ridden/speedbike/red,
+		/obj/vehicle/ridden/speedbike,
+		/obj/vehicle/ridden/speedbike,
+		/obj/vehicle/ridden/motorcycle,
+		/obj/vehicle/ridden/motorcycle,
+		/obj/vehicle/ridden/snowmobile/blue/key,
+		/obj/vehicle/ridden/snowmobile/key,
+		/obj/vehicle/ridden/car,
 		/obj/item/dnainjector/insulation,
 		/obj/item/dnainjector/nobreath,
 		/obj/item/dnainjector/runfast,
@@ -272,7 +272,7 @@
 /obj/effect/spawner/lootdrop/evil_santa_gift
 	name = "evil santa reward gift spawner 1 to 3"
 	icon_state = "evil_santa_gift"
-	lootdoubles = 0
+	lootdoubles = FALSE
 
 	loot = list(
 				/obj/item/a_gift/evil_santa_reward = 33,

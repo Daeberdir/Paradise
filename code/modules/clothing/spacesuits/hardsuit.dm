@@ -170,6 +170,45 @@
 	..()
 
 
+/obj/item/clothing/suit/space/hardsuit/attackby(obj/item/I, mob/user, params)
+	. = ..()
+
+	if(ATTACK_CHAIN_CANCEL_CHECK(.))
+		return .
+
+	if(istype(I, /obj/item/hardsuit_taser_proof))
+		add_fingerprint(user)
+		var/obj/item/hardsuit_taser_proof/new_taser_proof = I
+		if(user.get_item_by_slot(ITEM_SLOT_CLOTH_OUTER) == src)
+			to_chat(user, span_warning("You cannot install the upgrade into [src] while wearing it."))
+			return .
+		if(taser_proof)
+			to_chat(user, span_warning("The [name] already has a taser proof upfrage installed."))
+			return .
+		if(!user.drop_transfer_item_to_loc(new_taser_proof, src))
+			return .
+		to_chat(user, span_notice("You have successfully installed the taser proof upgrade into [src]."))
+		taser_proof = new_taser_proof
+		taser_proof.hardsuit = src
+		return .|ATTACK_CHAIN_BLOCKED_ALL
+
+	if(istype(I, /obj/item/hardsuit_shield))
+		add_fingerprint(user)
+		var/obj/item/hardsuit_shield/new_shield = I
+		if(user.get_item_by_slot(ITEM_SLOT_CLOTH_OUTER) == src)
+			to_chat(user, span_warning("You cannot install the upgrade into [src] while wearing it."))
+			return .
+		var/datum/component/shielded/shielded = GetComponent(/datum/component/shielded)
+		if(istype(shielded))
+			to_chat(user, span_warning("The [name] already has a shield installed."))
+			return .
+		if(!user.drop_transfer_item_to_loc(new_shield, src))
+			return .
+		to_chat(user, span_notice("You have successfully installed the shield upgrade into [src]."))
+		new_shield.attach_to_suit(src)
+		return .|ATTACK_CHAIN_BLOCKED_ALL
+
+
 /obj/item/clothing/suit/space/hardsuit/proc/ToggleHelmet()
 	if(suit_adjusted)
 		return RemoveHelmet()
@@ -335,6 +374,8 @@
 	visor_flags_inv = HIDEMASK|HIDEGLASSES|HIDENAME|HIDETAIL
 	visor_clothing_flags = STOPSPRESSUREDMAGE
 	var/combat_rad = 50
+	var/combat_slow = 0
+	var/eva_slow = 1
 
 
 /obj/item/clothing/head/helmet/space/hardsuit/syndi/Destroy()
@@ -400,12 +441,12 @@
 		linkedsuit.on = !linkedsuit.on
 
 	if(linkedsuit.on)
-		linkedsuit.slowdown = 1
+		linkedsuit.slowdown = eva_slow
 		linkedsuit.clothing_flags |= STOPSPRESSUREDMAGE
 		linkedsuit.cold_protection |= (UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS|TAIL)
 		linkedsuit.armor.rad = 100
 	else
-		linkedsuit.slowdown = 0
+		linkedsuit.slowdown = combat_slow
 		linkedsuit.clothing_flags &= ~STOPSPRESSUREDMAGE
 		linkedsuit.cold_protection &= ~(UPPER_TORSO|LOWER_TORSO|LEGS|FEET|ARMS|HANDS|TAIL)
 		linkedsuit.armor.rad = combat_rad
@@ -514,6 +555,8 @@
 	armor = list(melee = 70, bullet = 70, laser = 50, energy = 40, bomb = 80, bio = 100, rad = 100, fire = 100, acid = 100) //Almost as good as DS gear, but unlike DS can switch to combat for mobility
 	item_color = "sst"
 	combat_rad = 100
+	combat_slow = -0.1
+	eva_slow = 0
 
 /obj/item/clothing/suit/space/hardsuit/syndi/elite/sst
 	icon_state = "hardsuit0-sst"
@@ -586,7 +629,7 @@
 	armor = list("melee" = 30, "bullet" = 5, "laser" = 10, "energy" = 5, "bomb" = 10, "bio" = 100, "rad" = 60, "fire" = 60, "acid" = 75)
 	item_color = "medical"
 	flash_protect = FLASH_PROTECTION_NONE
-	scan_reagents = TRUE //Generally worn by the CMO, so they'd get utility off of seeing reagents
+	examine_extensions = EXAMINE_HUD_SCIENCE
 
 /obj/item/clothing/suit/space/hardsuit/medical
 	name = "medical hardsuit"
@@ -652,7 +695,7 @@
 	armor = list("melee" = 30, "bullet" = 10, "laser" = 20, "energy" = 15, "bomb" = 10, "bio" = 100, "rad" = 60, "fire" = 60, "acid" = 75)
 	item_color = "brigmed"
 	flash_protect = FLASH_PROTECTION_NONE
-	scan_reagents = TRUE
+	examine_extensions = EXAMINE_HUD_SCIENCE
 
 /obj/item/clothing/suit/space/hardsuit/security/brigmed
 	name = "brig physician's hardsuit"
@@ -691,7 +734,7 @@
 	item_state = "rd"
 	armor = list("melee" = 30, "bullet" = 5, "laser" = 10, "energy" = 5, "bomb" = 100, "bio" = 100, "rad" = 60, "fire" = 60, "acid" = 80)
 	item_color = "rd"
-	scan_reagents = TRUE
+	examine_extensions = EXAMINE_HUD_SCIENCE
 	var/explosion_detection_dist = 40
 
 

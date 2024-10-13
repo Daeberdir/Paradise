@@ -637,6 +637,9 @@
 /mob/proc/IsAdvancedToolUser()//This might need a rename but it should replace the can this mob use things check
 	return FALSE
 
+/mob/proc/can_use_machinery(obj/machinery/mach)
+	return IsAdvancedToolUser() 
+
 /mob/proc/swap_hand()
 	return
 
@@ -670,25 +673,27 @@
 	var/mob/living/picked = tgui_input_list(usr, "Please select an NPC to respawn as", "Respawn as NPC", allowed_creatures)
 	if(!picked)
 		return
-
+		
 	if(picked == "Mouse")
 		become_mouse()
 		return
 
 	var/mob/living/picked_mob = allowed_creatures[picked]
+	var/message = picked_mob.get_npc_respawn_message()
 
 	if(QDELETED(picked_mob) || picked_mob.key || picked_mob.stat == DEAD)
 		to_chat(usr, span_warning("[capitalize(picked_mob)] is no longer available to respawn!"))
 		return
-
+	
 	if(istype(picked_mob, /mob/living/simple_animal/borer))
 		var/mob/living/simple_animal/borer/borer = picked_mob
 		borer.transfer_personality(usr.client)
 		return
 
+	to_chat(usr, span_notify(message))
 	GLOB.respawnable_list -= usr
 	picked_mob.key = key
-
+		
 
 /mob/proc/become_mouse()
 	var/timedifference = world.time - client.time_joined_as_mouse
@@ -749,7 +754,7 @@
 		return
 	LAZYADD(mob_spell_list, spell)
 	spell.action.Grant(src)
-
+	spell.on_spell_gain(src)
 
 /mob/proc/RemoveSpell(obj/effect/proc_holder/spell/instance_or_path)
 	if(!ispath(instance_or_path))
@@ -783,7 +788,7 @@
  *
  * You can buckle on mobs if you're next to them since most are dense
  */
-/mob/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE)
+/mob/buckle_mob(mob/living/target, force = FALSE, check_loc = TRUE, buckle_mob_flags= NONE)
 	if(target.buckled)
 		return FALSE
 	return ..()
@@ -1020,11 +1025,11 @@
 		S.icon_state = "[initial(S.icon_state)][suffix]"
 
 ///Adjust the nutrition of a mob
-/mob/proc/adjust_nutrition(change)
+/mob/proc/adjust_nutrition(change, forced)
 	nutrition = max(0, nutrition + change)
 
 ///Force set the mob nutrition
-/mob/proc/set_nutrition(change)
+/mob/proc/set_nutrition(change, forced)
 	nutrition = max(0, change)
 
 /mob/clean_blood(clean_hands = TRUE, clean_mask = TRUE, clean_feet = TRUE)
@@ -1107,6 +1112,8 @@ GLOBAL_LIST_INIT(holy_areas, typecacheof(list(
 	. = stat
 	stat = new_stat
 	SEND_SIGNAL(src, COMSIG_MOB_STATCHANGE, new_stat, .)
+	if(.)
+		set_typing_indicator(FALSE)
 
 /**
  * Called when this mob slips over, override as needed

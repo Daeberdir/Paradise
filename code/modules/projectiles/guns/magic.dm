@@ -24,7 +24,7 @@
 	lefthand_file = 'icons/mob/inhands/items_lefthand.dmi' //not really a gun and some toys use these inhands
 	righthand_file = 'icons/mob/inhands/items_righthand.dmi'
 
-/obj/item/gun/magic/afterattack(atom/target, mob/living/user, flag)
+/obj/item/gun/magic/afterattack(atom/target, mob/living/user, flag, params)
 	if(no_den_usage)
 		var/area/A = get_area(user)
 		if(istype(A, /area/wizard_station))
@@ -50,6 +50,23 @@
 	if(chambered && !chambered.BB) //if BB is null, i.e the shot has been fired...
 		charges--//... drain a charge
 	return
+
+
+/obj/item/gun/magic/magic_charge_act(mob/user)
+	. = NONE
+
+	if(charges >= max_charges)
+		return
+
+	if(!can_charge && prob(80))
+		max_charges = max(0, max_charges - 1)
+
+	charges = max_charges
+	. |= RECHARGE_SUCCESSFUL
+
+	if(!max_charges)
+		. |= RECHARGE_BURNOUT
+
 
 /obj/item/gun/magic/Initialize()
 	. = ..()

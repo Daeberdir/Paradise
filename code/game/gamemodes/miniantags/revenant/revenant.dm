@@ -27,8 +27,6 @@
 	response_disarm = "swings at"
 	response_harm   = "punches"
 	unsuitable_atmos_damage = 0
-	minbodytemp = 0
-	maxbodytemp = INFINITY
 	harm_intent_damage = 0
 	friendly = "touches"
 	status_flags = 0
@@ -62,6 +60,12 @@
 	ADD_TRAIT(src, TRAIT_NO_FLOATING_ANIM, INNATE_TRAIT)
 	AddElement(/datum/element/simple_flying)
 
+/mob/living/simple_animal/revenant/ComponentInitialize()
+	AddComponent( \
+		/datum/component/animal_temperature, \
+		maxbodytemp = INFINITY, \
+		minbodytemp = 0, \
+	)
 
 /mob/living/simple_animal/revenant/Life(seconds, times_fired)
 	..()
@@ -205,6 +209,7 @@
 	mind.AddSpell(new /obj/effect/proc_holder/spell/aoe/revenant/defile(null))
 	mind.AddSpell(new /obj/effect/proc_holder/spell/aoe/revenant/malfunction(null))
 	mind.AddSpell(new /obj/effect/proc_holder/spell/aoe/revenant/overload(null))
+	mind.AddSpell(new /obj/effect/proc_holder/spell/aoe/revenant/blight(null))
 	mind.AddSpell(new /obj/effect/proc_holder/spell/aoe/revenant/haunt_object(null))
 	mind.AddSpell(new /obj/effect/proc_holder/spell/aoe/revenant/hallucinations(null))
 	return TRUE
@@ -250,16 +255,17 @@
 	qdel(src)
 
 
-/mob/living/simple_animal/revenant/attackby(obj/item/W, mob/living/user, params)
-	if(istype(W, /obj/item/nullrod))
-		visible_message("<span class='warning'>[src] violently flinches!</span>", \
-						"<span class='revendanger'>As \the [W] passes through you, you feel your essence draining away!</span>")
-		adjustBruteLoss(25) //hella effective
-		inhibited = 1
-		spawn(30)
-			inhibited = 0
+/mob/living/simple_animal/revenant/attackby(obj/item/I, mob/living/user, params)
+	if(istype(I, /obj/item/nullrod))
+		visible_message(
+			span_warning("[src] violently flinches!"),
+			span_revendanger("As [I.name] passes through you, you feel your essence draining away!"),
+		)
+		apply_damage(25) //hella effective
+		inhibited = TRUE
+		addtimer(VARSET_CALLBACK(src, inhibited, FALSE), 3 SECONDS)
+	return ..()
 
-	..()
 
 /mob/living/simple_animal/revenant/proc/castcheck(essence_cost)
 	if(!src)

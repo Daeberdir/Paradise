@@ -78,8 +78,8 @@
 	var/late = FALSE
 
 /obj/effect/mapping_helpers/Initialize(mapload)
-	..()
-	return late ? INITIALIZE_HINT_LATELOAD : qdel(src) // INITIALIZE_HINT_QDEL <-- Doesn't work
+	. = ..()
+	return late ? INITIALIZE_HINT_LATELOAD : INITIALIZE_HINT_QDEL
 
 /obj/effect/mapping_helpers/airlock
 	layer = DOOR_HELPER_LAYER
@@ -97,7 +97,7 @@
 		airlock.unres_sides ^= dir
 	else
 		log_world("### MAP WARNING, [src] failed to find an airlock at [AREACOORD(src)]")
-	..()
+	. =..()
 
 /obj/effect/mapping_helpers/no_lava
 	icon_state = "no_lava"
@@ -119,6 +119,18 @@
 	T.light_power = light_power
 	T.light_range = light_range
 	. = ..()
+
+/obj/effect/mapping_helpers/table_flip //used to flip tables. That's all.
+	name = "Table flip"
+	icon_state = "table_flip"
+	late = TRUE //initialize table and loot first
+
+/obj/effect/mapping_helpers/table_flip/LateInitialize()
+	. = ..()
+	var/obj/structure/table/to_flip = locate(/obj/structure/table) in get_turf(src)
+	if(to_flip)
+		to_flip.flip(dir, throw_around = FALSE) //subsytems aren't ready for things go flying
+	qdel(src)
 
 // Used by mapmerge2 to denote the existence of a merge conflict (or when it has to complete a "best intent" merge where it dumps the movable contents of an old key and a new key on the same tile).
 // We define it explicitly here to ensure that it shows up on the highest possible plane (while giving off a verbose icon) to aide mappers in resolving these conflicts.
