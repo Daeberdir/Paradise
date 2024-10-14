@@ -1501,6 +1501,60 @@
 /obj/machinery/vending/chinese/free
 	prices = list()
 
+
+/obj/machinery/vending/mc_vulpix
+	name = "\improper MacVulpix Deluxe Food"
+	desc = "A self-serving exotic food machine with a funny fox on the logo."
+	slogan_list = list(
+		"Не любите вульп? Вы просто не умеете их готовить!",
+		"Если вам понравились вульпиксы - ингредиенты погибли не зря!",
+		"\"МакВульпикс\" - выбор настоящего гурмана! Одобрено девятью из десяти диетологами!",
+		"\"МакВульпикс\"! То что я люблю!",
+		"Если чревоугодие — это грех, то добро пожаловать в ад!",
+//		"\"МакВульпикс\"! Вкус Детства!",
+	)
+	vend_reply = "Спасибо, что выбрали \"МакВульпикс\"!"
+	icon_state = "chang_off"	// sprite
+	panel_overlay = "chang_panel"	//sprite
+	screen_overlay = "chang"	//sprite
+	lightmask_overlay = "chang_lightmask"	//sprite
+	broken_overlay = "chang_broken"	//sprite
+	broken_lightmask_overlay = "chang_broken_lightmask"	//sprite
+
+	products = list(
+		/obj/item/reagent_containers/food/snacks/chinese/chowmein = 6,
+		/obj/item/reagent_containers/food/snacks/chinese/tao = 6,
+		/obj/item/reagent_containers/food/snacks/chinese/sweetsourchickenball = 6,
+		/obj/item/reagent_containers/food/snacks/chinese/newdles = 6,
+		/obj/item/reagent_containers/food/snacks/chinese/rice = 6,
+		/obj/item/reagent_containers/food/snacks/fortunecookie = 6,
+		/obj/item/storage/box/crayfish_bucket = 5,
+	)
+
+	contraband = list(
+		/obj/item/poster/cheng = 5,
+		/obj/item/storage/box/mr_cheng = 3,
+		/obj/item/clothing/head/rice_hat = 3,
+	)
+
+	prices = list(
+		/obj/item/reagent_containers/food/snacks/chinese/chowmein = 50,
+		/obj/item/reagent_containers/food/snacks/chinese/tao = 50,
+		/obj/item/reagent_containers/food/snacks/chinese/sweetsourchickenball = 50,
+		/obj/item/reagent_containers/food/snacks/chinese/newdles = 50,
+		/obj/item/reagent_containers/food/snacks/chinese/rice = 50,
+		/obj/item/reagent_containers/food/snacks/fortunecookie = 50,
+		/obj/item/storage/box/crayfish_bucket = 250,
+		/obj/item/storage/box/mr_cheng = 200,
+	)
+
+	refill_canister = /obj/item/vending_refill/mc_vulpix
+
+
+/obj/machinery/vending/mc_vulpix/free
+	prices = list()
+
+
 /obj/machinery/vending/cola
 	name = "\improper Robust Softdrinks"
 	desc = "A soft drink vendor provided by Robust Industries, LLC."
