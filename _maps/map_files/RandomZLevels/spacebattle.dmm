@@ -1432,7 +1432,7 @@
 	id = "GATE";
 	req_access = list(150)
 	},
-/obj/machinery/door/poddoor{
+/obj/machinery/door/poddoor/impassable{
 	id_tag = "GATE";
 	layer = 2.8
 	},
