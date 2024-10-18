@@ -372,3 +372,26 @@
 
 /obj/item/reagent_containers/food/condiment/animalfeed/on_reagent_change()
 	return
+
+
+/obj/item/reagent_containers/food/condiment/macvulpix_milk
+	name = "\improper Red Fox's Milk"
+	desc = "Упаковка молочного коктейля с милой мордочкой лиса."
+	icon_state = "macvulpix"
+	item_state = "macvulpix"
+	possible_states = list()
+
+
+/obj/item/reagent_containers/food/condiment/macvulpix_milk/banana
+	name = "\improper Red Fox's Banana Milk"
+	list_reagents = list("banana_milk" = 50)
+
+
+/obj/item/reagent_containers/food/condiment/macvulpix_milk/chocolate
+	name = "\improper Red Fox's Chocolate Milk"
+	list_reagents = list("chocolate_milk" = 50)
+
+
+/obj/item/reagent_containers/food/condiment/macvulpix_milk/strawberry
+	name = "\improper Red Fox's Strawberry Milk"
+	list_reagents = list("strawberry_milk" = 50)

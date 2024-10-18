@@ -121,6 +121,11 @@
 /obj/item/vending_refill/chinese
 	machine_name = "MrChangs"
 
+
+/obj/item/vending_refill/macvulpix
+	machine_name = "MacVulpix Deluxe Food"
+
+
 /obj/item/vending_refill/hydroseeds
 	machine_name = "MegaSeed Servitor"
 	icon_state = "refill_plant"

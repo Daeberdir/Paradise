@@ -330,7 +330,7 @@ to destroy them and players will be able to make replacements.
 		"Solar's Best Hot Drinks" =				/obj/machinery/vending/coffee,
 		"Getmore Chocolate Corp" =				/obj/machinery/vending/snack,
 		"Mr. Chang" =							/obj/machinery/vending/chinese,
-		"MacVulpix Deluxe Food" =				/obj/machinery/vending/mc_vulpix,
+		"MacVulpix Deluxe Food" =				/obj/machinery/vending/macvulpix,
 		"Robust Softdrinks" =					/obj/machinery/vending/cola,
 		"ShadyCigs Deluxe" =					/obj/machinery/vending/cigarette,
 		"Hatlord 9000" =						/obj/machinery/vending/hatdispenser,

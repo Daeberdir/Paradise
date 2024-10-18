@@ -53,6 +53,12 @@
 	poster_type = /obj/structure/sign/poster/official/mr_cheng
 	icon_state = "rolled_poster"
 
+
+/obj/item/poster/macvulpix
+	poster_type = /obj/structure/sign/poster/official/macvulpix
+	icon_state = "rolled_poster"
+
+
 //############################## THE ACTUAL DECALS ###########################
 
 /obj/structure/sign/poster
@@ -701,6 +707,13 @@
 	name = "Mr. Cheng!"
 	desc = "Stunning discounts! The best product quality! Good prices for lots and lots of goods! Only Mr. Cheng."
 	icon_state = "poster53_legit"
+
+
+/obj/structure/sign/poster/official/mr_cheng
+	name = "MacVulpix Commercial"
+	desc = "Успейте попробовать новую линейку продукции \"Большой Укус\" от ресторана быстрого питания МакВульпикс."
+	icon_state = "poster54_legit"
+
 
 /obj/structure/sign/poster/secret
 	poster_item_name = "Secret poster"

@@ -123,6 +123,20 @@
 	foodtype = JUNKFOOD | MEAT
 	opened = FALSE
 
+
+/obj/item/reagent_containers/food/snacks/macvulpix_nachos
+	name = "\improper MacNachos Diablo"
+	icon_state = "macvulpix_nachos"
+	desc = "Лис на упаковке словно говорит вам \"Это, черт возьми, остро!\""
+	trash = /obj/item/trash/macvulpix_nachos
+	filling_color = "#BAD145"
+	junkiness = 20
+	antable = FALSE
+	list_reagents = list("plantmatter" = 3, "sodiumchloride" = 1, "capsaicin" = 5)
+	tastes = list("crisps" = 1, "very spicy nachos" = 5)
+	foodtype = JUNKFOOD | DAIRY
+
+
 //////////////////////
 //		Homemade	//
 //////////////////////

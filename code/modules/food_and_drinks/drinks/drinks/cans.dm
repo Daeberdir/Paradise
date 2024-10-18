@@ -225,6 +225,13 @@
 	list_reagents = list("noalco_beer" = 30)
 
 
+/obj/item/reagent_containers/food/drinks/cans/macvulpix_beer
+	name = "\improper MacVulpBeer Citrus"
+	desc = "Баночка пробуждающего аппетит и дешевого цитрусового пива от МакВульпикс."
+	icon_state = "macvulpix_beer"
+	list_reagents = list("citrus_beer" = 30)
+
+
 /obj/item/reagent_containers/food/drinks/cans/adminbooze
 	name = "admin booze"
 	desc = "Bottled Griffon tears. Drink with caution."

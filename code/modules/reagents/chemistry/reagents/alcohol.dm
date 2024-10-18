@@ -55,6 +55,17 @@
 	drink_desc = "A freezing pint of beer"
 	taste_description = "beer"
 
+
+/datum/reagent/consumable/ethanol/beer/citrus
+	name = "Citrus Beer"
+	id = "citrus_beer"
+	color = "#c45308"
+	drink_icon ="citrusbeer"
+	drink_name = "Citrus Beer"
+	drink_desc = "Пахнущее апельсинами пиво оранжеватого оттенка."
+	taste_description = "citruses with booze"
+
+
 /datum/reagent/consumable/ethanol/cider
 	name = "Cider"
 	id = "cider"

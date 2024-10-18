@@ -769,6 +769,20 @@
 	name = "crimson fox plushie"
 	icon_state = "crimsonfox"
 
+
+/obj/item/toy/plushie/business_fox
+	name = "business red fox"
+	desc = "Мягкая и приятная на ощупь игрушка важного рыжего лиса в пальто."
+	icon_state = "businessfox0"
+
+
+/obj/item/toy/plushie/business_fox/New()
+	. = ..()
+	if(prob(50))
+		desc = "Мягкая и приятная на ощупь игрушка важного рыжего лиса в пальто и солнечных очках! Oh yeah!"
+		icon_state = "businessfox1"
+
+
 /obj/item/toy/plushie/deer
 	name = "deer plushie"
 	icon_state = "deer"

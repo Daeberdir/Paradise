@@ -246,13 +246,36 @@
 	drink_desc = "Ewwww..."
 	taste_description = "cream"
 
+
+/datum/reagent/consumable/drink/milk/banana_milk
+	name = "Banana Milk"
+	id = "banana_milk"
+	description = "Banana-flavored milk, tastes like being a kid again."
+	color = "#e9db5f"
+	drink_name = "Glass of banana milk"
+	drink_desc = "Банановый молочный коктейль, вкус вашего детства, если вы, конечно, клоун."
+	taste_description = "banana milk"
+
+
 /datum/reagent/consumable/drink/milk/chocolate_milk
 	name = "Chocolate milk"
 	id ="chocolate_milk"
 	description = "Chocolate-flavored milk, tastes like being a kid again."
 	color = "#85432C"
 	drink_name = "Glass of chocolate milk"
+	drink_desc = "Шоколадный молочный коктейль, вкус вашего детства!"
 	taste_description = "chocolate milk"
+
+
+/datum/reagent/consumable/drink/milk/strawberry_milk
+	name = "Strawberry Milk"
+	id = "strawberry_milk"
+	description = "Strawberry-flavored milk, tastes like being a kid again."
+	color = "#eb6f79"
+	drink_name = "Glass of strawberry milk"
+	drink_desc = "Клубничный молочный коктейль ярко-красного цвета, вкус вашего детства!"
+	taste_description = "strawberry milk"
+
 
 /datum/reagent/consumable/drink/hot_coco
 	name = "Hot Chocolate"

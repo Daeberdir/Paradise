@@ -137,6 +137,12 @@
 	desc = "Still has a delicious smell."
 
 
+/obj/item/trash/macvulpix_nachos
+	name = "\improper MacNachos Diablo"
+	desc = "Когда-то это были вкусные чипсы."
+	icon_state = "macvulpix_nachos"
+
+
 /obj/item/trash/attack(mob/living/target, mob/living/user, params, def_zone, skip_attack_anim = FALSE)
 	return ATTACK_CHAIN_PROCEED
 
