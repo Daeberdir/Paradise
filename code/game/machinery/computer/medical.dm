@@ -346,10 +346,16 @@
 						return
 
 					if(field == "age")
-						var/new_age = text2num(answer)
-						if(new_age < AGE_MIN || new_age > AGE_MAX)
-							set_temp("Invalid age. It must be between [AGE_MIN] and [AGE_MAX].", "danger")
+						if(!active1)
 							return
+
+						var/datum/species/species = active1.fields["species"]
+						var/new_age = text2num(answer)
+						var/age_limits = get_age_limits(species, list(SPECIES_AGE_MIN, SPECIES_AGE_MAX))
+						if(new_age < age_limits[SPECIES_AGE_MIN] || new_age > age_limits[SPECIES_AGE_MAX])
+							set_temp("Invalid age. It must be between [age_limits[SPECIES_AGE_MIN]] and [age_limits[SPECIES_AGE_MAX]].", "danger")
+							return
+
 						answer = new_age
 
 					if(istype(active2) && (field in active2.fields))

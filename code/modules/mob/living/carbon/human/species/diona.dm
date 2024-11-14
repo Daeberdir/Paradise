@@ -80,6 +80,13 @@
 	disliked_food = MEAT | RAW | EGG
 	liked_food = VEGETABLES | FRUIT
 
+	age_sheet = list(
+		SPECIES_AGE_MIN = 1,
+		SPECIES_AGE_MAX = 90,
+		JOB_MIN_AGE_HIGH_ED = 26,
+		JOB_MIN_AGE_COMMAND = 26,
+	)
+
 /datum/species/diona/can_understand(mob/other)
 	if(istype(other, /mob/living/simple_animal/diona))
 		return 1
