@@ -336,16 +336,38 @@
 	usr << browse(dat, "window=players;size=600x480")
 
 
-/datum/admins/proc/check_antagonists_line(mob/M, caption = "", close = 1)
-	var/logout_status
-	logout_status = M.client ? "" : " <i>(logged out)</i>"
-	var/dname = M.real_name
-	var/area/A = get_area(M)
-	if(!dname)
-		dname = M
+/datum/admins/proc/check_player_line(mob/mob, caption, player_panel = TRUE, perma_check = TRUE, personal_message = TRUE, admin_follow = TRUE, close = TRUE)
+	var/result = "<tr><td><a href='byond://?src=[UID()];"
 
-	return {"<tr><td><a href='byond://?src=[UID()];adminplayeropts=[M.UID()]'>[dname]</a><b>[caption]</b>[logout_status][istype(A, /area/security/permabrig) ? "<b><font color=red> (PERMA) </b></font>" : ""][M.stat == 2 ? " <b><font color=red>(DEAD)</font></b>" : ""]</td>
-		<td><a href='byond://?src=[usr.UID()];priv_msg=[M.client?.ckey]'>PM</A> [ADMIN_FLW(M, "FLW")] </td>[close ? "</tr>" : ""]"}
+	if(player_panel)
+		result += "adminplayeropts=[mob.UID()]'>[mob.real_name ? mob.real_name : mob]</a>"
+
+	else
+		result += mob.real_name || mob
+
+	result += mob.client ? "" : " <i>(logged out)</i>"
+
+	if(perma_check && istype(get_area(mob), /area/security/permabrig))
+		result += "<b><font color=red> (PERMA)</font></b>"
+
+	if(mob.stat == DEAD)
+		result += "<b><font color=red> (DEAD)</font></b>"
+
+	result += "</td><td><a href='byond://?src=[usr.UID()];"
+
+	if(personal_message)
+		result += " priv_msg=[mob.client?.ckey]'>PM</A>"
+
+	if(admin_follow)
+		result += " " + ADMIN_FLW(mob, "FLW")
+
+	result += "</td>"
+
+	if(close)
+		result += "</tr>"
+
+	return {result}
+
 
 /datum/admins/proc/check_antagonists()
 	if(!check_rights(R_ADMIN))
@@ -381,7 +403,7 @@
 			for(var/datum/mind/N in SSticker.mode.syndicates)
 				var/mob/M = N.current
 				if(M)
-					dat += check_antagonists_line(M)
+					dat += check_player_line(M)
 				else
 					dat += "<tr><td><i>Nuclear Operative not found!</i></td></tr>"
 			dat += "</table><br><table><tr><td><B>Nuclear Disk(s)</B></td></tr>"
@@ -401,26 +423,41 @@
 
 		if(SSticker.mode.head_revolutionaries.len || SSticker.mode.revolutionaries.len)
 			dat += "<br><table cellspacing=5><tr><td><B>Revolutionaries</B></td><td></td></tr>"
-			for(var/datum/mind/N in SSticker.mode.head_revolutionaries)
-				var/mob/M = N.current
-				if(!M)
-					dat += "<tr><td><i>Head Revolutionary not found!</i></td></tr>"
-				else
-					dat += check_antagonists_line(M, "(leader)")
-			for(var/datum/mind/N in SSticker.mode.revolutionaries)
-				var/mob/M = N.current
-				if(M)
-					dat += check_antagonists_line(M)
+			var/find_nothing = TRUE
+
+			for(var/datum/mind/headrev as anything in SSticker.mode.head_revolutionaries)
+				if(!headrev.current)
+					continue
+
+				dat += check_player_line(headrev.current, "(leader)")
+				find_nothing = FALSE
+
+			if(find_nothing)
+				dat += "<tr><td><i>Head Revolutionary not found!</i></td></tr>"
+
+			find_nothing = TRUE
+
+			for(var/datum/mind/rev as anything in SSticker.mode.revolutionaries)
+				if(!rev.current)
+					continue
+
+				dat += check_player_line(rev.current)
+
 			dat += "</table><table cellspacing=5><tr><td><B>Target(s)</B></td><td></td><td><B>Location</B></td></tr>"
-			for(var/datum/mind/N in SSticker.mode.get_living_heads())
-				var/mob/M = N.current
-				if(M)
-					dat += check_antagonists_line(M)
-					var/turf/mob_loc = get_turf(M)
-					dat += "<td>[mob_loc.loc]</td></tr>"
-				else
-					dat += "<tr><td><i>Head not found!</i></td></tr>"
+			for(var/datum/mind/actual_target as anything in SSticker.mode.get_living_heads())
+				if(!actual_target.current)
+					continue
+
+				dat += check_player_line(actual_target.current)
+				var/turf/mob_loc = get_turf(actual_target.current)
+				dat += "<td>[mob_loc.loc]</td></tr>"
+				find_nothing = FALSE
+
+			if(find_nothing)
+				dat += "<tr><td><i>Heads of Staff not found!</i></td></tr>"
+
 			dat += "</table>"
+
 		var/list/blob_infected = SSticker?.mode?.blobs["infected"]
 		if(blob_infected && blob_infected.len)
 			var/datum/game_mode/mode = SSticker.mode
@@ -639,7 +676,7 @@
 	if(!istype(M))
 		return "<tr><td><i>Not found!</i></td></tr>"
 
-	var/txt = check_antagonists_line(M, close = 0)
+	var/txt = check_player_line(M, close = FALSE)
 
 	if(show_objectives)
 		txt += {"
