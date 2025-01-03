@@ -1191,6 +1191,8 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 		HTML += ShowDisabilityState(user, DISABILITY_FLAG_ALCOHOLE_ADDICT, "Alcohole addict")
 	if(!(S.blacklisted_disabilities & DISABILITY_FLAG_PARAPLEGIA))
 		HTML += ShowDisabilityState(user, DISABILITY_FLAG_PARAPLEGIA, "Paraplegia")
+	if(!(S.blacklisted_disabilities & DISABILITY_FLAG_APHASIA))
+		HTML += ShowDisabilityState(user, DISABILITY_FLAG_APHASIA, "Aphasia")
 
 	HTML += {"</ul>
 		<a href=\"?_src_=prefs;task=close;preference=disabilities\">\[Done\]</a>
@@ -1551,7 +1553,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 					if(species in list(SPECIES_HUMAN, SPECIES_UNATHI, SPECIES_TAJARAN, SPECIES_SKRELL, SPECIES_MACNINEPERSON, SPECIES_WRYN, SPECIES_VULPKANIN, SPECIES_VOX))
 						h_sec_colour = rand_hex_color()
 				if("h_style")
-					h_style = random_hair_style(gender, species, robohead)
+					h_style = random_hair_style(gender, S, robohead)
 				if("facial")
 					if(species in list(SPECIES_HUMAN, SPECIES_UNATHI, SPECIES_TAJARAN, SPECIES_SKRELL, SPECIES_MACNINEPERSON, SPECIES_WRYN, SPECIES_VULPKANIN, SPECIES_VOX))
 						f_colour = rand_hex_color()
@@ -1647,7 +1649,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 							var/head_model = "[!rlimb_data["head"] ? "Morpheus Cyberkinetics" : rlimb_data["head"]]"
 							robohead = GLOB.all_robolimbs[head_model]
 						//grab one of the valid hair styles for the newly chosen species
-						h_style = random_hair_style(gender, species, robohead)
+						h_style = random_hair_style(gender, S, robohead)
 
 						//grab one of the valid facial hair styles for the newly chosen species
 						f_style = random_facial_hair_style(gender, species, robohead)
@@ -1994,7 +1996,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 
 
 				if("facial")
-					if(species in list(SPECIES_HUMAN, SPECIES_UNATHI, SPECIES_TAJARAN, SPECIES_SKRELL, SPECIES_MACNINEPERSON, SPECIES_VULPKANIN, SPECIES_VOX)) //Species that have facial hair. (No HAS_HAIR_FACIAL flag)
+					if(species in list(SPECIES_HUMAN, SPECIES_UNATHI, SPECIES_TAJARAN, SPECIES_SKRELL, SPECIES_MACNINEPERSON, SPECIES_VULPKANIN, SPECIES_VOX, SPECIES_WRYN)) //Species that have facial hair. (No HAS_HAIR_FACIAL flag)
 						var/new_facial = input(user, "Choose your character's facial-hair colour:", "Character Preference", f_colour) as color|null
 						if(new_facial)
 							f_colour = new_facial
@@ -2397,7 +2399,7 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 						var/head_model = "[!rlimb_data["head"] ? "Morpheus Cyberkinetics" : rlimb_data["head"]]"
 						robohead = GLOB.all_robolimbs[head_model]
 
-					h_style = random_hair_style(gender, species, robohead)
+					h_style = random_hair_style(gender, S, robohead)
 					f_style = random_facial_hair_style(gender, species, robohead)
 
 					m_styles["body"] = random_marking_style("body", species, gender = src.gender)
@@ -2958,6 +2960,9 @@ GLOBAL_LIST_INIT(special_role_times, list( //minimum age (in days) for accounts 
 
 	if((disabilities & DISABILITY_FLAG_PARAPLEGIA) && !(new_species.blacklisted_disabilities & DISABILITY_FLAG_PARAPLEGIA))
 		character.force_gene_block(GLOB.paraplegiablock, TRUE, TRUE)
+
+	if((disabilities & DISABILITY_FLAG_APHASIA) && !(new_species.blacklisted_disabilities & DISABILITY_FLAG_APHASIA))
+		character.force_gene_block(GLOB.aphasiablock, TRUE, TRUE)
 
 	character.dna.species.handle_dna(character)
 
