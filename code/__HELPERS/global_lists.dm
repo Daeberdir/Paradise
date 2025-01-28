@@ -25,6 +25,7 @@
 
 	init_subtypes(/datum/surgery_step, GLOB.surgery_steps)
 	init_subtypes(/obj/item/slimepotion, GLOB.slime_potions)
+	init_subtypes(/datum/preference_info, GLOB.preferences_info)
 	// Different bodies
 	__init_body_accessory(/datum/body_accessory/body)
 	// Different tails
@@ -107,7 +108,7 @@
 
 		GLOB.gear_tgui_info[gear.sort_category] += list(
 			"[gear]" = list(
-				"name" = ((gear.display_name == /datum/gear::display_name)? gear_item.name : gear.display_name) ,
+				"name" = gear.get_display_name() ,
 				"index_name" = gear.index_name,
 				"desc" = gear.description,
 				"icon" = gear_item.icon,

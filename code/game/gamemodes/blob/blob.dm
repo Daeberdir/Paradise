@@ -39,7 +39,7 @@
 	var/players_per_core = BLOB_PLAYERS_PER_CORE
 
 
-/datum/game_mode/blob/mid_setup()
+/datum/game_mode/blob/pre_setup()
 
 	var/list/possible_blobs = get_players_for_role(ROLE_BLOB)
 
@@ -117,6 +117,7 @@
 		blob_objective.critical_mass = legit_blobs.len
 		blob_objective.needed_critical_mass = blob_win_count
 		blob_objective.set_target()
+		blob_objective.owner = src
 
 
 /datum/game_mode/proc/blob_died()

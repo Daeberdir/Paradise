@@ -517,6 +517,9 @@
 /// Performed after the hands are swapped.
 #define COMSIG_MOB_SWAP_HANDS "mob_swap_hands"
 
+#define COMSIG_MOB_AUTOMUTE_CHECK "automute_check"
+	#define WAIVE_AUTOMUTE_CHECK (1<<0)
+
 /// from mob/get_status_tab_items(): (list/items)
 #define COMSIG_MOB_GET_STATUS_TAB_ITEMS "mob_get_status_tab_items"
 
@@ -979,6 +982,8 @@
 ///from /mob/living/carbon/human/proc/check_shields(): (atom/hit_by, damage, attack_text, attack_type, armour_penetration, damage_type)
 #define COMSIG_HUMAN_CHECK_SHIELDS "human_check_shields"
 	#define SHIELD_BLOCK (1<<0)
+
+#define COMSIG_HUMAN_DESTROYED "human_destroyed"
 
 // /datum/species signals
 ///from datum/species/on_species_gain(): (datum/species/new_species, datum/species/old_species)

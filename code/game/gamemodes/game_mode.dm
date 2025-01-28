@@ -1,7 +1,3 @@
-#define NUKE_INTACT 0
-#define NUKE_CORE_MISSING 1
-#define NUKE_MISSING 2
-
 /*
  * GAMEMODES (by Rastaf0)
  *
@@ -49,6 +45,17 @@
 	var/list/player_draft_log = list()
 	var/list/datum/mind/xenos = list()
 	var/list/datum/mind/eventmiscs = list()
+	var/list/datum/mind/traders = list()
+	var/list/datum/mind/terror_spiders = list()
+	var/list/datum/mind/morphs = list()
+	var/list/datum/mind/swarmers = list()
+	var/list/datum/mind/guardians = list()
+	var/list/datum/mind/revenants = list()
+	var/list/datum/mind/headslugs = list()
+	var/list/datum/mind/deathsquad = list()
+	var/list/datum/mind/honksquad = list()
+	var/list/datum/mind/sst = list()
+	var/list/datum/mind/sit = list()
 	var/list/datum/mind/victims = list()	//Свободные жертвы PREVENT/ASSASINATE целей для PROTECT (или не повтора целей)
 	/// A list of all station goals for this game mode
 	var/list/datum/station_goal/station_goals = list()
@@ -77,17 +84,11 @@
 
 
 /**
- * Selects players for special roles not affected by job assignment. Ex: Nuke, Wizard, Mouse blob
+ * Attempts to select players for special roles the mode might have.
  */
 /datum/game_mode/proc/pre_setup()
 	return TRUE
 
-/**
- * After station jobs distributed, attempts to select players for special roles the mode might have.
- * It also needs to return TRUE if game_mode is ready(antag roles assigned properly)
- */
-/datum/game_mode/proc/mid_setup()
-	return TRUE
 
 /**
  * Everyone should now be on the station and have their normal gear. This is the place to give the special roles extra things.
@@ -591,7 +592,7 @@
 		if(is_station_level(bomb.z))
 			nuke_status = NUKE_CORE_MISSING
 			if(bomb.core)
-				nuke_status = NUKE_INTACT
+				nuke_status = NUKE_STATUS_INTACT
 	return nuke_status
 
 
@@ -772,7 +773,3 @@
 	sleep(15 SECONDS)
 	SSticker.force_ending = TRUE
 	return
-
-#undef NUKE_INTACT
-#undef NUKE_CORE_MISSING
-#undef NUKE_MISSING

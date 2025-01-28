@@ -250,7 +250,7 @@
 /datum/vampire_passive/dissection_cap/on_apply(datum/antagonist/vampire/vampire)
 	vampire.subclass.dissect_cap++
 	vampire.subclass.crit_organ_cap += 2
-	gain_desc = "Теперь вы можете извлекать еще один орган у одной и той же жертвы, но не более чем <b>[vampire.subclass.dissect_cap]</b>. Помимо того, новый предел для извлечения критических органов - <b>[vampire.subclass.crit_organ_cap]</b>."
+	gain_desc = "Теперь вы можете извлекать ещё один орган у одной и той же жертвы, но не более чем <b>[vampire.subclass.dissect_cap]</b>. Помимо того, новый предел для извлечения критических органов - <b>[vampire.subclass.crit_organ_cap]</b>."
 
 
 /datum/vampire_passive/dissection_cap/two
@@ -499,12 +499,13 @@
 	var/list/data = list()
 	var/datum/antagonist/vampire/vampire = user.mind.has_antag_datum(/datum/antagonist/vampire)
 
-	data["icon_hearts"] = "[icon2base64(icon('icons/obj/surgery.dmi', "heart-off"))]"
-	data["icon_lungs"] = "[icon2base64(icon('icons/obj/surgery.dmi', "lungs"))]"
-	data["icon_livers"] = "[icon2base64(icon('icons/obj/surgery.dmi', "liver"))]"
-	data["icon_kidneys"] = "[icon2base64(icon('icons/obj/surgery.dmi', "kidneys"))]"
-	data["icon_eyes"] = "[icon2base64(icon('icons/obj/surgery.dmi', "eyes"))]"
-	data["icon_ears"] = "[icon2base64(icon('icons/obj/surgery.dmi', "ears"))]"
+	data["organs_icon"] = 'icons/obj/surgery.dmi'
+	data["icon_hearts"] = "heart-off"
+	data["icon_lungs"] = "lungs"
+	data["icon_livers"] = "liver"
+	data["icon_kidneys"] = "kidneys"
+	data["icon_eyes"] = "eyes"
+	data["icon_ears"] = "ears"
 
 	data["trophies_max_gen"] = MAX_TROPHIES_PER_TYPE_GENERAL
 	data["trophies_max_crit"] = MAX_TROPHIES_PER_TYPE_CRITICAL

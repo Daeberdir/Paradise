@@ -83,7 +83,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //Gets the round setup, cancelling if there's not enough players at the start//
 ///////////////////////////////////////////////////////////////////////////////
-/datum/game_mode/revolution/mid_setup()
+/datum/game_mode/revolution/pre_setup()
 	var/list/possible_revolutionaries = get_players_for_role(ROLE_REV)
 
 	if(CONFIG_GET(flag/protect_roles_from_antagonist))
@@ -137,6 +137,7 @@
 	var/datum/objective/rev_obj = new
 	rev_obj.needs_target = FALSE
 	rev_obj.owner = rev_mind
+	rev_obj.antag_menu_name = "Революция"
 	rev_obj.explanation_text = "Вы или ваши сподвижники должны занять командные должности, отправив в отставку занимающий их экипаж"
 	rev_mind.objectives += rev_obj
 
