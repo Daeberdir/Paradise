@@ -133,15 +133,18 @@
 		time_since_last_hallucination = 0
 
 
-/obj/structure/shadowcocoon/AltClick(mob/user)
-	if(!isdemon(user) || user.incapacitated())
-		return ..()
+/obj/structure/shadowcocoon/click_alt(mob/user)
+	if(!isdemon(user))
+		return NONE
+	if(user.incapacitated())
+		return CLICK_ACTION_BLOCKING
 	if(silent)
 		to_chat(user, span_notice("You twist and change your trapped victim in [src] to lure in more prey."))
 		silent = FALSE
-		return
+		return CLICK_ACTION_BLOCKING
 	to_chat(user, span_notice("The tendrils from [src] snap back to their orignal form."))
 	silent = TRUE
+	return CLICK_ACTION_SUCCESS
 
 
 /obj/structure/shadowcocoon/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = NONE)
@@ -197,7 +200,7 @@
 
 /obj/item/projectile/magic/shadow_hand/fire(setAngle)
 	if(firer)
-		firer.Beam(src, icon_state = "grabber_beam", time = INFINITY, maxdistance = INFINITY, beam_sleep_time = 1, beam_type = /obj/effect/ebeam/floor, beam_layer = BELOW_MOB_LAYER)
+		firer.Beam(src, icon_state = "grabber_beam", time = INFINITY, maxdistance = INFINITY, beam_type = /obj/effect/ebeam/floor, layer = BELOW_MOB_LAYER)
 	return ..()
 
 
